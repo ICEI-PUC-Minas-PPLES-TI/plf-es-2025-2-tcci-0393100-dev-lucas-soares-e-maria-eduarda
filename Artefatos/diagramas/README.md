@@ -1,4 +1,4 @@
-# Diagramas
+# Artefatos do projeto
 
 Este diretório mantém as versões dos diagramas produzidos no projeto. Cada diretório tem o artefato e sua respectiva versão no nome do arquivo em extensão `.astah` (Exemplo: `diagrama-de-caso-de-uso-v1.0.astah` refere ao Diagrama de Caso de Uso na versão 1.0 na extensão `.astah`) e o diretório `/imagens` que tem o artefato e sua respectiva versão no nome do arquivo em extensão `.png` (Exemplo: `diagrama-de-caso-de-uso-v1.0.astah` refere ao Diagrama de Caso de Uso na versão 1.0 na extensão `.png`). 
 
