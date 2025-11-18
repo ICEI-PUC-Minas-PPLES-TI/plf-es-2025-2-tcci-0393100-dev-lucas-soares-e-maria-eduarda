@@ -1,4 +1,8 @@
 # Divulgação: Vídeo do Projeto
 
-Nesta pasta inclua arquivos de vídeo produzidos para divulgação do projeto e seus resutados.
+Este diretório mantém os arquivos de vídeo produzidos para divulgação do projeto e seus resultados.
+
+## Arquivos:
+
+- [Video-PreBanca_Atividade_A6.mp4](): Vídeo de apresentação para pré-banca do TCC I. 
 
