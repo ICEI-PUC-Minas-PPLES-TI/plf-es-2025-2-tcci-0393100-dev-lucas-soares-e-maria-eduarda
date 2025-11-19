@@ -4,5 +4,5 @@ Este diretório mantém os arquivos de vídeo produzidos para divulgação do pr
 
 ## Arquivos:
 
-- [Video-PreBanca_Atividade_A6.mp4](): Vídeo de apresentação para pré-banca do TCC I. 
+- [Video-PreBanca_Atividade_A6.mp4](Video-PreBanca_Atividade_A6.mp4): Vídeo de apresentação para pré-banca do TCC I. 
 
