@@ -19,3 +19,4 @@ Este diretório mantém os artefatos (memoriais, diagramas, documentos, modelos 
   - [/diagramas/diagrama-de-estado](./diagramas/diagrama-de-estado): versões do diagrama de estado em `.png` e `.astah`.
   - [/diagramas/diagrama-de-pacotes](./diagramas/diagrama-de-pacotes): versões do diagrama de pacotes em `.png` e `.astah`.
 - [/prototipos](prototipos): contém os protótipos de tela do sistema
+- [Projeto-PreBanca_Atividade_A6.pdf](Projeto-PreBanca_Atividade_A6.pdf): Documento de Projeto na última versão para a pré-banca.
