@@ -1,15 +1,7 @@
-import {Card}from "./components/Card.tsx";
+import { AppRouter } from './routes';
 
 function App() {
-
-  return (
-      <>
-          <div>
-              GraphTest
-              <Card />
-          </div>
-      </>
-  )
+  return <AppRouter />;
 }
 
-export default App
+export default App;
