@@ -20,7 +20,7 @@ export function LoginCard() {
 
     try {
       await login(email, password);
-      navigate('/dashboard');
+      navigate('/');
     } catch {
       setError('Email ou senha inválidos.');
     } finally {
