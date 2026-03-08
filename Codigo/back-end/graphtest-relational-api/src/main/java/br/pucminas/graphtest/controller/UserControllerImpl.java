@@ -82,7 +82,10 @@ public class UserControllerImpl implements UserController {
 
 
     @Override
+    @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, Object>> deletar(UUID id) {
-        return null;
+        log.info(">>> deletar: recebendo requisição para deletar usuário");
+        userService.deletar(id);
+        return ResponseEntity.ok().body(construirRespostaJSON(CHAVES_USUARIO_CONTROLLER, asList(OK.value(), MSG_USUARIO_DELETADO, id)));
     }
 }

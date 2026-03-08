@@ -76,7 +76,14 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void deletar(UUID id) {
-
+        log.info(">>> deletar: deletando usuário");
+        User user = encontrarPorId(id);
+        try {
+            this.usuarioRepository.deleteById(user.getId());
+            log.info(format(">>> deletar: usuário deletado, id: %s", id));
+        } catch (Exception e) {
+            throw new DeletarEntidadeException(format("existem entidades relacionadas: %s", e));
+        }
     }
 
 
