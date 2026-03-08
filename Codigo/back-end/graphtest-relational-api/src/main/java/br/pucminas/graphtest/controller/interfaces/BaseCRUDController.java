@@ -1,0 +1,22 @@
+package br.pucminas.graphtest.controller.interfaces;
+
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+public interface BaseCRUDController<O> {
+
+    @GetMapping("/{id}")
+    ResponseEntity<O> encontrarPorId(@PathVariable UUID id);
+
+    @GetMapping
+    ResponseEntity<List<O>> listarTodos();
+
+
+    @DeleteMapping("/{id}")
+    ResponseEntity<Map<String, Object>> deletar(@PathVariable UUID id);
+
+}
