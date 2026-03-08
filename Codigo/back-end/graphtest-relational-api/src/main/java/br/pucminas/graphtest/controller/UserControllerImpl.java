@@ -6,6 +6,7 @@ import br.pucminas.graphtest.dto.PasswordDTO;
 import br.pucminas.graphtest.dto.UserDTO;
 import br.pucminas.graphtest.model.User;
 import br.pucminas.graphtest.service.interfaces.UserService;
+import br.pucminas.graphtest.util.ConversorEntidadeDTOUtil;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,17 +53,19 @@ public class UserControllerImpl implements UserController {
     }
 
     @Override
+    public ResponseEntity<List<UserDTO>> listarTodos() {
+        log.info(">>> listarTodos: recebendo requisição para listar todos usuários");
+        List<User> usuarios = userService.listarTodos();
+        return ResponseEntity.ok().body(usuarios.stream().map(ConversorEntidadeDTOUtil::converterParaDTO).toList());
+    }
+
+    @Override
     public ResponseEntity<Map<String, Object>> atualizarSenha(UUID id, PasswordDTO passwordDTO) {
         return null;
     }
 
     @Override
     public ResponseEntity<?> verificarToken(String token) {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<List<UserDTO>> listarTodos() {
         return null;
     }
 

@@ -47,7 +47,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> listarTodos() {
-        return List.of();
+        log.info(">>> listarTodos: listando todos usuários");
+        //validadorAutorizacaoRequisicaoService.validarAutorizacaoRequisicao();
+        return usuarioRepository.findAll();
     }
 
     @Override
