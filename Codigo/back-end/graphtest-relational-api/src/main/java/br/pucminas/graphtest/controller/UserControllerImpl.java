@@ -8,6 +8,7 @@ import br.pucminas.graphtest.model.User;
 import br.pucminas.graphtest.service.interfaces.UserService;
 import br.pucminas.graphtest.util.ConversorEntidadeDTOUtil;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,7 @@ import static br.pucminas.graphtest.util.ContrutorRespostaJsonUtil.construirResp
 import static br.pucminas.graphtest.util.ConversorEntidadeDTOUtil.converterParaDTO;
 import static java.util.Arrays.asList;
 import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.OK;
 
 @Slf4j(topic = USUARIO_CONTROLLER)
 @RestController
@@ -60,6 +62,15 @@ public class UserControllerImpl implements UserController {
     }
 
     @Override
+    @PutMapping("/{id}")
+    public ResponseEntity<Map<String, Object>> atualizar(@PathVariable UUID id,@Valid @RequestBody @NotNull User usuario) {
+        log.info(">>> atualizar: recebendo requisição para atualizar usuário");
+        usuario.setId(id);
+        User usuarioAtualizado = userService.atualizar(usuario);
+        return ResponseEntity.ok().body(construirRespostaJSON(CHAVES_USUARIO_CONTROLLER, asList(OK.value(), MSG_USUARIO_ATUALIZADO, usuarioAtualizado.getId())));
+    }
+
+    @Override
     public ResponseEntity<Map<String, Object>> atualizarSenha(UUID id, PasswordDTO passwordDTO) {
         return null;
     }
@@ -69,10 +80,6 @@ public class UserControllerImpl implements UserController {
         return null;
     }
 
-    @Override
-    public ResponseEntity<Map<String, Object>> atualizar(UUID id, User obj) {
-        return null;
-    }
 
     @Override
     public ResponseEntity<Map<String, Object>> deletar(UUID id) {

@@ -12,8 +12,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
+
+import static br.pucminas.graphtest.util.ConstantesRequisicaoUtil.PROPRIEDADES_IGNORADAS;
 import static br.pucminas.graphtest.util.ConstantesTopicosUtil.USUARIO_SERVICE;
 import static java.lang.String.format;
+import static org.springframework.beans.BeanUtils.copyProperties;
 
 @Slf4j(topic = USUARIO_SERVICE)
 @Service
@@ -53,8 +56,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User atualizar(User obj) {
-        return null;
+    @Transactional
+    public User atualizar(@NotNull User user) {
+        log.info(">>> atualizar: atualizando usuário");
+        User usuarioCadastrado = encontrarPorId(user.getId());
+        copyProperties(user, usuarioCadastrado, PROPRIEDADES_IGNORADAS);
+
+        /*if (usuarioAtualizado.getPerfilUsuario().equals(PerfilUsuario.ADMIN.getCodigo()))
+            usuarioAtualizado.setPerfilUsuario(usuario.getPerfilUsuario());*/
+
+        return usuarioRepository.save(usuarioCadastrado);
     }
 
     @Override
@@ -63,6 +74,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public void deletar(UUID id) {
 
     }
