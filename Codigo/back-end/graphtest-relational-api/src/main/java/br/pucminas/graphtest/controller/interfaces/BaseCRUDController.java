@@ -9,17 +9,11 @@ import java.util.UUID;
 
 public interface BaseCRUDController<O> {
 
-    @PostMapping
-    ResponseEntity<Map<String, Object>> criar(@Valid @RequestBody O obj);
-
     @GetMapping("/{id}")
     ResponseEntity<O> encontrarPorId(@PathVariable UUID id);
 
     @GetMapping
     ResponseEntity<List<O>> listarTodos();
-
-    @PutMapping("/{id}")
-    ResponseEntity<Map<String, Object>> atualizar(@PathVariable UUID id, @Valid @RequestBody O obj);
 
 
     @DeleteMapping("/{id}")

@@ -1,6 +1,7 @@
 package br.pucminas.graphtest.service;
 
 import br.pucminas.graphtest.dto.PasswordDTO;
+import br.pucminas.graphtest.exceptions.lancaveis.*;
 import br.pucminas.graphtest.model.User;
 import br.pucminas.graphtest.repository.UserRepository;
 import br.pucminas.graphtest.service.interfaces.UserService;
@@ -34,7 +35,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User encontrarPorId(@NotNull UUID id) {
-        return null;
+        log.info(">>> encontrarPorId: encontrando usuário por id");
+        try {
+            //validadorAutorizacaoRequisicaoService.validarAutorizacaoRequisicao(id, USUARIO_SERVICE);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return usuarioRepository.findById(id)
+                .orElseThrow(() -> new EntidadeNaoEncontradaException(format("usuário não encontrado, id: %s", id)));
     }
 
     @Override

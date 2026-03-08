@@ -3,6 +3,7 @@ package br.pucminas.graphtest.controller;
 
 import br.pucminas.graphtest.controller.interfaces.UserController;
 import br.pucminas.graphtest.dto.PasswordDTO;
+import br.pucminas.graphtest.dto.UserDTO;
 import br.pucminas.graphtest.model.User;
 import br.pucminas.graphtest.service.interfaces.UserService;
 import jakarta.validation.Valid;
@@ -10,10 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +19,7 @@ import java.util.UUID;
 import static br.pucminas.graphtest.util.ConstantesRequisicaoUtil.*;
 import static br.pucminas.graphtest.util.ConstantesTopicosUtil.USUARIO_CONTROLLER;
 import static br.pucminas.graphtest.util.ContrutorRespostaJsonUtil.construirRespostaJSON;
+import static br.pucminas.graphtest.util.ConversorEntidadeDTOUtil.converterParaDTO;
 import static java.util.Arrays.asList;
 import static org.springframework.http.HttpStatus.CREATED;
 
@@ -45,6 +44,14 @@ public class UserControllerImpl implements UserController {
     }
 
     @Override
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDTO> encontrarPorId(@PathVariable UUID id) {
+        log.info(">>> encontrarPorId: recebendo requisição para encontrar usuário por id");
+        User usuario = userService.encontrarPorId(id);
+        return ResponseEntity.ok().body(converterParaDTO(usuario));
+    }
+
+    @Override
     public ResponseEntity<Map<String, Object>> atualizarSenha(UUID id, PasswordDTO passwordDTO) {
         return null;
     }
@@ -55,12 +62,7 @@ public class UserControllerImpl implements UserController {
     }
 
     @Override
-    public ResponseEntity<User> encontrarPorId(UUID id) {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<List<User>> listarTodos() {
+    public ResponseEntity<List<UserDTO>> listarTodos() {
         return null;
     }
 
