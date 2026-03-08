@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ChangeEvent } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 
 interface PasswordFieldProps {
@@ -6,7 +6,7 @@ interface PasswordFieldProps {
   label: string;
   placeholder: string;
   value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
   required?: boolean;
 }
 

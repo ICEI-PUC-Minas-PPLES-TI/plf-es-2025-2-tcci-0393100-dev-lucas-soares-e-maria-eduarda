@@ -1,16 +1,31 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, type SyntheticEvent } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { AuthCard } from './AuthCard';
 import { FormField } from './FormField';
 import { PasswordField } from './PasswordField';
+import { useAuth } from '../hooks/useAuth';
 
 export function LoginCard() {
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: SyntheticEvent) => {
     e.preventDefault();
-    console.log('Login attempt:', { email, password });
+    setLoading(true);
+    setError(null);
+
+    try {
+      await login(email, password);
+      navigate('/dashboard');
+    } catch {
+      setError('Email ou senha inválidos.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -54,11 +69,16 @@ export function LoginCard() {
             </a>
           </div>
 
+          {error && (
+            <p className="text-sm text-red-400 text-center">{error}</p>
+          )}
+
           <button
             type="submit"
-            className="w-full py-3 bg-cyan-500 hover:bg-cyan-400 text-white font-medium rounded-lg transition-all hover:shadow-lg hover:shadow-cyan-500/20 active:scale-[0.98]"
+            disabled={loading}
+            className="w-full py-3 bg-cyan-500 hover:bg-cyan-400 disabled:bg-cyan-800 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-all hover:shadow-lg hover:shadow-cyan-500/20 active:scale-[0.98]"
           >
-            Entrar
+            {loading ? 'Entrando...' : 'Entrar'}
           </button>
 
           <div className="text-center">

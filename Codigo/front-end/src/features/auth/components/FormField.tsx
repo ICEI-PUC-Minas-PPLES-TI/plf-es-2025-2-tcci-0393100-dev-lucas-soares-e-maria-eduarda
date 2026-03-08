@@ -1,10 +1,12 @@
+import type { ChangeEvent } from 'react';
+
 interface FormFieldProps {
   id: string;
   label: string;
   type?: string;
   placeholder: string;
   value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
   required?: boolean;
 }
 
