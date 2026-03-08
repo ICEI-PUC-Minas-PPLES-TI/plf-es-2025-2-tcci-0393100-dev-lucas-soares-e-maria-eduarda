@@ -1,19 +1,33 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { AuthCard } from './AuthCard';
 import { FormField } from './FormField';
 import { PasswordField } from './PasswordField';
+import UserService from '../../../services/User/UserService';
 
 export function SignUpCard() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+    setLoading(true);
+    setError(null);
+
+    try {
+      await UserService.criar(formData);
+      navigate('/login');
+    } catch {
+      setError('Erro ao criar conta. Verifique os dados e tente novamente.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -59,11 +73,16 @@ export function SignUpCard() {
             required
           />
 
+          {error && (
+            <p className="text-sm text-red-400 text-center">{error}</p>
+          )}
+
           <button
             type="submit"
-            className="w-full mt-6 px-6 py-3 bg-cyan-500 hover:bg-cyan-400 text-white rounded-lg font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-cyan-500/50"
+            disabled={loading}
+            className="w-full mt-6 px-6 py-3 bg-cyan-500 hover:bg-cyan-400 disabled:bg-cyan-800 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-cyan-500/50"
           >
-            Criar conta
+            {loading ? 'Criando conta...' : 'Criar conta'}
           </button>
         </form>
 
