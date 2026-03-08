@@ -3,12 +3,15 @@ package br.pucminas.graphtest.service;
 import br.pucminas.graphtest.dto.PasswordDTO;
 import br.pucminas.graphtest.exceptions.lancaveis.*;
 import br.pucminas.graphtest.model.User;
+import br.pucminas.graphtest.model.enums.PerfilUsuario;
 import br.pucminas.graphtest.repository.UserRepository;
+import br.pucminas.graphtest.security.interfaces.ValidadorAutorizacaoRequisicaoService;
 import br.pucminas.graphtest.service.interfaces.UserService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
@@ -24,6 +27,8 @@ import static org.springframework.beans.BeanUtils.copyProperties;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final ValidadorAutorizacaoRequisicaoService validadorAutorizacaoRequisicaoService;
 
 
     @Override
@@ -31,6 +36,8 @@ public class UserServiceImpl implements UserService {
     public User criar(@NotNull  User user) {
         log.info(">>> criar: criando usuário");
         user.setId(null);
+        user.setPassword (passwordEncoder.encode(user.getPassword ()));
+        user.setPerfilUsuario(PerfilUsuario.USUARIO.getCodigo());
         user = usuarioRepository.save(user);
         log.info(format(">>> criar: usuário criado, id: %s", user.getId()));
         return user;
@@ -40,7 +47,7 @@ public class UserServiceImpl implements UserService {
     public User encontrarPorId(@NotNull UUID id) {
         log.info(">>> encontrarPorId: encontrando usuário por id");
         try {
-            //validadorAutorizacaoRequisicaoService.validarAutorizacaoRequisicao(id, USUARIO_SERVICE);
+            validadorAutorizacaoRequisicaoService.validarAutorizacaoRequisicao(id, USUARIO_SERVICE);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -51,7 +58,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<User> listarTodos() {
         log.info(">>> listarTodos: listando todos usuários");
-        //validadorAutorizacaoRequisicaoService.validarAutorizacaoRequisicao();
+        validadorAutorizacaoRequisicaoService.validarAutorizacaoRequisicao();
         return usuarioRepository.findAll();
     }
 
@@ -62,8 +69,8 @@ public class UserServiceImpl implements UserService {
         User usuarioCadastrado = encontrarPorId(user.getId());
         copyProperties(user, usuarioCadastrado, PROPRIEDADES_IGNORADAS);
 
-        /*if (usuarioAtualizado.getPerfilUsuario().equals(PerfilUsuario.ADMIN.getCodigo()))
-            usuarioAtualizado.setPerfilUsuario(usuario.getPerfilUsuario());*/
+        if (usuarioCadastrado.getPerfilUsuario().equals(PerfilUsuario.ADMIN.getCodigo()))
+            usuarioCadastrado.setPerfilUsuario(user.getPerfilUsuario());
 
         return usuarioRepository.save(usuarioCadastrado);
     }
@@ -71,6 +78,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public void atualizarSenha(UUID id, PasswordDTO passwordDTO) {
 
+    }
+
+    @Override
+    public User encontrarPorEmail(String email) {
+        log.info(">>> encontrarPorEmail: encontrando usuário por email");
+        return usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new EntidadeNaoEncontradaException(format("usuário não encontrado, email: %s", email)));
     }
 
     @Override

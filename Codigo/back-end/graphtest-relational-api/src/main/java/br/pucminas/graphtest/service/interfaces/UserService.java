@@ -9,5 +9,7 @@ public interface UserService extends BaseCRUDService<User> {
 
     void atualizarSenha(@NotNull UUID id, @NotNull PasswordDTO passwordDTO);
 
+    User encontrarPorEmail(@NotNull String email);
+
     boolean existEmail(String email);
 }

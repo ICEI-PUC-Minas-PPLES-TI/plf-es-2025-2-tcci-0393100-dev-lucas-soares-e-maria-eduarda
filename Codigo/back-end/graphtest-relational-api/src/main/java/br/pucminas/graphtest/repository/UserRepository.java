@@ -6,11 +6,18 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
+
+
     boolean existsByEmail(String email);
+
+    @Transactional(readOnly = true)
+    Optional<User> findByEmail(String email);
 
     @Transactional(readOnly = true)
     @Query("SELECT u.password FROM User u WHERE u.id = :id")
