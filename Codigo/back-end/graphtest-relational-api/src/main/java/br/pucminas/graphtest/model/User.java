@@ -29,4 +29,8 @@ public class User extends BaseEntity{
     @Size(min = 8, max = 100, message = MSG_ERRO_SENHA)
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
+
+    @Column(name = "PERFIL_USUARIO", nullable = false)
+    @JsonProperty("perfil_usuario")
+    private Integer perfilUsuario;
 }
