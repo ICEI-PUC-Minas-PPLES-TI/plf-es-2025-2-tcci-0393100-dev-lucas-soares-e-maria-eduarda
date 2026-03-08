@@ -33,7 +33,7 @@ public class ConstantesRequisicaoUtil {
 
             "\n}";
 
-    public static final String[] PROPRIEDADES_IGNORADAS = new String[]{"id", "password"};
+    public static final String[] PROPRIEDADES_IGNORADAS = new String[]{"id", "password", "perfilUsuario"};
 
     public static final List<String> CHAVES_USUARIO_CONTROLLER = new ArrayList<>(asList("status", "mensagem", "id_usuario"));
 

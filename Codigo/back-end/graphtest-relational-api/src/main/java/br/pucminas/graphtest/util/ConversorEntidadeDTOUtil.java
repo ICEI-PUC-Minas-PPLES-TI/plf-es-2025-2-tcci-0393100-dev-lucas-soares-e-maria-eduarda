@@ -22,6 +22,7 @@ public class ConversorEntidadeDTOUtil {
         log.info(format(">>> converterParaDTO: convertendo Usuario (id: %s) para DTO", usuario.getId()));
         return UserDTO.builder()
                 .id(usuario.getId())
+                .perfilUsuario(usuario.getPerfilUsuario())
                 .nome(usuario.getName())
                 .email(usuario.getEmail())
                 .build();
