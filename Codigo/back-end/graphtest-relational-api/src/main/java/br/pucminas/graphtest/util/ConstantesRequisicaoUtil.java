@@ -14,7 +14,7 @@ public class ConstantesRequisicaoUtil {
     public static final String ENDPOINT_USUARIO = "/usuario";
 
 
-    public static final String[] CAMINHOS_PUBLICOS = {"/", "/actuator/health", "/usuario/verificar-token"};
+    public static final String[] CAMINHOS_PUBLICOS = {"/", "/actuator/health", "/usuario/verificar-token", "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**"};
 
     public static final String[] CAMINHOS_PUBLICOS_POST = {"/usuario", "/login"};
 

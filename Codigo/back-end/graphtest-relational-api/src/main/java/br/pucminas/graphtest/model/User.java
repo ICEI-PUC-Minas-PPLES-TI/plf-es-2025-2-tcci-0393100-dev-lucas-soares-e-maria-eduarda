@@ -8,6 +8,12 @@ import lombok.*;
 import static br.pucminas.graphtest.util.ConstantesErroValidadorUtil.*;
 import static br.pucminas.graphtest.util.ConstantesNumUtil.*;
 
+/**
+ * Entidade que representa um usuário do sistema.
+ *
+ * @author lucas S.
+ * @since 1.0
+ */
 @Entity
 @Table(name = "TB_USER")
 @Data

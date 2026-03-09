@@ -7,6 +7,9 @@ import java.util.Arrays;
 
 import static br.pucminas.graphtest.util.ConstantesNumUtil.*;
 
+/**
+ * Enumeração que representa os perfis de acesso de usuários no sistema.
+ */
 @Getter
 @AllArgsConstructor
 public enum PerfilUsuario {
