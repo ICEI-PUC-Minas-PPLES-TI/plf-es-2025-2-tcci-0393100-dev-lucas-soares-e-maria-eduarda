@@ -1,6 +1,6 @@
 package br.pucminas.graphtest.util;
 
-import br.pucminas.graphtest.exceptions.lancaveis.ConstrutorRespostaJsonException;
+import br.pucminas.graphtest.adapters.inbound.exception.ConstrutorRespostaJsonException;
 import jakarta.validation.constraints.NotNull;
 import lombok.experimental.UtilityClass;
 

@@ -1,7 +1,7 @@
 package br.pucminas.graphtest.util;
 
 import br.pucminas.graphtest.dto.UserDTO;
-import br.pucminas.graphtest.model.User;
+import br.pucminas.graphtest.domain.User;
 import jakarta.validation.constraints.NotNull;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;

@@ -1,9 +1,9 @@
 package br.pucminas.graphtest.security;
 
 import br.pucminas.graphtest.component.JWTComp;
-import br.pucminas.graphtest.exceptions.InterceptadorExcecoes;
-import br.pucminas.graphtest.model.User;
-import br.pucminas.graphtest.model.enums.PerfilUsuario;
+import br.pucminas.graphtest.adapters.inbound.exception.GlobalExceptionHandler;
+import br.pucminas.graphtest.domain.User;
+import br.pucminas.graphtest.domain.enums.PerfilUsuario;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -30,7 +30,7 @@ public class JWTFiltroAutenticacao extends UsernamePasswordAuthenticationFilter 
     private final JWTComp jwtComp;
 
     public JWTFiltroAutenticacao(AuthenticationManager authenticationManager, JWTComp jwtComp) {
-        setAuthenticationFailureHandler(new InterceptadorExcecoes());
+        setAuthenticationFailureHandler(new GlobalExceptionHandler());
         this.authenticationManager = authenticationManager;
         this.jwtComp = jwtComp;
     }

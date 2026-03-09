@@ -1,9 +1,8 @@
 package br.pucminas.graphtest.security;
 
-import br.pucminas.graphtest.model.User;
-import br.pucminas.graphtest.model.enums.PerfilUsuario;
-import br.pucminas.graphtest.repository.UserRepository;
-import br.pucminas.graphtest.service.interfaces.UserService;
+import br.pucminas.graphtest.domain.User;
+import br.pucminas.graphtest.domain.enums.PerfilUsuario;
+import br.pucminas.graphtest.adapters.outbound.repository.JpaUserRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,11 +19,11 @@ import static br.pucminas.graphtest.util.ConstantesTopicosUtil.USUARIO_SPRING_SE
 @AllArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private UserRepository userRepository;
+    private JpaUserRepository jpaUserRepository;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User usuario = userRepository.findByEmail(email)
+        User usuario = jpaUserRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado: " + email));
 
         return UserDetailsImpl.builder()

@@ -1,8 +1,8 @@
 package br.pucminas.graphtest.security;
 
-import br.pucminas.graphtest.exceptions.lancaveis.TopicoNaoEncontradoException;
-import br.pucminas.graphtest.exceptions.lancaveis.UsuarioNaoAutorizadoException;
-import br.pucminas.graphtest.model.enums.PerfilUsuario;
+import br.pucminas.graphtest.application.exception.TopicoNaoEncontradoException;
+import br.pucminas.graphtest.application.exception.UsuarioNaoAutorizadoException;
+import br.pucminas.graphtest.domain.enums.PerfilUsuario;
 import br.pucminas.graphtest.security.interfaces.Validador;
 import br.pucminas.graphtest.security.interfaces.ValidadorAutorizacaoRequisicaoService;
 import jakarta.annotation.Nullable;

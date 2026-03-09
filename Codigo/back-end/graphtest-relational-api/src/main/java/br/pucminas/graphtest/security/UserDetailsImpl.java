@@ -1,6 +1,6 @@
 package br.pucminas.graphtest.security;
 
-import br.pucminas.graphtest.model.enums.PerfilUsuario;
+import br.pucminas.graphtest.domain.enums.PerfilUsuario;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
