@@ -1,12 +1,12 @@
 package br.pucminas.graphtest.adapters.outbound.entities;
 
-import br.pucminas.graphtest.domain.User;
+import br.pucminas.graphtest.application.domain.entity.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-import static br.pucminas.graphtest.util.ConstantesErroValidadorUtil.*;
+import static br.pucminas.graphtest.adapters.inbound.util.ConstantesErroValidadorUtil.*;
 
 /**
  * Entidade que representa um usuário do sistema.

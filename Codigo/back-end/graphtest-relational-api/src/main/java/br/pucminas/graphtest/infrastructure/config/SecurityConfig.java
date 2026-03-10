@@ -1,9 +1,9 @@
 package br.pucminas.graphtest.infrastructure.config;
 
-import br.pucminas.graphtest.component.JWTComp;
-import br.pucminas.graphtest.security.CustomUserDetailsService;
-import br.pucminas.graphtest.security.JWTFiltroAutenticacao;
-import br.pucminas.graphtest.security.JWTFiltroAutorizacao;
+import br.pucminas.graphtest.adapters.inbound.security.JWTFiltroAutenticacao;
+import br.pucminas.graphtest.adapters.inbound.security.JWTFiltroAutorizacao;
+import br.pucminas.graphtest.adapters.outbound.security.CustomUserDetails;
+import br.pucminas.graphtest.infrastructure.security.JWT;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,9 +23,9 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
-import static br.pucminas.graphtest.util.ConstantesRequisicaoUtil.CAMINHOS_PUBLICOS;
-import static br.pucminas.graphtest.util.ConstantesRequisicaoUtil.CAMINHOS_PUBLICOS_POST;
-import static br.pucminas.graphtest.util.ConstantesTopicosUtil.SEGURANCA_CONFIG;
+import static br.pucminas.graphtest.adapters.inbound.util.ConstantesRequisicaoUtil.CAMINHOS_PUBLICOS;
+import static br.pucminas.graphtest.adapters.inbound.util.ConstantesRequisicaoUtil.CAMINHOS_PUBLICOS_POST;
+import static br.pucminas.graphtest.infrastructure.util.ConstantesTopicosUtil.SEGURANCA_CONFIG;
 import static org.springframework.http.HttpMethod.POST;
 
 @Slf4j(topic = SEGURANCA_CONFIG)
@@ -35,8 +35,8 @@ import static org.springframework.http.HttpMethod.POST;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final CustomUserDetailsService customUserDetailsService;
-    private final JWTComp jwtComp;
+    private final CustomUserDetails customUserDetails;
+    private final JWT jwt;
 
     @Bean
     public SecurityFilterChain filterChain(@NotNull HttpSecurity httpSecurity, PasswordEncoder passwordEncoder) throws Exception {
@@ -46,7 +46,7 @@ public class SecurityConfig {
                 httpSecurity.getSharedObject(AuthenticationManagerBuilder.class);
 
         authenticationManagerBuilder
-                .userDetailsService(customUserDetailsService)
+                .userDetailsService(customUserDetails)
                 .passwordEncoder(passwordEncoder);
 
         AuthenticationManager authenticationManager = authenticationManagerBuilder.build();
@@ -56,8 +56,8 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationManager(authenticationManager)
-                .addFilter(new JWTFiltroAutenticacao(authenticationManager, jwtComp))
-                .addFilter(new JWTFiltroAutorizacao(authenticationManager, jwtComp, customUserDetailsService))
+                .addFilter(new JWTFiltroAutenticacao(authenticationManager, jwt))
+                .addFilter(new JWTFiltroAutorizacao(authenticationManager, jwt, customUserDetails))
                 .authorizeHttpRequests(request -> {
                     request.requestMatchers(CAMINHOS_PUBLICOS).permitAll();
                     request.requestMatchers(POST, CAMINHOS_PUBLICOS_POST).permitAll();

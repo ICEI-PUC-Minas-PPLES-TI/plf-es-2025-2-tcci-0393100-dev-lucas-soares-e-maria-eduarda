@@ -1,8 +1,8 @@
 package br.pucminas.graphtest.adapters.inbound.controller.interfaces;
 
-import br.pucminas.graphtest.dto.PasswordDTO;
-import br.pucminas.graphtest.dto.UserDTO;
-import br.pucminas.graphtest.domain.User;
+import br.pucminas.graphtest.adapters.inbound.dto.PasswordDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.UserDTO;
+import br.pucminas.graphtest.application.domain.entity.User;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.http.ResponseEntity;

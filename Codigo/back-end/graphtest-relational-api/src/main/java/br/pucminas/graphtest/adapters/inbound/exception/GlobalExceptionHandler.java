@@ -21,10 +21,10 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import java.io.IOException;
-import static br.pucminas.graphtest.util.ConstantesErroValidadorUtil.MSG_ERRO_USUARIO_SENHA;
-import static br.pucminas.graphtest.util.ConstantesErroValidadorUtil.MSG_ERRO_VALIDACAO;
-import static br.pucminas.graphtest.util.ConstantesRequisicaoUtil.CONTENT_TYPE;
-import static br.pucminas.graphtest.util.ConstantesTopicosUtil.INTERCEPTADOR_EXCECOES;
+import static br.pucminas.graphtest.adapters.inbound.util.ConstantesErroValidadorUtil.MSG_ERRO_USUARIO_SENHA;
+import static br.pucminas.graphtest.adapters.inbound.util.ConstantesErroValidadorUtil.MSG_ERRO_VALIDACAO;
+import static br.pucminas.graphtest.adapters.inbound.util.ConstantesRequisicaoUtil.CONTENT_TYPE;
+import static br.pucminas.graphtest.infrastructure.util.ConstantesTopicosUtil.INTERCEPTADOR_EXCECOES;
 
 
 /**
