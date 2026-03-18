@@ -17,14 +17,13 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import java.io.IOException;
-import static br.pucminas.graphtest.adapters.inbound.util.ConstantesErroValidadorUtil.MSG_ERRO_USUARIO_SENHA;
-import static br.pucminas.graphtest.adapters.inbound.util.ConstantesErroValidadorUtil.MSG_ERRO_VALIDACAO;
-import static br.pucminas.graphtest.adapters.inbound.util.ConstantesRequisicaoUtil.CONTENT_TYPE;
-import static br.pucminas.graphtest.infrastructure.util.ConstantesTopicosUtil.INTERCEPTADOR_EXCECOES;
+import static br.pucminas.graphtest.adapters.inbound.util.ValidatorErrorConstantsUtil.MSG_ERRO_USUARIO_SENHA;
+import static br.pucminas.graphtest.adapters.inbound.util.ValidatorErrorConstantsUtil.MSG_ERRO_VALIDACAO;
+import static br.pucminas.graphtest.adapters.inbound.util.SecurityHttpConstantsUtil.CONTENT_TYPE;
+import static br.pucminas.graphtest.shared.logging.LogTopics.INTERCEPTADOR_EXCECOES;
 
 
 /**
@@ -48,7 +47,7 @@ public class GlobalExceptionHandler implements AuthenticationFailureHandler {
 
         int status = HttpStatus.UNAUTHORIZED.value();
 
-        RespostaErro erro = new RespostaErro(status, MSG_ERRO_USUARIO_SENHA);
+        ErrorResponse erro = new ErrorResponse(status, MSG_ERRO_USUARIO_SENHA);
 
         response.setStatus(status);
         response.setContentType(CONTENT_TYPE);
@@ -61,7 +60,7 @@ public class GlobalExceptionHandler implements AuthenticationFailureHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Object> handleValidation(MethodArgumentNotValidException e) {
 
-        RespostaErro erro = new RespostaErro(
+        ErrorResponse erro = new ErrorResponse(
                 HttpStatus.UNPROCESSABLE_ENTITY.value(),
                 MSG_ERRO_VALIDACAO
         );
@@ -137,6 +136,17 @@ public class GlobalExceptionHandler implements AuthenticationFailureHandler {
     }
 
     /**
+     * Falha interna ao construir resposta JSON
+     */
+    @ExceptionHandler(JsonResponseBuilderException.class)
+    public ResponseEntity<Object> handleJsonBuilder(JsonResponseBuilderException e) {
+
+        log.error("[ERRO] JsonResponseBuilderException: {}", e.getMessage());
+
+        return construirMsgErro(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    /**
      * Endpoint inexistente
      */
     @ExceptionHandler(NoResourceFoundException.class)
@@ -163,7 +173,7 @@ public class GlobalExceptionHandler implements AuthenticationFailureHandler {
      */
     private ResponseEntity<Object> construirMsgErro(Exception e, HttpStatus status) {
 
-        RespostaErro erro = new RespostaErro(status.value(), e.getMessage());
+        ErrorResponse erro = new ErrorResponse(status.value(), e.getMessage());
 
         if (imprimirStackTrace) {
             erro.setStackTrace(ExceptionUtils.getStackTrace(e));

@@ -2,9 +2,11 @@ package br.pucminas.graphtest.adapters.outbound.repositories;
 
 import br.pucminas.graphtest.adapters.outbound.entities.JpaUserEntity;
 import br.pucminas.graphtest.adapters.outbound.repositories.interfaces.JpaUserRepository;
-import br.pucminas.graphtest.application.domain.entity.User;
+import br.pucminas.graphtest.application.domain.model.User;
+import br.pucminas.graphtest.application.domain.model.UserProfileEnum;
 import br.pucminas.graphtest.application.port.output.repositories.UserRepository;
 import org.springframework.stereotype.Repository;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -20,7 +22,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public User save(User user) {
-        JpaUserEntity entity = new JpaUserEntity(user);
+        JpaUserEntity entity = toEntity(user);
         JpaUserEntity savedEntity = jpaUserRepository.save(entity);
         return toDomain(savedEntity);
     }
@@ -45,28 +47,20 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public User findByEmail(String email) {
+    public Optional<User> findByEmail(String email) {
         return jpaUserRepository.findByEmail(email)
-                .map(this::toDomain)
-                .orElse(null);
+                .map(this::toDomain);
     }
 
-    @Override
-    public String buscarSenhaUsuarioPorId(UUID id) {
-        return jpaUserRepository.findById(id)
-                .map(JpaUserEntity::getPassword)
-                .orElse(null);
+    private JpaUserEntity toEntity(User user) {
+        JpaUserEntity entity = new JpaUserEntity();
+        entity.setId(user.getId());
+        entity.setName(user.getName());
+        entity.setEmail(user.getEmail());
+        entity.setPassword(user.getPassword());
+        entity.setPerfilUsuario(user.getProfile() != null ? user.getProfile().getCodigo() : null);
+        return entity;
     }
-
-    @Override
-    public void atualizarSenhaUsuario(String senha, UUID id) {
-        jpaUserRepository.findById(id).ifPresent(entity -> {
-            entity.setPassword(senha);
-            jpaUserRepository.save(entity);
-        });
-    }
-
-
 
     private User toDomain(JpaUserEntity entity) {
         return new User(
@@ -74,11 +68,7 @@ public class UserRepositoryImpl implements UserRepository {
                 entity.getName(),
                 entity.getEmail(),
                 entity.getPassword(),
-                entity.getPerfilUsuario()
+                UserProfileEnum.getPerfilUsuario(entity.getPerfilUsuario())
         );
     }
-
-
-
-
 }

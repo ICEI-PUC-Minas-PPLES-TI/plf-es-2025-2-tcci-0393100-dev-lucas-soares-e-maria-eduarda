@@ -1,6 +1,6 @@
 package br.pucminas.graphtest.application.port.output.repositories;
 
-import br.pucminas.graphtest.application.domain.entity.User;
+import br.pucminas.graphtest.application.domain.model.User;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,7 +11,5 @@ public interface UserRepository {
     Optional<User> findById(UUID id);
     List<User> findAll();
     void deleteById(UUID id);
-    User findByEmail(String email);
-    String buscarSenhaUsuarioPorId(UUID id);
-    void atualizarSenhaUsuario(String senha, UUID id);
+    Optional<User> findByEmail(String email);
 }

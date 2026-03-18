@@ -1,13 +1,13 @@
 package br.pucminas.graphtest.application.usecases.user;
 
-import br.pucminas.graphtest.application.domain.entity.User;
-import br.pucminas.graphtest.application.domain.enums.UserProfileEnum;
+import br.pucminas.graphtest.application.domain.model.User;
+import br.pucminas.graphtest.application.domain.model.UserProfileEnum;
+import br.pucminas.graphtest.application.exception.EntityNotFoundException;
 import br.pucminas.graphtest.application.port.input.user.UpdateUserUseCase;
 import br.pucminas.graphtest.application.port.input.user.command.UpdateUserCommand;
+import br.pucminas.graphtest.application.port.input.user.result.UserResult;
 import br.pucminas.graphtest.application.port.output.repositories.UserRepository;
 import org.springframework.stereotype.Service;
-import static br.pucminas.graphtest.adapters.inbound.util.ConstantesRequisicaoUtil.PROPRIEDADES_IGNORADAS;
-import static org.springframework.beans.BeanUtils.copyProperties;
 
 @Service
 public class UpdateUserUseCaseImpl implements UpdateUserUseCase {
@@ -19,18 +19,18 @@ public class UpdateUserUseCaseImpl implements UpdateUserUseCase {
     }
 
     @Override
-    public User execute(UpdateUserCommand command) {
+    public UserResult execute(UpdateUserCommand command) {
 
         User usuarioCadastrado = userRepository.findById(command.id())
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Usuario nao encontrado"));
 
         usuarioCadastrado.setName(command.name());
         usuarioCadastrado.setEmail(command.email());
 
-        if (usuarioCadastrado.getPerfilUsuario().equals(UserProfileEnum.USUARIO.getCodigo())) {
-            usuarioCadastrado.setPerfilUsuario(command.perfilUsuario());
+        if (UserProfileEnum.USUARIO.equals(usuarioCadastrado.getProfile())) {
+            usuarioCadastrado.setProfile(UserProfileEnum.getPerfilUsuario(command.profileCode()));
         }
 
-        return userRepository.save(usuarioCadastrado);
+        return UserResult.from(userRepository.save(usuarioCadastrado));
     }
 }

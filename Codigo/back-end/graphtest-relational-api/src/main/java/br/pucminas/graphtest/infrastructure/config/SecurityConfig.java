@@ -1,9 +1,9 @@
 package br.pucminas.graphtest.infrastructure.config;
 
-import br.pucminas.graphtest.adapters.inbound.security.JWTFiltroAutenticacao;
-import br.pucminas.graphtest.adapters.inbound.security.JWTFiltroAutorizacao;
-import br.pucminas.graphtest.adapters.outbound.security.CustomUserDetails;
-import br.pucminas.graphtest.infrastructure.security.JWT;
+import br.pucminas.graphtest.adapters.inbound.security.JwtAuthenticationFilter;
+import br.pucminas.graphtest.adapters.inbound.security.JwtAuthorizationFilter;
+import br.pucminas.graphtest.application.port.input.security.GenerateTokenUseCase;
+import br.pucminas.graphtest.application.port.input.security.ResolveAuthenticatedUserByTokenUseCase;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,16 +16,17 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
 import java.util.List;
-import static br.pucminas.graphtest.adapters.inbound.util.ConstantesRequisicaoUtil.CAMINHOS_PUBLICOS;
-import static br.pucminas.graphtest.adapters.inbound.util.ConstantesRequisicaoUtil.CAMINHOS_PUBLICOS_POST;
-import static br.pucminas.graphtest.infrastructure.util.ConstantesTopicosUtil.SEGURANCA_CONFIG;
+
+import static br.pucminas.graphtest.shared.logging.LogTopics.SEGURANCA_CONFIG;
 import static org.springframework.http.HttpMethod.POST;
 
 @Slf4j(topic = SEGURANCA_CONFIG)
@@ -35,18 +36,20 @@ import static org.springframework.http.HttpMethod.POST;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final CustomUserDetails customUserDetails;
-    private final JWT jwt;
+    private final UserDetailsService userDetailsService;
+    private final GenerateTokenUseCase generateTokenUseCase;
+    private final ResolveAuthenticatedUserByTokenUseCase resolveAuthenticatedUserByTokenUseCase;
 
     @Bean
-    public SecurityFilterChain filterChain(@NotNull HttpSecurity httpSecurity, PasswordEncoder passwordEncoder) throws Exception {
-        log.info(">>> filterChain: iniciando camada de segurança Filter Chain");
+    public SecurityFilterChain filterChain(@NotNull HttpSecurity httpSecurity, PasswordEncoder passwordEncoder)
+            throws Exception {
+        log.info(">>> filterChain: iniciando camada de seguranca Filter Chain");
 
         AuthenticationManagerBuilder authenticationManagerBuilder =
                 httpSecurity.getSharedObject(AuthenticationManagerBuilder.class);
 
         authenticationManagerBuilder
-                .userDetailsService(customUserDetails)
+                .userDetailsService(userDetailsService)
                 .passwordEncoder(passwordEncoder);
 
         AuthenticationManager authenticationManager = authenticationManagerBuilder.build();
@@ -56,11 +59,11 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationManager(authenticationManager)
-                .addFilter(new JWTFiltroAutenticacao(authenticationManager, jwt))
-                .addFilter(new JWTFiltroAutorizacao(authenticationManager, jwt, customUserDetails))
+                .addFilter(new JwtAuthenticationFilter(authenticationManager, generateTokenUseCase))
+                .addFilter(new JwtAuthorizationFilter(authenticationManager, resolveAuthenticatedUserByTokenUseCase))
                 .authorizeHttpRequests(request -> {
-                    request.requestMatchers(CAMINHOS_PUBLICOS).permitAll();
-                    request.requestMatchers(POST, CAMINHOS_PUBLICOS_POST).permitAll();
+                    request.requestMatchers(SecurityRequestPaths.CAMINHOS_PUBLICOS).permitAll();
+                    request.requestMatchers(POST, SecurityRequestPaths.CAMINHOS_PUBLICOS_POST).permitAll();
                     request.anyRequest().authenticated();
                 })
                 .build();
@@ -73,7 +76,7 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        log.info(">>> corsConfigurationSource: iniciando configuração de Cors");
+        log.info(">>> corsConfigurationSource: iniciando configuracao de Cors");
 
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("http://localhost:5173"));

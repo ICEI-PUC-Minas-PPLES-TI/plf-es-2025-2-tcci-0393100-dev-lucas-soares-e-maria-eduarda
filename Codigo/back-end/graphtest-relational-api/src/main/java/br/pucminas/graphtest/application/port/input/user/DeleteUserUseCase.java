@@ -1,7 +1,7 @@
 package br.pucminas.graphtest.application.port.input.user;
 
-import java.util.UUID;
+import br.pucminas.graphtest.application.port.input.user.command.DeleteUserCommand;
 
 public interface DeleteUserUseCase {
-    void execute(UUID id);
+    void execute(DeleteUserCommand command);
 }

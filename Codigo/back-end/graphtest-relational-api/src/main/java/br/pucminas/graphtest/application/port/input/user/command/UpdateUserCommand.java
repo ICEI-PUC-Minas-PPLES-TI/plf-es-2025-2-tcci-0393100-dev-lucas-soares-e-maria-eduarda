@@ -6,5 +6,5 @@ public record UpdateUserCommand(
         UUID id,
         String name,
         String email,
-        Integer perfilUsuario
+        Integer profileCode
 ) {}

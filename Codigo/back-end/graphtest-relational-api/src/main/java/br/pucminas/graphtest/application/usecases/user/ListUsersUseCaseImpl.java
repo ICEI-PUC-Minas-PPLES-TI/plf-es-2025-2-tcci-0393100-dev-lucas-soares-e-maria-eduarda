@@ -1,10 +1,9 @@
 package br.pucminas.graphtest.application.usecases.user;
 
-import br.pucminas.graphtest.application.domain.entity.User;
+import br.pucminas.graphtest.application.port.input.security.AuthorizeCurrentUserIsAdminUseCase;
 import br.pucminas.graphtest.application.port.input.user.ListUsersUseCase;
+import br.pucminas.graphtest.application.port.input.user.result.UserResult;
 import br.pucminas.graphtest.application.port.output.repositories.UserRepository;
-import br.pucminas.graphtest.application.port.security.ValidadorAutorizacaoRequisicao;
-import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,16 +12,21 @@ import java.util.List;
 public class ListUsersUseCaseImpl implements ListUsersUseCase {
 
     private final UserRepository userRepository;
-    private final ValidadorAutorizacaoRequisicao validadorAutorizacaoRequisicao;
+    private final AuthorizeCurrentUserIsAdminUseCase authorizeCurrentUserIsAdminUseCase;
 
-    public ListUsersUseCaseImpl(UserRepository userRepository, ValidadorAutorizacaoRequisicao validadorAutorizacaoRequisicao) {
+    public ListUsersUseCaseImpl(
+            UserRepository userRepository,
+            AuthorizeCurrentUserIsAdminUseCase authorizeCurrentUserIsAdminUseCase
+    ) {
         this.userRepository = userRepository;
-        this.validadorAutorizacaoRequisicao = validadorAutorizacaoRequisicao;
+        this.authorizeCurrentUserIsAdminUseCase = authorizeCurrentUserIsAdminUseCase;
     }
 
     @Override
-    public List<User> execute() {
-        validadorAutorizacaoRequisicao.validarAutorizacaoRequisicao();
-        return userRepository.findAll();
+    public List<UserResult> execute() {
+        authorizeCurrentUserIsAdminUseCase.execute();
+        return userRepository.findAll().stream()
+                .map(UserResult::from)
+                .toList();
     }
 }

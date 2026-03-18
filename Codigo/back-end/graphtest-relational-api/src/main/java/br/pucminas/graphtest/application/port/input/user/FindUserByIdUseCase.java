@@ -1,9 +1,8 @@
 package br.pucminas.graphtest.application.port.input.user;
 
-import br.pucminas.graphtest.application.domain.entity.User;
-
-import java.util.UUID;
+import br.pucminas.graphtest.application.port.input.user.query.FindUserByIdQuery;
+import br.pucminas.graphtest.application.port.input.user.result.UserResult;
 
 public interface FindUserByIdUseCase {
-    User execute(UUID id);
+    UserResult execute(FindUserByIdQuery query);
 }

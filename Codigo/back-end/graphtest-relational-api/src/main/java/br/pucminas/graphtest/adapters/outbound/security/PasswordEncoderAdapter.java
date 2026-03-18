@@ -1,6 +1,6 @@
 package br.pucminas.graphtest.adapters.outbound.security;
 
-import br.pucminas.graphtest.application.port.output.PasswordEncoderPort;
+import br.pucminas.graphtest.application.port.output.security.PasswordEncoderPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;

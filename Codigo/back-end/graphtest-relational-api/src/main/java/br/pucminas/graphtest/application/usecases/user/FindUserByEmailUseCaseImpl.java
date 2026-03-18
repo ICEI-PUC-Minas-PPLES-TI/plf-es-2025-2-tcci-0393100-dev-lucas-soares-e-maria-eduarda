@@ -1,13 +1,11 @@
 package br.pucminas.graphtest.application.usecases.user;
 
-import br.pucminas.graphtest.application.domain.entity.User;
-import br.pucminas.graphtest.application.exception.EntidadeNaoEncontradaException;
+import br.pucminas.graphtest.application.exception.EntityNotFoundException;
 import br.pucminas.graphtest.application.port.input.user.FindUserByEmailUseCase;
+import br.pucminas.graphtest.application.port.input.user.query.FindUserByEmailQuery;
+import br.pucminas.graphtest.application.port.input.user.result.UserResult;
 import br.pucminas.graphtest.application.port.output.repositories.UserRepository;
-import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.NoSuchElementException;
 
 import static java.lang.String.format;
 
@@ -21,13 +19,11 @@ public class FindUserByEmailUseCaseImpl implements FindUserByEmailUseCase {
     }
 
     @Override
-    public User execute(String email) {
-        try {
-            return userRepository.findByEmail(email);
-        } catch (NoSuchElementException e) {
-            throw new EntidadeNaoEncontradaException(
-                    format("usuário não encontrado, email: %s", email)
-            );
-        }
+    public UserResult execute(FindUserByEmailQuery query) {
+        return userRepository.findByEmail(query.email())
+                .map(UserResult::from)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        format("usuario nao encontrado, email: %s", query.email())
+                ));
     }
 }
