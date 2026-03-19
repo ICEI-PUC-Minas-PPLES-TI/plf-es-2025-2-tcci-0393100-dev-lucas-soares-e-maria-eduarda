@@ -34,12 +34,27 @@ import static org.springframework.http.HttpMethod.POST;
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
+/**
+ * Classe de configuracao da seguranca da aplicacao.
+ *
+ * <p>Responsavel por definir a cadeia de filtros de seguranca, o mecanismo
+ * de autenticacao, o codificador de senhas e as regras de CORS utilizadas
+ * pela API.</p>
+ */
 public class SecurityConfig {
 
     private final UserDetailsService userDetailsService;
     private final GenerateTokenUseCase generateTokenUseCase;
     private final ResolveAuthenticatedUserByTokenUseCase resolveAuthenticatedUserByTokenUseCase;
 
+    /**
+     * Configura a cadeia principal de filtros de seguranca da aplicacao.
+     *
+     * @param httpSecurity objeto de configuracao de seguranca HTTP do Spring
+     * @param passwordEncoder codificador de senhas utilizado na autenticacao
+     * @return cadeia de filtros de seguranca configurada
+     * @throws Exception caso ocorra erro durante a construcao da cadeia de seguranca
+     */
     @Bean
     public SecurityFilterChain filterChain(@NotNull HttpSecurity httpSecurity, PasswordEncoder passwordEncoder)
             throws Exception {
@@ -69,11 +84,21 @@ public class SecurityConfig {
                 .build();
     }
 
+    /**
+     * Disponibiliza o codificador de senhas utilizado pela aplicacao.
+     *
+     * @return implementacao de {@link PasswordEncoder} baseada em BCrypt
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * Define a configuracao de CORS aplicada aos endpoints da API.
+     *
+     * @return fonte de configuracao de CORS registrada para os caminhos da aplicacao
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         log.info(">>> corsConfigurationSource: iniciando configuracao de Cors");

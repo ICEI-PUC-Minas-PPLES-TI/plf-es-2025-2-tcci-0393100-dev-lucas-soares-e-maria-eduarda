@@ -19,6 +19,7 @@ public class AuthorizeCurrentUserForUserUseCaseImpl implements AuthorizeCurrentU
         this.currentUserPort = currentUserPort;
     }
 
+    // Pra que ser o método da linha 24? R: Para verificar se o usuário atual tem autorização para acessar os dados do usuário solicitado. Se o usuário atual for um administrador ou se for o próprio usuário, ele tem autorização. Caso contrário, uma exceção de usuário não autorizado é lançada.
     @Override
     public AuthenticatedUser execute(UUID userId) {
         AuthenticatedUser currentUser = currentUserPort.getCurrentUser();

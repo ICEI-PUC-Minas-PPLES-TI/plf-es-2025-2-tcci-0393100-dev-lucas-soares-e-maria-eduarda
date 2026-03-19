@@ -58,6 +58,13 @@ import static org.springframework.http.HttpStatus.OK;
 @Validated
 @RequestMapping(ENDPOINT_USUARIO)
 @AllArgsConstructor
+/**
+ * Implementacao do controlador REST responsavel pelas operacoes de usuario.
+ *
+ * <p>Esta classe recebe as requisicoes HTTP relacionadas ao recurso de usuario,
+ * aplica as validacoes de entrada e delega o processamento para os casos de uso
+ * da camada de aplicacao.</p>
+ */
 public class UserControllerImpl implements UserController {
 
     private final CreateUserUseCase criarUsuarioUseCase;
@@ -68,6 +75,12 @@ public class UserControllerImpl implements UserController {
     private final UpdateUserPasswordUseCase atualizarSenhaUsuarioUseCase;
     private final VerifyTokenUseCase verificarTokenUseCase;
 
+    /**
+     * Cria um novo usuario a partir dos dados informados na requisicao.
+     *
+     * @param usuario dados do usuario a ser criado
+     * @return resposta HTTP 201 contendo uma mensagem de sucesso e o identificador do usuario criado
+     */
     @Override
     @PostMapping
     public ResponseEntity<Map<String, Object>> criar(
@@ -76,9 +89,9 @@ public class UserControllerImpl implements UserController {
         log.info(">>> criar: recebendo requisicao para criar usuario");
 
         CreateUserCommand command = new CreateUserCommand(
-                usuario.nome(),
+                usuario.name(),
                 usuario.email(),
-                usuario.senha()
+                usuario.password()
         );
 
         UserResult usuarioCriado = criarUsuarioUseCase.execute(command);
@@ -90,6 +103,12 @@ public class UserControllerImpl implements UserController {
                 ));
     }
 
+    /**
+     * Busca um usuario pelo seu identificador unico.
+     *
+     * @param id identificador do usuario
+     * @return resposta HTTP 200 contendo os dados do usuario encontrado
+     */
     @Override
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> encontrarPorId(@PathVariable UUID id) {
@@ -100,6 +119,11 @@ public class UserControllerImpl implements UserController {
         return ResponseEntity.ok().body(converterParaDTO(usuario));
     }
 
+    /**
+     * Lista todos os usuarios cadastrados.
+     *
+     * @return resposta HTTP 200 contendo a lista de usuarios
+     */
     @Override
     @GetMapping
     public ResponseEntity<List<UserDTO>> listarTodos() {
@@ -113,6 +137,13 @@ public class UserControllerImpl implements UserController {
                         .toList());
     }
 
+    /**
+     * Atualiza os dados cadastrais de um usuario existente.
+     *
+     * @param id identificador do usuario a ser atualizado
+     * @param usuario novos dados do usuario
+     * @return resposta HTTP 200 contendo uma mensagem de sucesso e o identificador do usuario atualizado
+     */
     @Override
     @PutMapping("/{id}")
     public ResponseEntity<Map<String, Object>> atualizar(
@@ -123,9 +154,9 @@ public class UserControllerImpl implements UserController {
 
         UpdateUserCommand command = new UpdateUserCommand(
                 id,
-                usuario.nome(),
+                usuario.name(),
                 usuario.email(),
-                usuario.perfilUsuario()
+                usuario.profileUser()
         );
 
         UserResult usuarioAtualizado = atualizarUsuarioUseCase.execute(command);
@@ -137,6 +168,13 @@ public class UserControllerImpl implements UserController {
                 ));
     }
 
+    /**
+     * Atualiza a senha de um usuario existente.
+     *
+     * @param id identificador do usuario
+     * @param passwordDTO dados contendo a senha atual e a nova senha
+     * @return resposta HTTP 200 contendo uma mensagem de sucesso e o identificador do usuario
+     */
     @Override
     @PatchMapping("/{id}/senha")
     public ResponseEntity<Map<String, Object>> atualizarSenha(
@@ -160,18 +198,33 @@ public class UserControllerImpl implements UserController {
                 ));
     }
 
+    /**
+     * Verifica a validade de um token informado pelo cliente.
+     *
+     * @param token token a ser validado
+     * @return resposta HTTP 200 contendo o resultado da validacao do token
+     */
     @Override
+    @GetMapping("/verificar-token")
     public ResponseEntity<TokenValidationDTO> verificarToken(@RequestParam("token") String token) {
         log.info(">>> verificarToken: recebendo requisicao para verificar token");
         return ResponseEntity.ok(TokenValidationDTO.from(verificarTokenUseCase.execute(token)));
     }
 
+    /**
+     * Remove um usuario com base no identificador informado.
+     *
+     * @param id identificador do usuario a ser removido
+     * @return resposta HTTP 200 contendo uma mensagem de sucesso e o identificador do usuario removido
+     */
     @Override
     @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, Object>> deletar(@PathVariable UUID id) {
         log.info(">>> deletar: recebendo requisicao para deletar usuario");
 
-        deletarUsuarioUseCase.execute(new DeleteUserCommand(id));
+        DeleteUserCommand command = new DeleteUserCommand(id);
+
+        deletarUsuarioUseCase.execute(command);
 
         return ResponseEntity.ok()
                 .body(construirRespostaJSON(

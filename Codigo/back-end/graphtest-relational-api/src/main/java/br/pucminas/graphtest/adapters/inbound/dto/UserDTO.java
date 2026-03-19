@@ -13,13 +13,13 @@ import static br.pucminas.graphtest.adapters.inbound.util.ValidatorErrorConstant
 import static br.pucminas.graphtest.adapters.inbound.util.ValidatorErrorConstantsUtil.MSG_ERRO_SENHA;
 
 @Builder
-@JsonPropertyOrder({"id", "perfilUsuario", "nome", "email"})
+@JsonPropertyOrder({"id", "profileUser", "name", "email", "password"})
 public record UserDTO(
         UUID id,
 
-        @JsonProperty("perfil_usuario") Integer perfilUsuario,
+        @JsonProperty("perfil_usuario") Integer profileUser,
 
-        @NotBlank(groups = {Create.class, Update.class}, message = "O nome e obrigatorio") String nome,
+        @NotBlank(groups = {Create.class, Update.class}, message = "O nome e obrigatorio") String name,
 
         @NotBlank(groups = {Create.class, Update.class}, message = "O email e obrigatorio")
         @Pattern(
@@ -32,7 +32,9 @@ public record UserDTO(
         @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
         @NotBlank(groups = Create.class, message = "A senha e obrigatoria")
         @Size(groups = Create.class, min = 8, max = 100, message = MSG_ERRO_SENHA)
-        String senha) {
+        String password
+
+) {
 
     public interface Create {
     }

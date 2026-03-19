@@ -17,10 +17,10 @@ public class EntityDtoConverterUtil {
         log.info(format(">>> converterParaDTO: convertendo UsuarioResult (id: %s) para DTO", usuario.id()));
         return UserDTO.builder()
                 .id(usuario.id())
-                .perfilUsuario(usuario.profileCode())
-                .nome(usuario.name())
+                .profileUser(usuario.profileCode())
+                .name(usuario.name())
                 .email(usuario.email())
-                .senha(null)
+                .password(null)
                 .build();
     }
 }
