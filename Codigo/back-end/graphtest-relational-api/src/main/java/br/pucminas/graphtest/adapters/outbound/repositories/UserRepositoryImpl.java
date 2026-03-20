@@ -2,8 +2,8 @@ package br.pucminas.graphtest.adapters.outbound.repositories;
 
 import br.pucminas.graphtest.adapters.outbound.entities.JpaUserEntity;
 import br.pucminas.graphtest.adapters.outbound.repositories.interfaces.JpaUserRepository;
-import br.pucminas.graphtest.application.domain.model.User;
-import br.pucminas.graphtest.application.domain.model.UserProfileEnum;
+import br.pucminas.graphtest.application.domain.User;
+import br.pucminas.graphtest.application.domain.UserProfileEnum;
 import br.pucminas.graphtest.application.port.output.repositories.UserRepository;
 import org.springframework.stereotype.Repository;
 

@@ -2,7 +2,7 @@ package br.pucminas.graphtest.adapters.inbound.security;
 
 import br.pucminas.graphtest.adapters.inbound.dto.LoginRequestDTO;
 import br.pucminas.graphtest.application.port.input.security.GenerateTokenUseCase;
-import br.pucminas.graphtest.application.port.input.security.command.GenerateTokenCommand;
+import br.pucminas.graphtest.application.port.input.security.records.GenerateTokenInput;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
@@ -74,7 +74,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         }
 
         String emailUsuario = authenticatedPrincipal.getUsername();
-        String token = generateTokenUseCase.execute(new GenerateTokenCommand(
+        String token = generateTokenUseCase.execute(new GenerateTokenInput(
                 authenticatedPrincipal.getId(),
                 emailUsuario,
                 authenticatedPrincipal.getPerfilUsuario()

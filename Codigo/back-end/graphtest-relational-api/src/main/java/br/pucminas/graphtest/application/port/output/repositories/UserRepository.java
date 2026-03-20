@@ -1,6 +1,6 @@
 package br.pucminas.graphtest.application.port.output.repositories;
 
-import br.pucminas.graphtest.application.domain.model.User;
+import br.pucminas.graphtest.application.domain.User;
 
 import java.util.List;
 import java.util.Optional;

@@ -1,8 +1,8 @@
 package br.pucminas.graphtest.application.port.input.user;
 
-import br.pucminas.graphtest.application.port.input.user.query.FindUserByIdQuery;
-import br.pucminas.graphtest.application.port.input.user.result.UserResult;
+import br.pucminas.graphtest.application.port.input.user.records.FindUserByIdInput;
+import br.pucminas.graphtest.application.port.input.user.records.UserOutput;
 
 public interface FindUserByIdUseCase {
-    UserResult execute(FindUserByIdQuery query);
+    UserOutput execute(FindUserByIdInput input);
 }

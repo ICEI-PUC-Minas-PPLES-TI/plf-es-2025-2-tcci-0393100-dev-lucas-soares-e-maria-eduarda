@@ -12,12 +12,12 @@ import br.pucminas.graphtest.application.port.input.user.FindUserByIdUseCase;
 import br.pucminas.graphtest.application.port.input.user.ListUsersUseCase;
 import br.pucminas.graphtest.application.port.input.user.UpdateUserPasswordUseCase;
 import br.pucminas.graphtest.application.port.input.user.UpdateUserUseCase;
-import br.pucminas.graphtest.application.port.input.user.command.CreateUserCommand;
-import br.pucminas.graphtest.application.port.input.user.command.DeleteUserCommand;
-import br.pucminas.graphtest.application.port.input.user.command.UpdateUserCommand;
-import br.pucminas.graphtest.application.port.input.user.command.UpdateUserPasswordCommand;
-import br.pucminas.graphtest.application.port.input.user.query.FindUserByIdQuery;
-import br.pucminas.graphtest.application.port.input.user.result.UserResult;
+import br.pucminas.graphtest.application.port.input.user.records.CreateUserInput;
+import br.pucminas.graphtest.application.port.input.user.records.DeleteUserInput;
+import br.pucminas.graphtest.application.port.input.user.records.FindUserByIdInput;
+import br.pucminas.graphtest.application.port.input.user.records.UpdateUserInput;
+import br.pucminas.graphtest.application.port.input.user.records.UpdateUserPasswordInput;
+import br.pucminas.graphtest.application.port.input.user.records.UserOutput;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -88,13 +88,13 @@ public class UserControllerImpl implements UserController {
     ) {
         log.info(">>> criar: recebendo requisicao para criar usuario");
 
-        CreateUserCommand command = new CreateUserCommand(
+        CreateUserInput input = new CreateUserInput(
                 usuario.name(),
                 usuario.email(),
                 usuario.password()
         );
 
-        UserResult usuarioCriado = criarUsuarioUseCase.execute(command);
+        UserOutput usuarioCriado = criarUsuarioUseCase.execute(input);
 
         return ResponseEntity.created(URI.create("/usuario/" + usuarioCriado.id()))
                 .body(construirRespostaJSON(
@@ -114,7 +114,7 @@ public class UserControllerImpl implements UserController {
     public ResponseEntity<UserDTO> encontrarPorId(@PathVariable UUID id) {
         log.info(">>> encontrarPorId: recebendo requisicao para encontrar usuario por id");
 
-        UserResult usuario = encontrarUsuarioPorIdUseCase.execute(new FindUserByIdQuery(id));
+        UserOutput usuario = encontrarUsuarioPorIdUseCase.execute(new FindUserByIdInput(id));
 
         return ResponseEntity.ok().body(converterParaDTO(usuario));
     }
@@ -129,7 +129,7 @@ public class UserControllerImpl implements UserController {
     public ResponseEntity<List<UserDTO>> listarTodos() {
         log.info(">>> listarTodos: recebendo requisicao para listar todos usuarios");
 
-        List<UserResult> usuarios = listarTodosUsuariosUseCase.execute();
+        List<UserOutput> usuarios = listarTodosUsuariosUseCase.execute();
 
         return ResponseEntity.ok()
                 .body(usuarios.stream()
@@ -152,14 +152,14 @@ public class UserControllerImpl implements UserController {
     ) {
         log.info(">>> atualizar: recebendo requisicao para atualizar usuario");
 
-        UpdateUserCommand command = new UpdateUserCommand(
+        UpdateUserInput input = new UpdateUserInput(
                 id,
                 usuario.name(),
                 usuario.email(),
                 usuario.profileUser()
         );
 
-        UserResult usuarioAtualizado = atualizarUsuarioUseCase.execute(command);
+        UserOutput usuarioAtualizado = atualizarUsuarioUseCase.execute(input);
 
         return ResponseEntity.ok()
                 .body(construirRespostaJSON(
@@ -183,13 +183,13 @@ public class UserControllerImpl implements UserController {
     ) {
         log.info(">>> atualizarSenha: recebendo requisicao para atualizar senha do usuario id: {}", id);
 
-        UpdateUserPasswordCommand command = new UpdateUserPasswordCommand(
+        UpdateUserPasswordInput input = new UpdateUserPasswordInput(
                 id,
                 passwordDTO.senhaOriginal(),
                 passwordDTO.senhaAtualizada()
         );
 
-        atualizarSenhaUsuarioUseCase.execute(command);
+        atualizarSenhaUsuarioUseCase.execute(input);
 
         return ResponseEntity.ok()
                 .body(construirRespostaJSON(
@@ -222,9 +222,7 @@ public class UserControllerImpl implements UserController {
     public ResponseEntity<Map<String, Object>> deletar(@PathVariable UUID id) {
         log.info(">>> deletar: recebendo requisicao para deletar usuario");
 
-        DeleteUserCommand command = new DeleteUserCommand(id);
-
-        deletarUsuarioUseCase.execute(command);
+        deletarUsuarioUseCase.execute(new DeleteUserInput(id));
 
         return ResponseEntity.ok()
                 .body(construirRespostaJSON(

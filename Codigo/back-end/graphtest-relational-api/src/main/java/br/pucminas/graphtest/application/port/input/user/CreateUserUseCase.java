@@ -1,8 +1,8 @@
 package br.pucminas.graphtest.application.port.input.user;
 
-import br.pucminas.graphtest.application.port.input.user.command.CreateUserCommand;
-import br.pucminas.graphtest.application.port.input.user.result.UserResult;
+import br.pucminas.graphtest.application.port.input.user.records.CreateUserInput;
+import br.pucminas.graphtest.application.port.input.user.records.UserOutput;
 
 public interface CreateUserUseCase {
-    UserResult execute(CreateUserCommand command);
+    UserOutput execute(CreateUserInput input);
 }

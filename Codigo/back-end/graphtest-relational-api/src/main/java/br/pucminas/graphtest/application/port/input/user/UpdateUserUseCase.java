@@ -1,8 +1,8 @@
 package br.pucminas.graphtest.application.port.input.user;
 
-import br.pucminas.graphtest.application.port.input.user.command.UpdateUserCommand;
-import br.pucminas.graphtest.application.port.input.user.result.UserResult;
+import br.pucminas.graphtest.application.port.input.user.records.UpdateUserInput;
+import br.pucminas.graphtest.application.port.input.user.records.UserOutput;
 
 public interface UpdateUserUseCase {
-    UserResult execute(UpdateUserCommand command);
+    UserOutput execute(UpdateUserInput input);
 }

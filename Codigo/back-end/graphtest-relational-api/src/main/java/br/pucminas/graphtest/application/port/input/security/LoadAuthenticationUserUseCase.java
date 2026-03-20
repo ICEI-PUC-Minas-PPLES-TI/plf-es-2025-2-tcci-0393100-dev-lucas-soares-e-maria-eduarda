@@ -1,9 +1,9 @@
 package br.pucminas.graphtest.application.port.input.security;
 
-import br.pucminas.graphtest.application.port.input.security.query.LoadAuthenticationUserQuery;
-import br.pucminas.graphtest.application.port.input.security.result.AuthenticationUserResult;
+import br.pucminas.graphtest.application.port.input.security.records.LoadAuthenticationUserInput;
+import br.pucminas.graphtest.application.port.input.security.records.AuthenticationUserResult;
 
 public interface LoadAuthenticationUserUseCase {
 
-    AuthenticationUserResult execute(LoadAuthenticationUserQuery query);
+    AuthenticationUserResult execute(LoadAuthenticationUserInput input);
 }

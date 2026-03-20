@@ -1,6 +1,6 @@
 package br.pucminas.graphtest.adapters.inbound.security;
 
-import br.pucminas.graphtest.application.domain.model.AuthenticatedUser;
+import br.pucminas.graphtest.application.domain.AuthenticatedUser;
 import br.pucminas.graphtest.application.port.input.security.ResolveAuthenticatedUserByTokenUseCase;
 import jakarta.annotation.Nullable;
 import jakarta.servlet.FilterChain;

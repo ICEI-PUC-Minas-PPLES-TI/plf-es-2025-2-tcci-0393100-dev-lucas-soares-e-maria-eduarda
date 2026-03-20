@@ -1,13 +1,13 @@
 package br.pucminas.graphtest.application.usecases.user;
 
-import br.pucminas.graphtest.application.domain.model.AuthenticatedUser;
-import br.pucminas.graphtest.application.domain.model.User;
-import br.pucminas.graphtest.application.domain.model.UserProfileEnum;
+import br.pucminas.graphtest.application.domain.AuthenticatedUser;
+import br.pucminas.graphtest.application.domain.User;
+import br.pucminas.graphtest.application.domain.UserProfileEnum;
 import br.pucminas.graphtest.application.exception.EntityNotFoundException;
 import br.pucminas.graphtest.application.port.input.security.AuthorizeCurrentUserForUserUseCase;
 import br.pucminas.graphtest.application.port.input.user.UpdateUserUseCase;
-import br.pucminas.graphtest.application.port.input.user.command.UpdateUserCommand;
-import br.pucminas.graphtest.application.port.input.user.result.UserResult;
+import br.pucminas.graphtest.application.port.input.user.records.UpdateUserInput;
+import br.pucminas.graphtest.application.port.input.user.records.UserOutput;
 import br.pucminas.graphtest.application.port.output.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 
@@ -24,20 +24,20 @@ public class UpdateUserUseCaseImpl implements UpdateUserUseCase {
     }
 
     @Override
-    public UserResult execute(UpdateUserCommand command) {
-        AuthenticatedUser currentUser = authorizeCurrentUserForUserUseCase.execute(command.id());
+    public UserOutput execute(UpdateUserInput input) {
+        AuthenticatedUser currentUser = authorizeCurrentUserForUserUseCase.execute(input.id());
 
-        User usuarioCadastrado = userRepository.findById(command.id())
+        User usuarioCadastrado = userRepository.findById(input.id())
                 .orElseThrow(() -> new EntityNotFoundException("Usuario nao encontrado"));
 
 
-        usuarioCadastrado.setName(command.name());
-        usuarioCadastrado.setEmail(command.email());
+        usuarioCadastrado.setName(input.name());
+        usuarioCadastrado.setEmail(input.email());
 
         if (currentUser.isAdmin()) {
-            usuarioCadastrado.setProfile(UserProfileEnum.getPerfilUsuario(command.profileCode()));
+            usuarioCadastrado.setProfile(UserProfileEnum.getPerfilUsuario(input.profileCode()));
         }
 
-        return UserResult.from(userRepository.save(usuarioCadastrado));
+        return UserOutput.from(userRepository.save(usuarioCadastrado));
     }
 }

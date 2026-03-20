@@ -1,4 +1,4 @@
-package br.pucminas.graphtest.application.port.input.security.result;
+package br.pucminas.graphtest.application.port.input.security.records;
 
 public record TokenValidationResult(
         boolean valid,

@@ -1,7 +1,7 @@
 package br.pucminas.graphtest.application.port.input.user;
 
-import br.pucminas.graphtest.application.port.input.user.command.DeleteUserCommand;
+import br.pucminas.graphtest.application.port.input.user.records.DeleteUserInput;
 
 public interface DeleteUserUseCase {
-    void execute(DeleteUserCommand command);
+    void execute(DeleteUserInput input);
 }

@@ -1,7 +1,7 @@
 package br.pucminas.graphtest.adapters.inbound.util;
 
 import br.pucminas.graphtest.adapters.inbound.dto.UserDTO;
-import br.pucminas.graphtest.application.port.input.user.result.UserResult;
+import br.pucminas.graphtest.application.port.input.user.records.UserOutput;
 import jakarta.validation.constraints.NotNull;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
@@ -13,8 +13,8 @@ import static java.lang.String.format;
 @Slf4j(topic = CONVERSOR_ENTIDADE_DTO_UTIL)
 public class EntityDtoConverterUtil {
 
-    public static UserDTO converterParaDTO(@NotNull UserResult usuario) {
-        log.info(format(">>> converterParaDTO: convertendo UsuarioResult (id: %s) para DTO", usuario.id()));
+    public static UserDTO converterParaDTO(@NotNull UserOutput usuario) {
+        log.info(format(">>> converterParaDTO: convertendo UserOutput (id: %s) para DTO", usuario.id()));
         return UserDTO.builder()
                 .id(usuario.id())
                 .profileUser(usuario.profileCode())

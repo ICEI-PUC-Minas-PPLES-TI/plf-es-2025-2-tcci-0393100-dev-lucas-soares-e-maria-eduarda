@@ -2,7 +2,7 @@ package br.pucminas.graphtest.application.usecases.user;
 
 import br.pucminas.graphtest.application.port.input.security.AuthorizeCurrentUserIsAdminUseCase;
 import br.pucminas.graphtest.application.port.input.user.ListUsersUseCase;
-import br.pucminas.graphtest.application.port.input.user.result.UserResult;
+import br.pucminas.graphtest.application.port.input.user.records.UserOutput;
 import br.pucminas.graphtest.application.port.output.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 
@@ -23,10 +23,10 @@ public class ListUsersUseCaseImpl implements ListUsersUseCase {
     }
 
     @Override
-    public List<UserResult> execute() {
+    public List<UserOutput> execute() {
         authorizeCurrentUserIsAdminUseCase.execute();
         return userRepository.findAll().stream()
-                .map(UserResult::from)
+                .map(UserOutput::from)
                 .toList();
     }
 }

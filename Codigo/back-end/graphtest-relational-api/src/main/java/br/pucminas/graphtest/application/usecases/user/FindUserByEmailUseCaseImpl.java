@@ -2,8 +2,8 @@ package br.pucminas.graphtest.application.usecases.user;
 
 import br.pucminas.graphtest.application.exception.EntityNotFoundException;
 import br.pucminas.graphtest.application.port.input.user.FindUserByEmailUseCase;
-import br.pucminas.graphtest.application.port.input.user.query.FindUserByEmailQuery;
-import br.pucminas.graphtest.application.port.input.user.result.UserResult;
+import br.pucminas.graphtest.application.port.input.user.records.FindUserByEmailInput;
+import br.pucminas.graphtest.application.port.input.user.records.UserOutput;
 import br.pucminas.graphtest.application.port.output.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 
@@ -19,11 +19,11 @@ public class FindUserByEmailUseCaseImpl implements FindUserByEmailUseCase {
     }
 
     @Override
-    public UserResult execute(FindUserByEmailQuery query) {
-        return userRepository.findByEmail(query.email())
-                .map(UserResult::from)
+    public UserOutput execute(FindUserByEmailInput input) {
+        return userRepository.findByEmail(input.email())
+                .map(UserOutput::from)
                 .orElseThrow(() -> new EntityNotFoundException(
-                        format("usuario nao encontrado, email: %s", query.email())
+                        format("usuario nao encontrado, email: %s", input.email())
                 ));
     }
 }

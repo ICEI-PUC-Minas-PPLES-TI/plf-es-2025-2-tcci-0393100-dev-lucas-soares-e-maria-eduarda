@@ -1,6 +1,6 @@
 package br.pucminas.graphtest.application.port.input.security;
 
-import br.pucminas.graphtest.application.port.input.security.result.TokenValidationResult;
+import br.pucminas.graphtest.application.port.input.security.records.TokenValidationResult;
 
 public interface VerifyTokenUseCase {
 

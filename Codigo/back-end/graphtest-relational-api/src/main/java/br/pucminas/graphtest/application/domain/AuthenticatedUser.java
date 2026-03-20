@@ -1,4 +1,4 @@
-package br.pucminas.graphtest.application.domain.model;
+package br.pucminas.graphtest.application.domain;
 
 import java.util.UUID;
 

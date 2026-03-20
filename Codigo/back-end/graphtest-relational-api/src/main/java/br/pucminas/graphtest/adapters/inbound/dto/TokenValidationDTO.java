@@ -1,6 +1,6 @@
 package br.pucminas.graphtest.adapters.inbound.dto;
 
-import br.pucminas.graphtest.application.port.input.security.result.TokenValidationResult;
+import br.pucminas.graphtest.application.port.input.security.records.TokenValidationResult;
 import lombok.Builder;
 
 @Builder

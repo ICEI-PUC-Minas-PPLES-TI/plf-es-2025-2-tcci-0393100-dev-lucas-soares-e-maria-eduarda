@@ -1,10 +1,10 @@
 package br.pucminas.graphtest.application.usecases.user;
 
-import br.pucminas.graphtest.application.domain.model.User;
-import br.pucminas.graphtest.application.domain.model.UserProfileEnum;
+import br.pucminas.graphtest.application.domain.User;
+import br.pucminas.graphtest.application.domain.UserProfileEnum;
 import br.pucminas.graphtest.application.port.input.user.CreateUserUseCase;
-import br.pucminas.graphtest.application.port.input.user.command.CreateUserCommand;
-import br.pucminas.graphtest.application.port.input.user.result.UserResult;
+import br.pucminas.graphtest.application.port.input.user.records.CreateUserInput;
+import br.pucminas.graphtest.application.port.input.user.records.UserOutput;
 import br.pucminas.graphtest.application.port.output.security.PasswordEncoderPort;
 import br.pucminas.graphtest.application.port.output.repositories.UserRepository;
 import org.springframework.stereotype.Service;
@@ -22,16 +22,16 @@ public class CreateUserUseCaseImpl implements CreateUserUseCase {
     }
 
     @Override
-    public UserResult execute(CreateUserCommand command) {
+    public UserOutput execute(CreateUserInput input) {
 
         User user = new User(
                 null,
-                command.name(),
-                command.email(),
-                passwordEncoder.encode(command.password()),
+                input.name(),
+                input.email(),
+                passwordEncoder.encode(input.password()),
                 UserProfileEnum.USUARIO
         );
 
-        return UserResult.from(userRepository.save(user));
+        return UserOutput.from(userRepository.save(user));
     }
 }

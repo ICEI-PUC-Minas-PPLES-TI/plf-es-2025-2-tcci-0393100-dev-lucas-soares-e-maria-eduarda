@@ -3,8 +3,8 @@ package br.pucminas.graphtest.application.usecases.user;
 import br.pucminas.graphtest.application.exception.EntityNotFoundException;
 import br.pucminas.graphtest.application.port.input.security.AuthorizeCurrentUserForUserUseCase;
 import br.pucminas.graphtest.application.port.input.user.FindUserByIdUseCase;
-import br.pucminas.graphtest.application.port.input.user.query.FindUserByIdQuery;
-import br.pucminas.graphtest.application.port.input.user.result.UserResult;
+import br.pucminas.graphtest.application.port.input.user.records.FindUserByIdInput;
+import br.pucminas.graphtest.application.port.input.user.records.UserOutput;
 import br.pucminas.graphtest.application.port.output.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 
@@ -25,10 +25,10 @@ public class FindUserByIdUseCaseImpl implements FindUserByIdUseCase {
     }
 
     @Override
-    public UserResult execute(FindUserByIdQuery query) {
-        authorizeCurrentUserForUserUseCase.execute(query.id());
-        return userRepository.findById(query.id())
-                .map(UserResult::from)
-                .orElseThrow(() -> new EntityNotFoundException(format("usuario nao encontrado, id: %s", query.id())));
+    public UserOutput execute(FindUserByIdInput input) {
+        authorizeCurrentUserForUserUseCase.execute(input.id());
+        return userRepository.findById(input.id())
+                .map(UserOutput::from)
+                .orElseThrow(() -> new EntityNotFoundException(format("usuario nao encontrado, id: %s", input.id())));
     }
 }

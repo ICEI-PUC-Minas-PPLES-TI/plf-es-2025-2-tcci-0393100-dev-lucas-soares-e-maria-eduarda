@@ -2,8 +2,8 @@ package br.pucminas.graphtest.application.usecases.security;
 
 import br.pucminas.graphtest.application.exception.EntityNotFoundException;
 import br.pucminas.graphtest.application.port.input.security.LoadAuthenticationUserUseCase;
-import br.pucminas.graphtest.application.port.input.security.query.LoadAuthenticationUserQuery;
-import br.pucminas.graphtest.application.port.input.security.result.AuthenticationUserResult;
+import br.pucminas.graphtest.application.port.input.security.records.LoadAuthenticationUserInput;
+import br.pucminas.graphtest.application.port.input.security.records.AuthenticationUserResult;
 import br.pucminas.graphtest.application.port.output.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 
@@ -19,11 +19,11 @@ public class LoadAuthenticationUserUseCaseImpl implements LoadAuthenticationUser
     }
 
     @Override
-    public AuthenticationUserResult execute(LoadAuthenticationUserQuery query) {
-        return userRepository.findByEmail(query.email())
+    public AuthenticationUserResult execute(LoadAuthenticationUserInput input) {
+        return userRepository.findByEmail(input.email())
                 .map(AuthenticationUserResult::from)
                 .orElseThrow(() -> new EntityNotFoundException(
-                        format("usuario nao encontrado, email: %s", query.email())
+                        format("usuario nao encontrado, email: %s", input.email())
                 ));
     }
 }

@@ -1,7 +1,7 @@
 package br.pucminas.graphtest.application.port.input.user;
 
-import br.pucminas.graphtest.application.port.input.user.command.UpdateUserPasswordCommand;
+import br.pucminas.graphtest.application.port.input.user.records.UpdateUserPasswordInput;
 
 public interface UpdateUserPasswordUseCase {
-    void execute(UpdateUserPasswordCommand command);
+    void execute(UpdateUserPasswordInput input);
 }

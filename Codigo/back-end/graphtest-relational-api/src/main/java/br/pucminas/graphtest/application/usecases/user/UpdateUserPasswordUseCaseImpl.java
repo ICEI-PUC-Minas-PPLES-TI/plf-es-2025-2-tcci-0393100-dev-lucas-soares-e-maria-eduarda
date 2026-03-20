@@ -1,10 +1,10 @@
 package br.pucminas.graphtest.application.usecases.user;
 
-import br.pucminas.graphtest.application.domain.model.User;
+import br.pucminas.graphtest.application.domain.User;
 import br.pucminas.graphtest.application.exception.UpdatePasswordException;
 import br.pucminas.graphtest.application.exception.EntityNotFoundException;
 import br.pucminas.graphtest.application.port.input.user.UpdateUserPasswordUseCase;
-import br.pucminas.graphtest.application.port.input.user.command.UpdateUserPasswordCommand;
+import br.pucminas.graphtest.application.port.input.user.records.UpdateUserPasswordInput;
 import br.pucminas.graphtest.application.port.output.repositories.UserRepository;
 import br.pucminas.graphtest.application.port.output.security.PasswordEncoderPort;
 import org.springframework.stereotype.Service;
@@ -21,22 +21,22 @@ public class UpdateUserPasswordUseCaseImpl implements UpdateUserPasswordUseCase 
     }
 
     @Override
-    public void execute(UpdateUserPasswordCommand command) {
+    public void execute(UpdateUserPasswordInput input) {
 
-        User user = userRepository.findById(command.id())
+        User user = userRepository.findById(input.id())
                 .orElseThrow(() ->
                         new EntityNotFoundException(
-                                "Usuario nao encontrado com id: " + command.id()
+                                "Usuario nao encontrado com id: " + input.id()
                         )
                 );
 
-        if (command.senhaOriginal() != null && !command.senhaOriginal().isEmpty()) {
-            if (!passwordEncoder.matches(command.senhaOriginal(), user.getPassword())) {
+        if (input.senhaOriginal() != null && !input.senhaOriginal().isEmpty()) {
+            if (!passwordEncoder.matches(input.senhaOriginal(), user.getPassword())) {
                 throw new UpdatePasswordException("Senha atual incorreta");
             }
         }
 
-        String encodedNewPassword = passwordEncoder.encode(command.senhaAtualizada());
+        String encodedNewPassword = passwordEncoder.encode(input.senhaAtualizada());
         user.setPassword(encodedNewPassword);
 
         userRepository.save(user);
