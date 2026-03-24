@@ -1,6 +1,6 @@
 package br.pucminas.graphtest.application.usecases.user;
 
-import br.pucminas.graphtest.application.domain.User;
+import br.pucminas.graphtest.application.domain.user.User;
 import br.pucminas.graphtest.application.exception.UpdatePasswordException;
 import br.pucminas.graphtest.application.exception.EntityNotFoundException;
 import br.pucminas.graphtest.application.port.input.user.UpdateUserPasswordUseCase;

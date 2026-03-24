@@ -1,6 +1,6 @@
 package br.pucminas.graphtest.adapters.outbound.security;
 
-import br.pucminas.graphtest.application.domain.AuthenticatedUser;
+import br.pucminas.graphtest.application.domain.user.AuthenticatedUser;
 import br.pucminas.graphtest.application.port.output.security.CurrentUserPort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;

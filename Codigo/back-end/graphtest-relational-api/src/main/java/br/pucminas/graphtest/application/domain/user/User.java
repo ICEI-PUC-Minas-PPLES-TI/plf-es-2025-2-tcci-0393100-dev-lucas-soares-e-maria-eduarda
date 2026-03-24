@@ -1,4 +1,6 @@
-package br.pucminas.graphtest.application.domain;
+package br.pucminas.graphtest.application.domain.user;
+
+import br.pucminas.graphtest.application.domain.BaseEntity;
 
 import java.util.UUID;
 
