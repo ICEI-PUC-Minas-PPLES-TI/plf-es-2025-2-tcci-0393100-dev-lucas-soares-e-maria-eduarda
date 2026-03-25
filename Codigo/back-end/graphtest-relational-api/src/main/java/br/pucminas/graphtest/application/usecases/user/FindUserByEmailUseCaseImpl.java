@@ -5,11 +5,9 @@ import br.pucminas.graphtest.application.port.input.user.FindUserByEmailUseCase;
 import br.pucminas.graphtest.application.port.input.user.records.FindUserByEmailInput;
 import br.pucminas.graphtest.application.port.input.user.records.UserOutput;
 import br.pucminas.graphtest.application.port.output.repositories.UserRepository;
-import org.springframework.stereotype.Service;
 
 import static java.lang.String.format;
 
-@Service
 public class FindUserByEmailUseCaseImpl implements FindUserByEmailUseCase {
 
     private final UserRepository userRepository;

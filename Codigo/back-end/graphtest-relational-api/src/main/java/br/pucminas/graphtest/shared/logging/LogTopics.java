@@ -9,6 +9,8 @@ public class LogTopics {
 
     public static final String USUARIO_CONTROLLER = "USUARIO_CONTROLLER";
 
+    public static final String PROJETO_CONTROLLER = "PROJETO_CONTROLLER";
+
     public static final String JWT = "JWT";
 
     public static final String SEGURANCA_CONFIG = "SEGURANCA_CONFIG";

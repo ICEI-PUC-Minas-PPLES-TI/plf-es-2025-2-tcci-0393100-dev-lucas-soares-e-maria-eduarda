@@ -1,6 +1,8 @@
 package br.pucminas.graphtest.adapters.inbound.util;
 
 import br.pucminas.graphtest.adapters.inbound.dto.UserDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.ProjectDTO;
+import br.pucminas.graphtest.application.port.input.project.records.ProjectOutput;
 import br.pucminas.graphtest.application.port.input.user.records.UserOutput;
 import jakarta.validation.constraints.NotNull;
 import lombok.experimental.UtilityClass;
@@ -13,14 +15,23 @@ import static java.lang.String.format;
 @Slf4j(topic = CONVERSOR_ENTIDADE_DTO_UTIL)
 public class EntityDtoConverterUtil {
 
-    public static UserDTO converterParaDTO(@NotNull UserOutput usuario) {
-        log.info(format(">>> converterParaDTO: convertendo UserOutput (id: %s) para DTO", usuario.id()));
+    public static UserDTO toDto(@NotNull UserOutput userOutput) {
+        log.info(format(">>> toDto: convertendo UserOutput (id: %s) para DTO", userOutput.id()));
         return UserDTO.builder()
-                .id(usuario.id())
-                .profileUser(usuario.profileCode())
-                .name(usuario.name())
-                .email(usuario.email())
+                .id(userOutput.id())
+                .profileUser(userOutput.profileCode())
+                .name(userOutput.name())
+                .email(userOutput.email())
                 .password(null)
+                .build();
+    }
+
+    public static ProjectDTO toDto(@NotNull ProjectOutput projectOutput) {
+        log.info(format(">>> toDto: convertendo ProjectOutput (id: %s) para DTO", projectOutput.id()));
+        return ProjectDTO.builder()
+                .id(projectOutput.id())
+                .name(projectOutput.name())
+                .description(projectOutput.description())
                 .build();
     }
 }

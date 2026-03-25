@@ -3,29 +3,27 @@ package br.pucminas.graphtest.application.usecases.user;
 import br.pucminas.graphtest.application.domain.User;
 import br.pucminas.graphtest.application.exception.UpdatePasswordException;
 import br.pucminas.graphtest.application.exception.EntityNotFoundException;
-import br.pucminas.graphtest.application.port.input.security.AuthorizeCurrentUserForUserUseCase;
 import br.pucminas.graphtest.application.port.input.user.UpdateUserPasswordUseCase;
 import br.pucminas.graphtest.application.port.input.user.records.UpdateUserPasswordInput;
 import br.pucminas.graphtest.application.port.output.repositories.UserRepository;
 import br.pucminas.graphtest.application.port.output.security.PasswordEncoderPort;
-import org.springframework.stereotype.Service;
+import br.pucminas.graphtest.application.service.interfaces.UserAuthorizationService;
 
-@Service
 public class UpdateUserPasswordUseCaseImpl implements UpdateUserPasswordUseCase {
 
     private final UserRepository userRepository;
     private final PasswordEncoderPort passwordEncoder;
-    private final AuthorizeCurrentUserForUserUseCase authorizeCurrentUserForUserUseCase;
+    private final UserAuthorizationService userAuthorizationService;
 
-    public UpdateUserPasswordUseCaseImpl(UserRepository userRepository, PasswordEncoderPort passwordEncoder, AuthorizeCurrentUserForUserUseCase authorizeCurrentUserForUserUseCase) {
+    public UpdateUserPasswordUseCaseImpl(UserRepository userRepository, PasswordEncoderPort passwordEncoder, UserAuthorizationService userAuthorizationService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-        this.authorizeCurrentUserForUserUseCase = authorizeCurrentUserForUserUseCase;
+        this.userAuthorizationService = userAuthorizationService;
     }
 
     @Override
     public void execute(UpdateUserPasswordInput input) {
-        authorizeCurrentUserForUserUseCase.execute(input.id());
+        userAuthorizationService.authorizeForUser(input.id());
 
         User user = userRepository.findById(input.id())
                 .orElseThrow(() ->

@@ -46,8 +46,8 @@ import static br.pucminas.graphtest.adapters.inbound.util.ControllerConstantsUti
 import static br.pucminas.graphtest.adapters.inbound.util.ControllerConstantsUtil.MSG_USUARIO_CRIADO;
 import static br.pucminas.graphtest.adapters.inbound.util.ControllerConstantsUtil.MSG_USUARIO_DELETADO;
 import static br.pucminas.graphtest.adapters.inbound.util.ControllerConstantsUtil.MSG_USUARIO_SENHA;
-import static br.pucminas.graphtest.adapters.inbound.util.EntityDtoConverterUtil.converterParaDTO;
-import static br.pucminas.graphtest.adapters.inbound.util.JsonResponseBuilderUtil.construirRespostaJSON;
+import static br.pucminas.graphtest.adapters.inbound.util.EntityDtoConverterUtil.toDto;
+import static br.pucminas.graphtest.adapters.inbound.util.JsonResponseBuilderUtil.buildJsonResponse;
 import static br.pucminas.graphtest.shared.logging.LogTopics.USUARIO_CONTROLLER;
 import static java.util.Arrays.asList;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -83,7 +83,7 @@ public class UserControllerImpl implements UserController {
      */
     @Override
     @PostMapping
-    public ResponseEntity<Map<String, Object>> criar(
+    public ResponseEntity<Map<String, Object>> create(
             @Validated(UserDTO.Create.class) @RequestBody UserDTO usuario
     ) {
         log.info(">>> criar: recebendo requisicao para criar usuario");
@@ -97,7 +97,7 @@ public class UserControllerImpl implements UserController {
         UserOutput usuarioCriado = criarUsuarioUseCase.execute(input);
 
         return ResponseEntity.created(URI.create("/usuario/" + usuarioCriado.id()))
-                .body(construirRespostaJSON(
+                .body(buildJsonResponse(
                         CHAVES_USUARIO_CONTROLLER,
                         asList(CREATED.value(), MSG_USUARIO_CRIADO, usuarioCriado.id())
                 ));
@@ -111,12 +111,12 @@ public class UserControllerImpl implements UserController {
      */
     @Override
     @GetMapping("/{id}")
-    public ResponseEntity<UserDTO> encontrarPorId(@PathVariable UUID id) {
+    public ResponseEntity<UserDTO> findById(@PathVariable UUID id) {
         log.info(">>> encontrarPorId: recebendo requisicao para encontrar usuario por id");
 
         UserOutput usuario = encontrarUsuarioPorIdUseCase.execute(new FindUserByIdInput(id));
 
-        return ResponseEntity.ok().body(converterParaDTO(usuario));
+        return ResponseEntity.ok().body(toDto(usuario));
     }
 
     /**
@@ -126,14 +126,14 @@ public class UserControllerImpl implements UserController {
      */
     @Override
     @GetMapping
-    public ResponseEntity<List<UserDTO>> listarTodos() {
+    public ResponseEntity<List<UserDTO>> listAll() {
         log.info(">>> listarTodos: recebendo requisicao para listar todos usuarios");
 
         List<UserOutput> usuarios = listarTodosUsuariosUseCase.execute();
 
         return ResponseEntity.ok()
                 .body(usuarios.stream()
-                        .map(EntityDtoConverterUtil::converterParaDTO)
+                        .map(EntityDtoConverterUtil::toDto)
                         .toList());
     }
 
@@ -146,7 +146,7 @@ public class UserControllerImpl implements UserController {
      */
     @Override
     @PutMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> atualizar(
+    public ResponseEntity<Map<String, Object>> update(
             @PathVariable UUID id,
             @Validated(UserDTO.Update.class) @RequestBody @NotNull UserDTO usuario
     ) {
@@ -162,7 +162,7 @@ public class UserControllerImpl implements UserController {
         UserOutput usuarioAtualizado = atualizarUsuarioUseCase.execute(input);
 
         return ResponseEntity.ok()
-                .body(construirRespostaJSON(
+                .body(buildJsonResponse(
                         CHAVES_USUARIO_CONTROLLER,
                         asList(OK.value(), MSG_USUARIO_ATUALIZADO, usuarioAtualizado.id())
                 ));
@@ -177,7 +177,7 @@ public class UserControllerImpl implements UserController {
      */
     @Override
     @PatchMapping("/{id}/senha")
-    public ResponseEntity<Map<String, Object>> atualizarSenha(
+    public ResponseEntity<Map<String, Object>> updatePassword(
             @PathVariable UUID id,
             @Valid @RequestBody PasswordDTO passwordDTO
     ) {
@@ -192,7 +192,7 @@ public class UserControllerImpl implements UserController {
         atualizarSenhaUsuarioUseCase.execute(input);
 
         return ResponseEntity.ok()
-                .body(construirRespostaJSON(
+                .body(buildJsonResponse(
                         CHAVES_USUARIO_CONTROLLER,
                         asList(OK.value(), MSG_USUARIO_SENHA, id)
                 ));
@@ -206,7 +206,7 @@ public class UserControllerImpl implements UserController {
      */
     @Override
     @GetMapping("/verificar-token")
-    public ResponseEntity<TokenValidationDTO> verificarToken(@RequestParam("token") String token) {
+    public ResponseEntity<TokenValidationDTO> verifyToken(@RequestParam("token") String token) {
         log.info(">>> verificarToken: recebendo requisicao para verificar token");
         return ResponseEntity.ok(TokenValidationDTO.from(verificarTokenUseCase.execute(token)));
     }
@@ -219,13 +219,13 @@ public class UserControllerImpl implements UserController {
      */
     @Override
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> deletar(@PathVariable UUID id) {
+    public ResponseEntity<Map<String, Object>> delete(@PathVariable UUID id) {
         log.info(">>> deletar: recebendo requisicao para deletar usuario");
 
         deletarUsuarioUseCase.execute(new DeleteUserInput(id));
 
         return ResponseEntity.ok()
-                .body(construirRespostaJSON(
+                .body(buildJsonResponse(
                         CHAVES_USUARIO_CONTROLLER,
                         asList(OK.value(), MSG_USUARIO_DELETADO, id)
                 ));

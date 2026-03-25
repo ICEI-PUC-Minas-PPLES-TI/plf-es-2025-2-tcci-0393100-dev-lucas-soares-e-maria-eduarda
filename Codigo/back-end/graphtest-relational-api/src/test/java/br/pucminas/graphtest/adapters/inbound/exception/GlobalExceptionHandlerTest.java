@@ -1,0 +1,39 @@
+package br.pucminas.graphtest.adapters.inbound.exception;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class GlobalExceptionHandlerTest {
+
+    private final GlobalExceptionHandler handler = new GlobalExceptionHandler();
+
+    @Test
+    void shouldReturnNotFoundForUnknownEndpoint() {
+        NoResourceFoundException exception = new NoResourceFoundException(HttpMethod.GET, "/inexistente", null);
+
+        var response = handler.handleNoResource(exception);
+        ErrorResponse body = (ErrorResponse) response.getBody();
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals(HttpStatus.NOT_FOUND.value(), body.getStatus());
+    }
+
+    @Test
+    void shouldWriteUnauthorizedResponseOnAuthenticationFailure() throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        handler.onAuthenticationFailure(request, response, new BadCredentialsException("credenciais invalidas"));
+
+        assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
+        assertTrue(response.getContentAsString().contains("\"status\": 401"));
+    }
+}

@@ -21,19 +21,19 @@ import java.util.UUID;
 public interface UserController extends BaseCRUDController<UserDTO> {
 
     @PostMapping
-    ResponseEntity<Map<String, Object>> criar(
+    ResponseEntity<Map<String, Object>> create(
             @Validated(UserDTO.Create.class) @RequestBody UserDTO obj
     );
 
     @PutMapping("/{id}")
-    ResponseEntity<Map<String, Object>> atualizar(
+    ResponseEntity<Map<String, Object>> update(
             @PathVariable UUID id,
             @Validated(UserDTO.Update.class) @RequestBody @NotNull UserDTO obj
     );
 
     @PatchMapping("/{id}/senha")
-    ResponseEntity<Map<String, Object>> atualizarSenha(@PathVariable UUID id, @Valid @RequestBody PasswordDTO passwordDTO);
+    ResponseEntity<Map<String, Object>> updatePassword(@PathVariable UUID id, @Valid @RequestBody PasswordDTO passwordDTO);
 
     @GetMapping("/verificar-token")
-    ResponseEntity<TokenValidationDTO> verificarToken(@RequestParam("token") String token);
+    ResponseEntity<TokenValidationDTO> verifyToken(@RequestParam("token") String token);
 }

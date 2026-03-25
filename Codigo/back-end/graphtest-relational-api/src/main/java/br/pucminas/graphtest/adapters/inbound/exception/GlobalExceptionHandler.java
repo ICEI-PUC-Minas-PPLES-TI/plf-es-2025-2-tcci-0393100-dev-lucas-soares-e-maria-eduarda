@@ -154,7 +154,7 @@ public class GlobalExceptionHandler implements AuthenticationFailureHandler {
 
         log.error("[ERRO] Recurso não encontrado: {}", e.getMessage());
 
-        return construirMsgErro(e, HttpStatus.BAD_REQUEST);
+        return construirMsgErro(e, HttpStatus.NOT_FOUND);
     }
 
     /**

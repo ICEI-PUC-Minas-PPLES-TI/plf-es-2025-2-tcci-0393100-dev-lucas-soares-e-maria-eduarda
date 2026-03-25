@@ -5,9 +5,7 @@ import br.pucminas.graphtest.application.domain.User;
 import br.pucminas.graphtest.application.port.input.security.ResolveAuthenticatedUserByTokenUseCase;
 import br.pucminas.graphtest.application.port.output.repositories.UserRepository;
 import br.pucminas.graphtest.application.port.output.security.TokenServicePort;
-import org.springframework.stereotype.Service;
 
-@Service
 public class ResolveAuthenticatedUserByTokenUseCaseImpl implements ResolveAuthenticatedUserByTokenUseCase {
 
     private final TokenServicePort tokenService;

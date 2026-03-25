@@ -19,6 +19,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -46,6 +47,7 @@ public class SecurityConfig {
     private final UserDetailsService userDetailsService;
     private final GenerateTokenUseCase generateTokenUseCase;
     private final ResolveAuthenticatedUserByTokenUseCase resolveAuthenticatedUserByTokenUseCase;
+    private final AuthenticationFailureHandler authenticationFailureHandler;
 
     /**
      * Configura a cadeia principal de filtros de seguranca da aplicacao.
@@ -68,13 +70,16 @@ public class SecurityConfig {
                 .passwordEncoder(passwordEncoder);
 
         AuthenticationManager authenticationManager = authenticationManagerBuilder.build();
+        JwtAuthenticationFilter jwtAuthenticationFilter =
+                new JwtAuthenticationFilter(authenticationManager, generateTokenUseCase);
+        jwtAuthenticationFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
 
         return httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationManager(authenticationManager)
-                .addFilter(new JwtAuthenticationFilter(authenticationManager, generateTokenUseCase))
+                .addFilter(jwtAuthenticationFilter)
                 .addFilter(new JwtAuthorizationFilter(authenticationManager, resolveAuthenticatedUserByTokenUseCase))
                 .authorizeHttpRequests(request -> {
                     request.requestMatchers(SecurityRequestPaths.CAMINHOS_PUBLICOS).permitAll();

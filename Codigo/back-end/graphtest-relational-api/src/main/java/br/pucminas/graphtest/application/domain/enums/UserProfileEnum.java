@@ -1,13 +1,14 @@
 package br.pucminas.graphtest.application.domain.enums;
 
+import br.pucminas.graphtest.application.exception.InvalidUserProfileException;
+
 /**
  * Enumeração que representa os perfis de acesso de usuários no sistema.
  */
 public enum UserProfileEnum {
 
     ADMIN(1, "ROLE_ADMIN"),
-    USUARIO(2, "ROLE_USUARIO"),
-    TECNICO(3, "ROLE_USUARIO");
+    USUARIO(2, "ROLE_USUARIO");
 
     private final Integer codigo;
     private final String descricao;
@@ -43,5 +44,13 @@ public enum UserProfileEnum {
         }
 
         return null;
+    }
+
+    public static UserProfileEnum getPerfilUsuarioOrThrow(Integer codigo) {
+        UserProfileEnum perfil = getPerfilUsuario(codigo);
+        if (perfil == null) {
+            throw new InvalidUserProfileException("Perfil de usuario invalido: " + codigo);
+        }
+        return perfil;
     }
 }

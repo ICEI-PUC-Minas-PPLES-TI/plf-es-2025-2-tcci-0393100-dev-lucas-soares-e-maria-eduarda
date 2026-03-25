@@ -5,11 +5,9 @@ import br.pucminas.graphtest.application.port.input.security.LoadAuthenticationU
 import br.pucminas.graphtest.application.port.input.security.records.LoadAuthenticationUserInput;
 import br.pucminas.graphtest.application.port.input.security.records.AuthenticationUserResult;
 import br.pucminas.graphtest.application.port.output.repositories.UserRepository;
-import org.springframework.stereotype.Service;
 
 import static java.lang.String.format;
 
-@Service
 public class LoadAuthenticationUserUseCaseImpl implements LoadAuthenticationUserUseCase {
 
     private final UserRepository userRepository;

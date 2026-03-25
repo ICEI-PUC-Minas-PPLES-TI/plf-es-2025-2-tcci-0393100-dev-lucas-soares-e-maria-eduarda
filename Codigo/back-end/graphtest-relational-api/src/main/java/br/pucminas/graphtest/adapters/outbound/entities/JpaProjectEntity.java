@@ -12,7 +12,7 @@ import lombok.*;
 @ToString
 public class JpaProjectEntity extends JpaBaseEntity{
 
-    @Column(name = "NAME", length = 50)
+    @Column(name = "NAME", length = 50, nullable = false)
     private String name;
 
     @Column(name = "DESCRIPTION", length = 200)

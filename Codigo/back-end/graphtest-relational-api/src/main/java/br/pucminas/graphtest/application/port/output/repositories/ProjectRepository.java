@@ -14,4 +14,5 @@ public interface ProjectRepository {
     Optional<Project> findByIdAndUserId(UUID id, UUID userId);
     void deleteById(UUID id);
     long countByUserId(UUID userId);
+    void deleteAllByUserId(UUID userId);
 }
