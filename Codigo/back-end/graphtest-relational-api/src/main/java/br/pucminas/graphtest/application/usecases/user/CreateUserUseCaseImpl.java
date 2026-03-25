@@ -1,7 +1,7 @@
 package br.pucminas.graphtest.application.usecases.user;
 
-import br.pucminas.graphtest.application.domain.user.User;
-import br.pucminas.graphtest.application.domain.user.UserProfileEnum;
+import br.pucminas.graphtest.application.domain.User;
+import br.pucminas.graphtest.application.domain.enums.UserProfileEnum;
 import br.pucminas.graphtest.application.port.input.user.CreateUserUseCase;
 import br.pucminas.graphtest.application.port.input.user.records.CreateUserInput;
 import br.pucminas.graphtest.application.port.input.user.records.UserOutput;

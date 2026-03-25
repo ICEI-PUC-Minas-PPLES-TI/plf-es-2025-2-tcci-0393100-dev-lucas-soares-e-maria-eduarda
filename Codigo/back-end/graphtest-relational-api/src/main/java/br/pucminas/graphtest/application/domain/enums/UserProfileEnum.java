@@ -1,4 +1,4 @@
-package br.pucminas.graphtest.application.domain.user;
+package br.pucminas.graphtest.application.domain.enums;
 
 /**
  * Enumeração que representa os perfis de acesso de usuários no sistema.

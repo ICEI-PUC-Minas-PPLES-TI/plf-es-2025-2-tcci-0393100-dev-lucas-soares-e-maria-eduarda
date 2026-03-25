@@ -1,8 +1,8 @@
 package br.pucminas.graphtest.application.usecases.user;
 
-import br.pucminas.graphtest.application.domain.user.AuthenticatedUser;
-import br.pucminas.graphtest.application.domain.user.User;
-import br.pucminas.graphtest.application.domain.user.UserProfileEnum;
+import br.pucminas.graphtest.application.domain.records.AuthenticatedUser;
+import br.pucminas.graphtest.application.domain.User;
+import br.pucminas.graphtest.application.domain.enums.UserProfileEnum;
 import br.pucminas.graphtest.application.exception.EntityNotFoundException;
 import br.pucminas.graphtest.application.port.input.security.AuthorizeCurrentUserForUserUseCase;
 import br.pucminas.graphtest.application.port.input.user.UpdateUserUseCase;

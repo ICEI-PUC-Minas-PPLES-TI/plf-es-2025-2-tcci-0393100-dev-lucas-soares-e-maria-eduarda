@@ -1,6 +1,6 @@
 package br.pucminas.graphtest.application.usecases.security;
 
-import br.pucminas.graphtest.application.domain.user.AuthenticatedUser;
+import br.pucminas.graphtest.application.domain.records.AuthenticatedUser;
 import br.pucminas.graphtest.application.exception.UnauthorizedUserException;
 import br.pucminas.graphtest.application.port.input.security.AuthorizeCurrentUserIsAdminUseCase;
 import br.pucminas.graphtest.application.port.output.security.CurrentUserPort;

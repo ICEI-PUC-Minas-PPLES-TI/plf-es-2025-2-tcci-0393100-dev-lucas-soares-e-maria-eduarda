@@ -1,6 +1,6 @@
 package br.pucminas.graphtest.adapters.inbound.security;
 
-import br.pucminas.graphtest.application.domain.user.UserProfileEnum;
+import br.pucminas.graphtest.application.domain.enums.UserProfileEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

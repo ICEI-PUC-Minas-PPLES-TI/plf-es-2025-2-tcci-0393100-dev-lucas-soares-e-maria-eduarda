@@ -38,7 +38,7 @@ public class GlobalExceptionHandler implements AuthenticationFailureHandler {
     private boolean imprimirStackTrace;
 
     /**
-     * Falha de autenticação
+     * Pra que serve o método da linha 44? Resposta: Ele é um método de callback do Spring Security que é chamado quando uma tentativa de autenticação falha. Ele captura a exceção de autenticação e constrói uma resposta HTTP com status 401 (Unauthorized) e uma mensagem de erro personalizada, indicando que o usuário ou senha estão incorretos. A resposta é enviada de volta ao cliente para informar sobre a falha na autenticação.
      */
     @Override
     public void onAuthenticationFailure(HttpServletRequest request,

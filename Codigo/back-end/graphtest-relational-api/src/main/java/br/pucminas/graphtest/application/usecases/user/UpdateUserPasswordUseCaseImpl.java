@@ -1,8 +1,9 @@
 package br.pucminas.graphtest.application.usecases.user;
 
-import br.pucminas.graphtest.application.domain.user.User;
+import br.pucminas.graphtest.application.domain.User;
 import br.pucminas.graphtest.application.exception.UpdatePasswordException;
 import br.pucminas.graphtest.application.exception.EntityNotFoundException;
+import br.pucminas.graphtest.application.port.input.security.AuthorizeCurrentUserForUserUseCase;
 import br.pucminas.graphtest.application.port.input.user.UpdateUserPasswordUseCase;
 import br.pucminas.graphtest.application.port.input.user.records.UpdateUserPasswordInput;
 import br.pucminas.graphtest.application.port.output.repositories.UserRepository;
@@ -14,14 +15,17 @@ public class UpdateUserPasswordUseCaseImpl implements UpdateUserPasswordUseCase 
 
     private final UserRepository userRepository;
     private final PasswordEncoderPort passwordEncoder;
+    private final AuthorizeCurrentUserForUserUseCase authorizeCurrentUserForUserUseCase;
 
-    public UpdateUserPasswordUseCaseImpl(UserRepository userRepository, PasswordEncoderPort passwordEncoder) {
+    public UpdateUserPasswordUseCaseImpl(UserRepository userRepository, PasswordEncoderPort passwordEncoder, AuthorizeCurrentUserForUserUseCase authorizeCurrentUserForUserUseCase) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.authorizeCurrentUserForUserUseCase = authorizeCurrentUserForUserUseCase;
     }
 
     @Override
     public void execute(UpdateUserPasswordInput input) {
+        authorizeCurrentUserForUserUseCase.execute(input.id());
 
         User user = userRepository.findById(input.id())
                 .orElseThrow(() ->
