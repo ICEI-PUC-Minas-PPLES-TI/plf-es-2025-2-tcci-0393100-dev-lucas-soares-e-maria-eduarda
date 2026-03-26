@@ -16,4 +16,6 @@ public class ValidatorErrorConstantsUtil {
 
     public static final String MSG_ERRO_SENHA = "a senha deve conter no mínimo 8 caracteres";
 
+    public static final String MSG_ERRO_CAMPO_EM_BRANCO = "o campo nao pode conter apenas espacos em branco";
+
 }

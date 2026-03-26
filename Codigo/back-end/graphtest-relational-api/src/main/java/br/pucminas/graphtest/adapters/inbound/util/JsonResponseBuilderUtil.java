@@ -16,29 +16,28 @@ public class JsonResponseBuilderUtil {
     /**
      * Constrói o Json de resposta
      *
-     * @param chaves     chaves do Json
-     * @param argumentos argumentos do Json
+     * @param keys     chaves do Json
+     * @param arguments argumentos do Json
      * @return Json a partir das chaves e argumentos
      */
-    public static Map<String, Object> construirRespostaJSON(List<String> chaves, List<Object> argumentos) {
+    public static Map<String, Object> buildJsonResponse(List<String> keys, List<Object> arguments) {
 
-        validarTamanhoListas(chaves, argumentos);
+        validateListSizes(keys, arguments);
 
-        return range(0, chaves.size())
+        return range(0, keys.size())
                 .boxed()
-                .collect(toMap(chaves::get, argumentos::get));
+                .collect(toMap(keys::get, arguments::get));
     }
 
     /**
-     * Valida se a quantidade de chaves é igual ao número de argumentos
+     * Valida se a quantidade de chaves igual ao numero de argumentos
      *
-     * @param chaves     chaves do Json
-     * @param argumentos argumentos do Json
+     * @param keys    chaves do Json
+     * @param arguments argumentos do Json
      */
-    private static void validarTamanhoListas(@NotNull List<String> chaves, @NotNull List<Object> argumentos) {
-        if (chaves.size() != argumentos.size())
-             throw new JsonResponseBuilderException("O número de chaves deve ser igual ao número de argumentos.");
-
+    private static void validateListSizes(@NotNull List<String> keys, @NotNull List<Object> arguments) {
+        if (keys.size() != arguments.size()) {
+            throw new JsonResponseBuilderException("O nÃºmero de chaves deve ser igual ao nÃºmero de argumentos.");
+        }
     }
-
 }

@@ -23,7 +23,7 @@ import java.io.IOException;
 import static br.pucminas.graphtest.adapters.inbound.util.ValidatorErrorConstantsUtil.MSG_ERRO_USUARIO_SENHA;
 import static br.pucminas.graphtest.adapters.inbound.util.ValidatorErrorConstantsUtil.MSG_ERRO_VALIDACAO;
 import static br.pucminas.graphtest.adapters.inbound.util.SecurityHttpConstantsUtil.CONTENT_TYPE;
-import static br.pucminas.graphtest.shared.logging.LogTopics.INTERCEPTADOR_EXCECOES;
+import static br.pucminas.graphtest.shared.LogTopicsUtil.INTERCEPTADOR_EXCECOES;
 
 
 /**
@@ -37,9 +37,7 @@ public class GlobalExceptionHandler implements AuthenticationFailureHandler {
     @Value("${spring.web.error.include-exception}")
     private boolean imprimirStackTrace;
 
-    /**
-     * Falha de autenticação
-     */
+
     @Override
     public void onAuthenticationFailure(HttpServletRequest request,
                                         @NotNull HttpServletResponse response,
@@ -154,7 +152,7 @@ public class GlobalExceptionHandler implements AuthenticationFailureHandler {
 
         log.error("[ERRO] Recurso não encontrado: {}", e.getMessage());
 
-        return construirMsgErro(e, HttpStatus.BAD_REQUEST);
+        return construirMsgErro(e, HttpStatus.NOT_FOUND);
     }
 
     /**

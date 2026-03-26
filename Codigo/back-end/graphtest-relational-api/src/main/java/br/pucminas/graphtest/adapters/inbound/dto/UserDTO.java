@@ -27,24 +27,14 @@ import static br.pucminas.graphtest.adapters.inbound.util.ValidatorErrorConstant
 @Builder
 @JsonPropertyOrder({"id", "profileUser", "name", "email", "password"})
 public record UserDTO(
-        /**
-         * Identificador unico do usuario.
-         */
-        UUID id,
 
-        /**
-         * Perfil associado ao usuario, utilizado para definir o nivel de permissao.
-         */
+        UUID id,
         @JsonProperty("perfil_usuario") Integer profileUser,
 
-        /**
-         * Nome do usuario validado nas operacoes de criacao e atualizacao.
-         */
-        @NotBlank(groups = {Create.class, Update.class}, message = "O nome e obrigatorio") String name,
+        @NotBlank(groups = {Create.class, Update.class}, message = "O nome e obrigatorio")
+        @Size(min = 10, max = 100)
+        String name,
 
-        /**
-         * Email do usuario validado nas operacoes de criacao e atualizacao.
-         */
         @NotBlank(groups = {Create.class, Update.class}, message = "O email e obrigatorio")
         @Pattern(
                 groups = {Create.class, Update.class},
@@ -53,9 +43,7 @@ public record UserDTO(
         )
         String email,
 
-        /**
-         * Senha usada apenas na criacao do usuario e aceita somente na desserializacao do JSON.
-         */
+
         @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
         @NotBlank(groups = Create.class, message = "A senha e obrigatoria")
         @Size(groups = Create.class, min = 8, max = 100, message = MSG_ERRO_SENHA)

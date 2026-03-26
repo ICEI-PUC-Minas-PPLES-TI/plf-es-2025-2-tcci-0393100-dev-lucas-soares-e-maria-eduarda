@@ -13,7 +13,7 @@ import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.UUID;
 
-import static br.pucminas.graphtest.shared.logging.LogTopics.JWT;
+import static br.pucminas.graphtest.shared.LogTopicsUtil.JWT;
 import static io.jsonwebtoken.security.Keys.hmacShaKeyFor;
 import static java.lang.System.currentTimeMillis;
 import static java.util.Objects.nonNull;

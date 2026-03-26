@@ -10,13 +10,13 @@ import java.util.UUID;
 public interface BaseCRUDController<O> {
 
     @GetMapping("/{id}")
-    ResponseEntity<O> encontrarPorId(@PathVariable UUID id);
+    ResponseEntity<O> findById(@PathVariable UUID id);
 
     @GetMapping
-    ResponseEntity<List<O>> listarTodos();
+    ResponseEntity<List<O>> listAll();
 
 
     @DeleteMapping("/{id}")
-    ResponseEntity<Map<String, Object>> deletar(@PathVariable UUID id);
+    ResponseEntity<Map<String, Object>> delete(@PathVariable UUID id);
 
 }

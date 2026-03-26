@@ -21,7 +21,7 @@ import lombok.ToString;
 @ToString
 public class JpaUserEntity extends JpaBaseEntity {
 
-    @Column(name = "NAME", length = 50, nullable = false)
+    @Column(name = "NAME", nullable = false)
     private String name;
 
     @Column(name = "EMAIL", unique = true, nullable = false)

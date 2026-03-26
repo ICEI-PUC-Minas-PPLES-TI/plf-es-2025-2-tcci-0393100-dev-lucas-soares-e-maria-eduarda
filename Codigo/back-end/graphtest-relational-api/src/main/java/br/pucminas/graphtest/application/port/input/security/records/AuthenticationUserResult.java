@@ -1,7 +1,7 @@
 package br.pucminas.graphtest.application.port.input.security.records;
 
 import br.pucminas.graphtest.application.domain.User;
-import br.pucminas.graphtest.application.domain.UserProfileEnum;
+import br.pucminas.graphtest.application.domain.enums.UserProfileEnum;
 
 import java.util.UUID;
 

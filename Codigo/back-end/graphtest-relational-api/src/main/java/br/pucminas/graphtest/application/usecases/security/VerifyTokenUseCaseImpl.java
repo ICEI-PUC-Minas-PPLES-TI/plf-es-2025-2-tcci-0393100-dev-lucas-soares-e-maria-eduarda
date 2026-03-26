@@ -3,9 +3,7 @@ package br.pucminas.graphtest.application.usecases.security;
 import br.pucminas.graphtest.application.port.input.security.VerifyTokenUseCase;
 import br.pucminas.graphtest.application.port.input.security.records.TokenValidationResult;
 import br.pucminas.graphtest.application.port.output.security.TokenServicePort;
-import org.springframework.stereotype.Service;
 
-@Service
 public class VerifyTokenUseCaseImpl implements VerifyTokenUseCase {
 
     private final TokenServicePort tokenService;

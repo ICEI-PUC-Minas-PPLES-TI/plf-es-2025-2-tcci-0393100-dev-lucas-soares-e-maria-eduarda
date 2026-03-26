@@ -15,8 +15,13 @@ public class ControllerConstantsUtil {
 
     public static final String ENDPOINT_USUARIO = "/usuario";
 
+    public static final String ENDPOINT_PROJETO = "/projeto";
+
     public static final List<String> CHAVES_USUARIO_CONTROLLER =
             new ArrayList<>(asList("status", "mensagem", "id_usuario"));
+
+    public static final List<String> CHAVES_PROJETO_CONTROLLER =
+            new ArrayList<>(asList("status", "mensagem", "id_projeto"));
 
     public static final String MSG_USUARIO_CRIADO = "usuario criado com sucesso";
 
@@ -25,4 +30,10 @@ public class ControllerConstantsUtil {
     public static final String MSG_USUARIO_DELETADO = "usuario deletado com sucesso";
 
     public static final String MSG_USUARIO_SENHA = "senha atualizada com sucesso";
+
+    public static final String MSG_PROJETO_CRIADO = "projeto criado com sucesso";
+
+    public static final String MSG_PROJETO_ATUALIZADO = "projeto atualizado com sucesso";
+
+    public static final String MSG_PROJETO_DELETADO = "projeto deletado com sucesso";
 }

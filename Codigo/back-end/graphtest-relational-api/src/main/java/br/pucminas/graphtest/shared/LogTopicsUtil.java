@@ -1,13 +1,15 @@
-package br.pucminas.graphtest.shared.logging;
+package br.pucminas.graphtest.shared;
 
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
-public class LogTopics {
+public class LogTopicsUtil {
 
     public static final String USUARIO_SPRING_SECURITY_SERVICE = "USUARIO_SPRING_SECURITY_SERVICE";
 
     public static final String USUARIO_CONTROLLER = "USUARIO_CONTROLLER";
+
+    public static final String PROJETO_CONTROLLER = "PROJETO_CONTROLLER";
 
     public static final String JWT = "JWT";
 
