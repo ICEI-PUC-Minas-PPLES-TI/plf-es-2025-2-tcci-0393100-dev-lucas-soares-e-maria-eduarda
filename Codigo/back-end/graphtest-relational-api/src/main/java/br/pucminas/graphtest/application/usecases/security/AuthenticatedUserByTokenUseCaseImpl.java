@@ -2,18 +2,18 @@ package br.pucminas.graphtest.application.usecases.security;
 
 import br.pucminas.graphtest.application.domain.records.AuthenticatedUser;
 import br.pucminas.graphtest.application.domain.User;
-import br.pucminas.graphtest.application.port.input.security.ResolveAuthenticatedUserByTokenUseCase;
-import br.pucminas.graphtest.application.port.output.repositories.UserRepository;
+import br.pucminas.graphtest.application.port.input.security.AuthenticatedUserByTokenUseCasePort;
+import br.pucminas.graphtest.application.port.output.repositories.UserRepositoryPort;
 import br.pucminas.graphtest.application.port.output.security.TokenServicePort;
 
-public class ResolveAuthenticatedUserByTokenUseCaseImpl implements ResolveAuthenticatedUserByTokenUseCase {
+public class AuthenticatedUserByTokenUseCaseImpl implements AuthenticatedUserByTokenUseCasePort {
 
     private final TokenServicePort tokenService;
-    private final UserRepository userRepository;
+    private final UserRepositoryPort userRepositoryPort;
 
-    public ResolveAuthenticatedUserByTokenUseCaseImpl(TokenServicePort tokenService, UserRepository userRepository) {
+    public AuthenticatedUserByTokenUseCaseImpl(TokenServicePort tokenService, UserRepositoryPort userRepositoryPort) {
         this.tokenService = tokenService;
-        this.userRepository = userRepository;
+        this.userRepositoryPort = userRepositoryPort;
     }
 
     @Override
@@ -27,7 +27,7 @@ public class ResolveAuthenticatedUserByTokenUseCaseImpl implements ResolveAuthen
             return null;
         }
 
-        User user = userRepository.findByEmail(email).orElse(null);
+        User user = userRepositoryPort.findByEmail(email).orElse(null);
         if (user == null) {
             return null;
         }

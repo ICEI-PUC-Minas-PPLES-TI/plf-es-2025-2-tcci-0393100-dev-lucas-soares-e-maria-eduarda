@@ -1,10 +1,10 @@
 package br.pucminas.graphtest.application.usecases.security;
 
-import br.pucminas.graphtest.application.port.input.security.GenerateTokenUseCase;
+import br.pucminas.graphtest.application.port.input.security.GenerateTokenUseCasePort;
 import br.pucminas.graphtest.application.port.input.security.records.GenerateTokenInput;
 import br.pucminas.graphtest.application.port.output.security.TokenServicePort;
 
-public class GenerateTokenUseCaseImpl implements GenerateTokenUseCase {
+public class GenerateTokenUseCaseImpl implements GenerateTokenUseCasePort {
 
     private final TokenServicePort tokenService;
 

@@ -3,7 +3,7 @@ package br.pucminas.graphtest.application.usecases.project;
 import br.pucminas.graphtest.application.domain.Project;
 import br.pucminas.graphtest.application.port.input.project.records.ProjectOutput;
 import br.pucminas.graphtest.application.port.input.project.records.UpdateProjectInput;
-import br.pucminas.graphtest.application.port.output.repositories.ProjectRepository;
+import br.pucminas.graphtest.application.port.output.repositories.ProjectRepositoryPort;
 import br.pucminas.graphtest.application.service.interfaces.ProjectAccessService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,7 +23,7 @@ import static org.mockito.Mockito.when;
 class UpdateProjectUseCaseImplTest {
 
     @Mock
-    private ProjectRepository projectRepository;
+    private ProjectRepositoryPort projectRepository;
 
     @Mock
     private ProjectAccessService projectAccessService;

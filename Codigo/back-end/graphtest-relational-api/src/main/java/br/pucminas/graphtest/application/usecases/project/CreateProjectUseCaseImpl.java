@@ -2,18 +2,18 @@ package br.pucminas.graphtest.application.usecases.project;
 
 import br.pucminas.graphtest.application.domain.Project;
 import br.pucminas.graphtest.application.domain.records.AuthenticatedUser;
-import br.pucminas.graphtest.application.port.input.project.CreateProjectUseCase;
+import br.pucminas.graphtest.application.port.input.project.CreateProjectUseCasePort;
 import br.pucminas.graphtest.application.port.input.project.records.CreateProjectInput;
 import br.pucminas.graphtest.application.port.input.project.records.ProjectOutput;
-import br.pucminas.graphtest.application.port.output.repositories.ProjectRepository;
+import br.pucminas.graphtest.application.port.output.repositories.ProjectRepositoryPort;
 import br.pucminas.graphtest.application.port.output.security.CurrentUserPort;
 
 /**
  * Caso de uso responsavel por criar um novo projeto para o usuario autenticado.
  */
-public class CreateProjectUseCaseImpl implements CreateProjectUseCase {
+public class CreateProjectUseCaseImpl implements CreateProjectUseCasePort {
 
-    private final ProjectRepository projectRepository;
+    private final ProjectRepositoryPort projectRepository;
     private final CurrentUserPort currentUserPort;
 
     /**
@@ -23,7 +23,7 @@ public class CreateProjectUseCaseImpl implements CreateProjectUseCase {
      * @param projectRepository repositorio usado para salvar e contar projetos
      * @param currentUserPort porta responsavel por fornecer o usuario autenticado
      */
-    public CreateProjectUseCaseImpl(ProjectRepository projectRepository, CurrentUserPort currentUserPort) {
+    public CreateProjectUseCaseImpl(ProjectRepositoryPort projectRepository, CurrentUserPort currentUserPort) {
         this.projectRepository = projectRepository;
         this.currentUserPort = currentUserPort;
     }

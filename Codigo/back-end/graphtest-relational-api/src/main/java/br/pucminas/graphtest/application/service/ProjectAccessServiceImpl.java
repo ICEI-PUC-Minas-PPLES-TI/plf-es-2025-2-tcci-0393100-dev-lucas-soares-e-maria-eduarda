@@ -3,7 +3,7 @@ package br.pucminas.graphtest.application.service;
 import br.pucminas.graphtest.application.domain.Project;
 import br.pucminas.graphtest.application.domain.records.AuthenticatedUser;
 import br.pucminas.graphtest.application.exception.EntityNotFoundException;
-import br.pucminas.graphtest.application.port.output.repositories.ProjectRepository;
+import br.pucminas.graphtest.application.port.output.repositories.ProjectRepositoryPort;
 import br.pucminas.graphtest.application.port.output.security.CurrentUserPort;
 import br.pucminas.graphtest.application.service.interfaces.ProjectAccessService;
 import java.util.Optional;
@@ -18,10 +18,10 @@ public class ProjectAccessServiceImpl implements ProjectAccessService {
 
     private static final String PROJECT_NOT_FOUND_MESSAGE = "Projeto nao encontrado";
 
-    private final ProjectRepository projectRepository;
+    private final ProjectRepositoryPort projectRepository;
     private final CurrentUserPort currentUserPort;
 
-    public ProjectAccessServiceImpl(ProjectRepository projectRepository,
+    public ProjectAccessServiceImpl(ProjectRepositoryPort projectRepository,
                                     CurrentUserPort currentUserPort) {
         this.projectRepository = projectRepository;
         this.currentUserPort = currentUserPort;

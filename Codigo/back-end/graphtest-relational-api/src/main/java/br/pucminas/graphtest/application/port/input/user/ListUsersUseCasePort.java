@@ -4,6 +4,6 @@ import br.pucminas.graphtest.application.port.input.user.records.UserOutput;
 
 import java.util.List;
 
-public interface ListUsersUseCase {
+public interface ListUsersUseCasePort {
     List<UserOutput> execute();
 }

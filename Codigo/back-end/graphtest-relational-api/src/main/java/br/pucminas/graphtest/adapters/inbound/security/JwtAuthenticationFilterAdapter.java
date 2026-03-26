@@ -1,7 +1,7 @@
 package br.pucminas.graphtest.adapters.inbound.security;
 
 import br.pucminas.graphtest.adapters.inbound.dto.LoginRequestDTO;
-import br.pucminas.graphtest.application.port.input.security.GenerateTokenUseCase;
+import br.pucminas.graphtest.application.port.input.security.GenerateTokenUseCasePort;
 import br.pucminas.graphtest.application.port.input.security.records.GenerateTokenInput;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
@@ -26,15 +26,15 @@ import static br.pucminas.graphtest.shared.LogTopicsUtil.JWT_AUTHENTICATION_FILT
 import static java.lang.String.format;
 
 @Slf4j(topic = JWT_AUTHENTICATION_FILTER)
-public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
+public class JwtAuthenticationFilterAdapter extends UsernamePasswordAuthenticationFilter {
 
     private final AuthenticationManager authenticationManager;
-    private final GenerateTokenUseCase generateTokenUseCase;
+    private final GenerateTokenUseCasePort generateTokenUseCasePort;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public JwtAuthenticationFilter(AuthenticationManager authenticationManager, GenerateTokenUseCase generateTokenUseCase) {
+    public JwtAuthenticationFilterAdapter(AuthenticationManager authenticationManager, GenerateTokenUseCasePort generateTokenUseCasePort) {
         this.authenticationManager = authenticationManager;
-        this.generateTokenUseCase = generateTokenUseCase;
+        this.generateTokenUseCasePort = generateTokenUseCasePort;
     }
 
     @Override
@@ -74,7 +74,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         }
 
         String emailUsuario = authenticatedPrincipal.getUsername();
-        String token = generateTokenUseCase.execute(new GenerateTokenInput(
+        String token = generateTokenUseCasePort.execute(new GenerateTokenInput(
                 authenticatedPrincipal.getId(),
                 emailUsuario,
                 authenticatedPrincipal.getPerfilUsuario()

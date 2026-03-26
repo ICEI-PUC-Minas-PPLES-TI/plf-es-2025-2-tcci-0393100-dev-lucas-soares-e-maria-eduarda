@@ -5,13 +5,13 @@ import br.pucminas.graphtest.adapters.inbound.dto.PasswordDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.TokenValidationDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.UserDTO;
 import br.pucminas.graphtest.adapters.inbound.util.EntityDtoConverterUtil;
-import br.pucminas.graphtest.application.port.input.security.VerifyTokenUseCase;
-import br.pucminas.graphtest.application.port.input.user.CreateUserUseCase;
-import br.pucminas.graphtest.application.port.input.user.DeleteUserUseCase;
-import br.pucminas.graphtest.application.port.input.user.FindUserByIdUseCase;
-import br.pucminas.graphtest.application.port.input.user.ListUsersUseCase;
-import br.pucminas.graphtest.application.port.input.user.UpdateUserPasswordUseCase;
-import br.pucminas.graphtest.application.port.input.user.UpdateUserUseCase;
+import br.pucminas.graphtest.application.port.input.security.VerifyTokenUseCasePort;
+import br.pucminas.graphtest.application.port.input.user.CreateUserUseCasePort;
+import br.pucminas.graphtest.application.port.input.user.DeleteUserUseCasePort;
+import br.pucminas.graphtest.application.port.input.user.FindUserByIdUseCasePort;
+import br.pucminas.graphtest.application.port.input.user.ListUsersUseCasePort;
+import br.pucminas.graphtest.application.port.input.user.UpdateUserPasswordUseCasePort;
+import br.pucminas.graphtest.application.port.input.user.UpdateUserUseCasePort;
 import br.pucminas.graphtest.application.port.input.user.records.CreateUserInput;
 import br.pucminas.graphtest.application.port.input.user.records.DeleteUserInput;
 import br.pucminas.graphtest.application.port.input.user.records.FindUserByIdInput;
@@ -41,13 +41,16 @@ import java.util.Map;
 import java.util.UUID;
 
 import static br.pucminas.graphtest.adapters.inbound.util.ControllerConstantsUtil.CHAVES_USUARIO_CONTROLLER;
-import static br.pucminas.graphtest.adapters.inbound.util.ControllerConstantsUtil.ENDPOINT_USUARIO;
 import static br.pucminas.graphtest.adapters.inbound.util.ControllerConstantsUtil.MSG_USUARIO_ATUALIZADO;
 import static br.pucminas.graphtest.adapters.inbound.util.ControllerConstantsUtil.MSG_USUARIO_CRIADO;
 import static br.pucminas.graphtest.adapters.inbound.util.ControllerConstantsUtil.MSG_USUARIO_DELETADO;
 import static br.pucminas.graphtest.adapters.inbound.util.ControllerConstantsUtil.MSG_USUARIO_SENHA;
 import static br.pucminas.graphtest.adapters.inbound.util.EntityDtoConverterUtil.toDto;
 import static br.pucminas.graphtest.adapters.inbound.util.JsonResponseBuilderUtil.buildJsonResponse;
+import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.ID;
+import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.USUARIO;
+import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.USUARIO_SENHA;
+import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.USUARIO_VERIFICAR_TOKEN;
 import static br.pucminas.graphtest.shared.LogTopicsUtil.USUARIO_CONTROLLER;
 import static java.util.Arrays.asList;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -56,7 +59,7 @@ import static org.springframework.http.HttpStatus.OK;
 @Slf4j(topic = USUARIO_CONTROLLER)
 @RestController
 @Validated
-@RequestMapping(ENDPOINT_USUARIO)
+@RequestMapping(USUARIO)
 @AllArgsConstructor
 /**
  * Implementacao do controlador REST responsavel pelas operacoes de usuario.
@@ -67,13 +70,13 @@ import static org.springframework.http.HttpStatus.OK;
  */
 public class UserControllerImpl implements UserController {
 
-    private final CreateUserUseCase criarUsuarioUseCase;
-    private final DeleteUserUseCase deletarUsuarioUseCase;
-    private final FindUserByIdUseCase encontrarUsuarioPorIdUseCase;
-    private final ListUsersUseCase listarTodosUsuariosUseCase;
-    private final UpdateUserUseCase atualizarUsuarioUseCase;
-    private final UpdateUserPasswordUseCase atualizarSenhaUsuarioUseCase;
-    private final VerifyTokenUseCase verificarTokenUseCase;
+    private final CreateUserUseCasePort criarUsuarioUseCase;
+    private final DeleteUserUseCasePort deletarUsuarioUseCase;
+    private final FindUserByIdUseCasePort encontrarUsuarioPorIdUseCase;
+    private final ListUsersUseCasePort listarTodosUsuariosUseCase;
+    private final UpdateUserUseCasePort atualizarUsuarioUseCase;
+    private final UpdateUserPasswordUseCasePort atualizarSenhaUsuarioUseCase;
+    private final VerifyTokenUseCasePort verificarTokenUseCase;
 
     /**
      * Cria um novo usuario a partir dos dados informados na requisicao.
@@ -96,7 +99,7 @@ public class UserControllerImpl implements UserController {
 
         UserOutput usuarioCriado = criarUsuarioUseCase.execute(input);
 
-        return ResponseEntity.created(URI.create("/usuario/" + usuarioCriado.id()))
+        return ResponseEntity.created(URI.create(USUARIO + "/" + usuarioCriado.id()))
                 .body(buildJsonResponse(
                         CHAVES_USUARIO_CONTROLLER,
                         asList(CREATED.value(), MSG_USUARIO_CRIADO, usuarioCriado.id())
@@ -110,7 +113,7 @@ public class UserControllerImpl implements UserController {
      * @return resposta HTTP 200 contendo os dados do usuario encontrado
      */
     @Override
-    @GetMapping("/{id}")
+    @GetMapping(ID)
     public ResponseEntity<UserDTO> findById(@PathVariable UUID id) {
         log.info(">>> encontrarPorId: recebendo requisicao para encontrar usuario por id");
 
@@ -145,7 +148,7 @@ public class UserControllerImpl implements UserController {
      * @return resposta HTTP 200 contendo uma mensagem de sucesso e o identificador do usuario atualizado
      */
     @Override
-    @PutMapping("/{id}")
+    @PutMapping(ID)
     public ResponseEntity<Map<String, Object>> update(
             @PathVariable UUID id,
             @Validated(UserDTO.Update.class) @RequestBody @NotNull UserDTO usuario
@@ -176,7 +179,7 @@ public class UserControllerImpl implements UserController {
      * @return resposta HTTP 200 contendo uma mensagem de sucesso e o identificador do usuario
      */
     @Override
-    @PatchMapping("/{id}/senha")
+    @PatchMapping(USUARIO_SENHA)
     public ResponseEntity<Map<String, Object>> updatePassword(
             @PathVariable UUID id,
             @Valid @RequestBody PasswordDTO passwordDTO
@@ -205,7 +208,7 @@ public class UserControllerImpl implements UserController {
      * @return resposta HTTP 200 contendo o resultado da validacao do token
      */
     @Override
-    @GetMapping("/verificar-token")
+    @GetMapping(USUARIO_VERIFICAR_TOKEN)
     public ResponseEntity<TokenValidationDTO> verifyToken(@RequestParam("token") String token) {
         log.info(">>> verificarToken: recebendo requisicao para verificar token");
         return ResponseEntity.ok(TokenValidationDTO.from(verificarTokenUseCase.execute(token)));
@@ -218,7 +221,7 @@ public class UserControllerImpl implements UserController {
      * @return resposta HTTP 200 contendo uma mensagem de sucesso e o identificador do usuario removido
      */
     @Override
-    @DeleteMapping("/{id}")
+    @DeleteMapping(ID)
     public ResponseEntity<Map<String, Object>> delete(@PathVariable UUID id) {
         log.info(">>> deletar: recebendo requisicao para deletar usuario");
 

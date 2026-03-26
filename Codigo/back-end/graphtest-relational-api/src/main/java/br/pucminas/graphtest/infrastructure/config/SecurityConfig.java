@@ -1,9 +1,10 @@
 package br.pucminas.graphtest.infrastructure.config;
 
-import br.pucminas.graphtest.adapters.inbound.security.JwtAuthenticationFilter;
-import br.pucminas.graphtest.adapters.inbound.security.JwtAuthorizationFilter;
-import br.pucminas.graphtest.application.port.input.security.GenerateTokenUseCase;
-import br.pucminas.graphtest.application.port.input.security.ResolveAuthenticatedUserByTokenUseCase;
+import br.pucminas.graphtest.adapters.inbound.security.JwtAuthenticationFilterAdapter;
+import br.pucminas.graphtest.adapters.inbound.security.JwtAuthorizationFilterAdapter;
+import br.pucminas.graphtest.application.port.input.security.GenerateTokenUseCasePort;
+import br.pucminas.graphtest.application.port.input.security.AuthenticatedUserByTokenUseCasePort;
+import br.pucminas.graphtest.infrastructure.paths.SecurityRequestPaths;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,8 +46,8 @@ import static org.springframework.http.HttpMethod.POST;
 public class SecurityConfig {
 
     private final UserDetailsService userDetailsService;
-    private final GenerateTokenUseCase generateTokenUseCase;
-    private final ResolveAuthenticatedUserByTokenUseCase resolveAuthenticatedUserByTokenUseCase;
+    private final GenerateTokenUseCasePort generateTokenUseCasePort;
+    private final AuthenticatedUserByTokenUseCasePort authenticatedUserByTokenUseCasePort;
     private final AuthenticationFailureHandler authenticationFailureHandler;
 
     /**
@@ -70,17 +71,17 @@ public class SecurityConfig {
                 .passwordEncoder(passwordEncoder);
 
         AuthenticationManager authenticationManager = authenticationManagerBuilder.build();
-        JwtAuthenticationFilter jwtAuthenticationFilter =
-                new JwtAuthenticationFilter(authenticationManager, generateTokenUseCase);
-        jwtAuthenticationFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
+        JwtAuthenticationFilterAdapter jwtAuthenticationFilterAdapter =
+                new JwtAuthenticationFilterAdapter(authenticationManager, generateTokenUseCasePort);
+        jwtAuthenticationFilterAdapter.setAuthenticationFailureHandler(authenticationFailureHandler);
 
         return httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationManager(authenticationManager)
-                .addFilter(jwtAuthenticationFilter)
-                .addFilter(new JwtAuthorizationFilter(authenticationManager, resolveAuthenticatedUserByTokenUseCase))
+                .addFilter(jwtAuthenticationFilterAdapter)
+                .addFilter(new JwtAuthorizationFilterAdapter(authenticationManager, authenticatedUserByTokenUseCasePort))
                 .authorizeHttpRequests(request -> {
                     request.requestMatchers(SecurityRequestPaths.CAMINHOS_PUBLICOS).permitAll();
                     request.requestMatchers(POST, SecurityRequestPaths.CAMINHOS_PUBLICOS_POST).permitAll();

@@ -1,10 +1,10 @@
 package br.pucminas.graphtest.application.usecases.project;
 
 import br.pucminas.graphtest.application.domain.Project;
-import br.pucminas.graphtest.application.port.input.project.UpdateProjectUseCase;
+import br.pucminas.graphtest.application.port.input.project.UpdateProjectUseCasePort;
 import br.pucminas.graphtest.application.port.input.project.records.ProjectOutput;
 import br.pucminas.graphtest.application.port.input.project.records.UpdateProjectInput;
-import br.pucminas.graphtest.application.port.output.repositories.ProjectRepository;
+import br.pucminas.graphtest.application.port.output.repositories.ProjectRepositoryPort;
 import br.pucminas.graphtest.application.service.interfaces.ProjectAccessService;
 
 import java.util.Objects;
@@ -13,9 +13,9 @@ import java.util.Objects;
  * Caso de uso responsavel por atualizar os dados de um projeto acessivel ao
  * usuario autenticado.
  */
-public class UpdateProjectUseCaseImpl implements UpdateProjectUseCase {
+public class UpdateProjectUseCaseImpl implements UpdateProjectUseCasePort {
 
-    private final ProjectRepository projectRepository;
+    private final ProjectRepositoryPort projectRepository;
     private final ProjectAccessService projectAccessService;
 
     /**
@@ -26,7 +26,7 @@ public class UpdateProjectUseCaseImpl implements UpdateProjectUseCase {
      * @param projectAccessService servico responsavel por localizar projetos
      * acessiveis ao usuario autenticado
      */
-    public UpdateProjectUseCaseImpl(ProjectRepository projectRepository,
+    public UpdateProjectUseCaseImpl(ProjectRepositoryPort projectRepository,
                                     ProjectAccessService projectAccessService) {
         this.projectRepository = projectRepository;
         this.projectAccessService = projectAccessService;

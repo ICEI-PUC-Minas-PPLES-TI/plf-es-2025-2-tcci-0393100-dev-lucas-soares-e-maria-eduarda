@@ -5,7 +5,7 @@ import br.pucminas.graphtest.application.domain.enums.UserProfileEnum;
 import br.pucminas.graphtest.application.domain.records.AuthenticatedUser;
 import br.pucminas.graphtest.application.port.input.project.records.CreateProjectInput;
 import br.pucminas.graphtest.application.port.input.project.records.ProjectOutput;
-import br.pucminas.graphtest.application.port.output.repositories.ProjectRepository;
+import br.pucminas.graphtest.application.port.output.repositories.ProjectRepositoryPort;
 import br.pucminas.graphtest.application.port.output.security.CurrentUserPort;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,7 +25,7 @@ import static org.mockito.Mockito.when;
 class CreateProjectUseCaseImplTest {
 
     @Mock
-    private ProjectRepository projectRepository;
+    private ProjectRepositoryPort projectRepository;
 
     @Mock
     private CurrentUserPort currentUserPort;

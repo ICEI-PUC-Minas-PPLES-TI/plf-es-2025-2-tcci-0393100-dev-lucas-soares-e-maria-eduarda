@@ -1,10 +1,10 @@
 package br.pucminas.graphtest.application.usecases.security;
 
-import br.pucminas.graphtest.application.port.input.security.VerifyTokenUseCase;
+import br.pucminas.graphtest.application.port.input.security.VerifyTokenUseCasePort;
 import br.pucminas.graphtest.application.port.input.security.records.TokenValidationResult;
 import br.pucminas.graphtest.application.port.output.security.TokenServicePort;
 
-public class VerifyTokenUseCaseImpl implements VerifyTokenUseCase {
+public class VerifyTokenUseCaseImpl implements VerifyTokenUseCasePort {
 
     private final TokenServicePort tokenService;
 

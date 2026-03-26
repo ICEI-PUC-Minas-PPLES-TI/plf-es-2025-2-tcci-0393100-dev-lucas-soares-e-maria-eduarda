@@ -1,5 +1,8 @@
-package br.pucminas.graphtest.infrastructure.config;
+package br.pucminas.graphtest.infrastructure.paths;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public final class SecurityRequestPaths {
 
     public static final String[] CAMINHOS_PUBLICOS = {
@@ -10,9 +13,7 @@ public final class SecurityRequestPaths {
 
     public static final String[] CAMINHOS_PUBLICOS_POST = {
             "/login",
-            "/usuario"
+            ApiRequestPaths.USUARIO
     };
 
-    private SecurityRequestPaths() {
-    }
 }

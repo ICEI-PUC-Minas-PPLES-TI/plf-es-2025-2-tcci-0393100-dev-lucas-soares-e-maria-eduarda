@@ -1,18 +1,18 @@
 package br.pucminas.graphtest.application.usecases.user;
 
 import br.pucminas.graphtest.application.exception.EntityNotFoundException;
-import br.pucminas.graphtest.application.port.input.user.FindUserByEmailUseCase;
+import br.pucminas.graphtest.application.port.input.user.FindUserByEmailUseCasePort;
 import br.pucminas.graphtest.application.port.input.user.records.FindUserByEmailInput;
 import br.pucminas.graphtest.application.port.input.user.records.UserOutput;
-import br.pucminas.graphtest.application.port.output.repositories.UserRepository;
+import br.pucminas.graphtest.application.port.output.repositories.UserRepositoryPort;
 
 import static java.lang.String.format;
 
-public class FindUserByEmailUseCaseImpl implements FindUserByEmailUseCase {
+public class FindUserByEmailUseCaseImpl implements FindUserByEmailUseCasePort {
 
-    private final UserRepository userRepository;
+    private final UserRepositoryPort userRepository;
 
-    public FindUserByEmailUseCaseImpl(UserRepository userRepository) {
+    public FindUserByEmailUseCaseImpl(UserRepositoryPort userRepository) {
         this.userRepository = userRepository;
     }
 

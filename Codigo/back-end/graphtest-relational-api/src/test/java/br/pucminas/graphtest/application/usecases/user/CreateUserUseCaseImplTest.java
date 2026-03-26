@@ -5,7 +5,7 @@ import br.pucminas.graphtest.application.domain.enums.UserProfileEnum;
 import br.pucminas.graphtest.application.exception.DuplicateEmailException;
 import br.pucminas.graphtest.application.port.input.user.records.CreateUserInput;
 import br.pucminas.graphtest.application.port.input.user.records.UserOutput;
-import br.pucminas.graphtest.application.port.output.repositories.UserRepository;
+import br.pucminas.graphtest.application.port.output.repositories.UserRepositoryPort;
 import br.pucminas.graphtest.application.port.output.security.PasswordEncoderPort;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,7 +26,7 @@ import static org.mockito.Mockito.when;
 class CreateUserUseCaseImplTest {
 
     @Mock
-    private UserRepository userRepository;
+    private UserRepositoryPort userRepository;
 
     @Mock
     private PasswordEncoderPort passwordEncoder;

@@ -1,7 +1,7 @@
 package br.pucminas.graphtest.application.usecases.project;
 
 import br.pucminas.graphtest.application.domain.Project;
-import br.pucminas.graphtest.application.port.input.project.FindProjectByIdUseCase;
+import br.pucminas.graphtest.application.port.input.project.FindProjectByIdUseCasePort;
 import br.pucminas.graphtest.application.port.input.project.records.FindProjectByIdInput;
 import br.pucminas.graphtest.application.port.input.project.records.ProjectOutput;
 import br.pucminas.graphtest.application.service.interfaces.ProjectAccessService;
@@ -10,7 +10,7 @@ import br.pucminas.graphtest.application.service.interfaces.ProjectAccessService
  * Caso de uso responsavel por localizar um projeto pelo identificador,
  * respeitando as regras de acesso do usuario autenticado.
  */
-public class FindProjectByIdUseCaseImpl implements FindProjectByIdUseCase {
+public class FindProjectByIdUseCaseImpl implements FindProjectByIdUseCasePort {
 
     private final ProjectAccessService projectAccessService;
 

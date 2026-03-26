@@ -1,24 +1,24 @@
 package br.pucminas.graphtest.infrastructure.config;
 
-import br.pucminas.graphtest.application.port.input.project.CreateProjectUseCase;
-import br.pucminas.graphtest.application.port.input.project.DeleteProjectUseCase;
-import br.pucminas.graphtest.application.port.input.project.FindProjectByIdUseCase;
-import br.pucminas.graphtest.application.port.input.project.ListProjectsByUserUseCase;
-import br.pucminas.graphtest.application.port.input.project.ListProjectsUseCase;
-import br.pucminas.graphtest.application.port.input.project.UpdateProjectUseCase;
-import br.pucminas.graphtest.application.port.input.security.GenerateTokenUseCase;
-import br.pucminas.graphtest.application.port.input.security.LoadAuthenticationUserUseCase;
-import br.pucminas.graphtest.application.port.input.security.ResolveAuthenticatedUserByTokenUseCase;
-import br.pucminas.graphtest.application.port.input.security.VerifyTokenUseCase;
-import br.pucminas.graphtest.application.port.input.user.CreateUserUseCase;
-import br.pucminas.graphtest.application.port.input.user.DeleteUserUseCase;
-import br.pucminas.graphtest.application.port.input.user.FindUserByEmailUseCase;
-import br.pucminas.graphtest.application.port.input.user.FindUserByIdUseCase;
-import br.pucminas.graphtest.application.port.input.user.ListUsersUseCase;
-import br.pucminas.graphtest.application.port.input.user.UpdateUserPasswordUseCase;
-import br.pucminas.graphtest.application.port.input.user.UpdateUserUseCase;
-import br.pucminas.graphtest.application.port.output.repositories.ProjectRepository;
-import br.pucminas.graphtest.application.port.output.repositories.UserRepository;
+import br.pucminas.graphtest.application.port.input.project.CreateProjectUseCasePort;
+import br.pucminas.graphtest.application.port.input.project.DeleteProjectUseCasePort;
+import br.pucminas.graphtest.application.port.input.project.FindProjectByIdUseCasePort;
+import br.pucminas.graphtest.application.port.input.project.ListProjectsByUserUseCasePort;
+import br.pucminas.graphtest.application.port.input.project.ListProjectsUseCasePort;
+import br.pucminas.graphtest.application.port.input.project.UpdateProjectUseCasePort;
+import br.pucminas.graphtest.application.port.input.security.GenerateTokenUseCasePort;
+import br.pucminas.graphtest.application.port.input.security.LoadAuthenticationUserUseCasePort;
+import br.pucminas.graphtest.application.port.input.security.AuthenticatedUserByTokenUseCasePort;
+import br.pucminas.graphtest.application.port.input.security.VerifyTokenUseCasePort;
+import br.pucminas.graphtest.application.port.input.user.CreateUserUseCasePort;
+import br.pucminas.graphtest.application.port.input.user.DeleteUserUseCasePort;
+import br.pucminas.graphtest.application.port.input.user.FindUserByEmailUseCasePort;
+import br.pucminas.graphtest.application.port.input.user.FindUserByIdUseCasePort;
+import br.pucminas.graphtest.application.port.input.user.ListUsersUseCasePort;
+import br.pucminas.graphtest.application.port.input.user.UpdateUserPasswordUseCasePort;
+import br.pucminas.graphtest.application.port.input.user.UpdateUserUseCasePort;
+import br.pucminas.graphtest.application.port.output.repositories.ProjectRepositoryPort;
+import br.pucminas.graphtest.application.port.output.repositories.UserRepositoryPort;
 import br.pucminas.graphtest.application.port.output.security.CurrentUserPort;
 import br.pucminas.graphtest.application.port.output.security.PasswordEncoderPort;
 import br.pucminas.graphtest.application.port.output.security.TokenServicePort;
@@ -34,7 +34,7 @@ import br.pucminas.graphtest.application.usecases.project.ListProjectsUseCaseImp
 import br.pucminas.graphtest.application.usecases.project.UpdateProjectUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.security.GenerateTokenUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.security.LoadAuthenticationUserUseCaseImpl;
-import br.pucminas.graphtest.application.usecases.security.ResolveAuthenticatedUserByTokenUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.security.AuthenticatedUserByTokenUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.security.VerifyTokenUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.user.CreateUserUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.user.DeleteUserUseCaseImpl;
@@ -50,7 +50,7 @@ import org.springframework.context.annotation.Configuration;
 public class ApplicationBeansConfig {
 
     @Bean
-    public ProjectAccessService projectAccessService(ProjectRepository projectRepository, CurrentUserPort currentUserPort) {
+    public ProjectAccessService projectAccessService(ProjectRepositoryPort projectRepository, CurrentUserPort currentUserPort) {
         return new ProjectAccessServiceImpl(projectRepository, currentUserPort);
     }
 
@@ -60,95 +60,95 @@ public class ApplicationBeansConfig {
     }
 
     @Bean
-    public CreateProjectUseCase createProjectUseCase(ProjectRepository projectRepository, CurrentUserPort currentUserPort) {
+    public CreateProjectUseCasePort createProjectUseCase(ProjectRepositoryPort projectRepository, CurrentUserPort currentUserPort) {
         return new CreateProjectUseCaseImpl(projectRepository, currentUserPort);
     }
 
     @Bean
-    public DeleteProjectUseCase deleteProjectUseCase(ProjectRepository projectRepository, ProjectAccessService projectAccessService) {
-        return new DeleteProjectUseCaseImpl(projectRepository, projectAccessService);
+    public DeleteProjectUseCasePort deleteProjectUseCase(ProjectRepositoryPort projectRepositoryPort, ProjectAccessService projectAccessService) {
+        return new DeleteProjectUseCaseImpl(projectRepositoryPort, projectAccessService);
     }
 
     @Bean
-    public FindProjectByIdUseCase findProjectByIdUseCase(ProjectAccessService projectAccessService) {
+    public FindProjectByIdUseCasePort findProjectByIdUseCase(ProjectAccessService projectAccessService) {
         return new FindProjectByIdUseCaseImpl(projectAccessService);
     }
 
     @Bean
-    public ListProjectsUseCase listProjectsUseCase(ProjectRepository projectRepository, CurrentUserPort currentUserPort) {
-        return new ListProjectsUseCaseImpl(projectRepository, currentUserPort);
+    public ListProjectsUseCasePort listProjectsUseCase(ProjectRepositoryPort projectRepositoryPort, CurrentUserPort currentUserPort) {
+        return new ListProjectsUseCaseImpl(projectRepositoryPort, currentUserPort);
     }
 
     @Bean
-    public ListProjectsByUserUseCase listProjectsByUserUseCase(ProjectRepository projectRepository, CurrentUserPort currentUserPort) {
-        return new ListProjectsByUserUseCaseImpl(projectRepository, currentUserPort);
+    public ListProjectsByUserUseCasePort listProjectsByUserUseCase(ProjectRepositoryPort projectRepositoryPort, CurrentUserPort currentUserPort) {
+        return new ListProjectsByUserUseCaseImpl(projectRepositoryPort, currentUserPort);
     }
 
     @Bean
-    public UpdateProjectUseCase updateProjectUseCase(ProjectRepository projectRepository, ProjectAccessService projectAccessService) {
-        return new UpdateProjectUseCaseImpl(projectRepository, projectAccessService);
+    public UpdateProjectUseCasePort updateProjectUseCase(ProjectRepositoryPort projectRepositoryPort, ProjectAccessService projectAccessService) {
+        return new UpdateProjectUseCaseImpl(projectRepositoryPort, projectAccessService);
     }
 
     @Bean
-    public GenerateTokenUseCase generateTokenUseCase(TokenServicePort tokenServicePort) {
+    public GenerateTokenUseCasePort generateTokenUseCase(TokenServicePort tokenServicePort) {
         return new GenerateTokenUseCaseImpl(tokenServicePort);
     }
 
     @Bean
-    public LoadAuthenticationUserUseCase loadAuthenticationUserUseCase(UserRepository userRepository) {
+    public LoadAuthenticationUserUseCasePort loadAuthenticationUserUseCase(UserRepositoryPort userRepository) {
         return new LoadAuthenticationUserUseCaseImpl(userRepository);
     }
 
     @Bean
-    public ResolveAuthenticatedUserByTokenUseCase resolveAuthenticatedUserByTokenUseCase(TokenServicePort tokenServicePort,
-                                                                                         UserRepository userRepository) {
-        return new ResolveAuthenticatedUserByTokenUseCaseImpl(tokenServicePort, userRepository);
+    public AuthenticatedUserByTokenUseCasePort resolveAuthenticatedUserByTokenUseCase(TokenServicePort tokenServicePort,
+                                                                                      UserRepositoryPort userRepository) {
+        return new AuthenticatedUserByTokenUseCaseImpl(tokenServicePort, userRepository);
     }
 
     @Bean
-    public VerifyTokenUseCase verifyTokenUseCase(TokenServicePort tokenServicePort) {
+    public VerifyTokenUseCasePort verifyTokenUseCase(TokenServicePort tokenServicePort) {
         return new VerifyTokenUseCaseImpl(tokenServicePort);
     }
 
     @Bean
-    public CreateUserUseCase createUserUseCase(UserRepository userRepository, PasswordEncoderPort passwordEncoderPort) {
+    public CreateUserUseCasePort createUserUseCase(UserRepositoryPort userRepository, PasswordEncoderPort passwordEncoderPort) {
         return new CreateUserUseCaseImpl(userRepository, passwordEncoderPort);
     }
 
     @Bean
-    public DeleteUserUseCase deleteUserUseCase(UserRepository userRepository,
-                                               UserAuthorizationService userAuthorizationService,
-                                               ProjectRepository projectRepository) {
-        return new DeleteUserUseCaseImpl(userRepository, userAuthorizationService, projectRepository);
+    public DeleteUserUseCasePort deleteUserUseCase(UserRepositoryPort userRepository,
+                                                   UserAuthorizationService userAuthorizationService,
+                                                   ProjectRepositoryPort projectRepositoryPort) {
+        return new DeleteUserUseCaseImpl(userRepository, userAuthorizationService, projectRepositoryPort);
     }
 
     @Bean
-    public FindUserByEmailUseCase findUserByEmailUseCase(UserRepository userRepository) {
+    public FindUserByEmailUseCasePort findUserByEmailUseCase(UserRepositoryPort userRepository) {
         return new FindUserByEmailUseCaseImpl(userRepository);
     }
 
     @Bean
-    public FindUserByIdUseCase findUserByIdUseCase(UserRepository userRepository,
-                                                   UserAuthorizationService userAuthorizationService) {
+    public FindUserByIdUseCasePort findUserByIdUseCase(UserRepositoryPort userRepository,
+                                                       UserAuthorizationService userAuthorizationService) {
         return new FindUserByIdUseCaseImpl(userRepository, userAuthorizationService);
     }
 
     @Bean
-    public ListUsersUseCase listUsersUseCase(UserRepository userRepository,
-                                             UserAuthorizationService userAuthorizationService) {
+    public ListUsersUseCasePort listUsersUseCase(UserRepositoryPort userRepository,
+                                                 UserAuthorizationService userAuthorizationService) {
         return new ListUsersUseCaseImpl(userRepository, userAuthorizationService);
     }
 
     @Bean
-    public UpdateUserPasswordUseCase updateUserPasswordUseCase(UserRepository userRepository,
-                                                               PasswordEncoderPort passwordEncoderPort,
-                                                               UserAuthorizationService userAuthorizationService) {
+    public UpdateUserPasswordUseCasePort updateUserPasswordUseCase(UserRepositoryPort userRepository,
+                                                                   PasswordEncoderPort passwordEncoderPort,
+                                                                   UserAuthorizationService userAuthorizationService) {
         return new UpdateUserPasswordUseCaseImpl(userRepository, passwordEncoderPort, userAuthorizationService);
     }
 
     @Bean
-    public UpdateUserUseCase updateUserUseCase(UserRepository userRepository,
-                                               UserAuthorizationService userAuthorizationService) {
+    public UpdateUserUseCasePort updateUserUseCase(UserRepositoryPort userRepository,
+                                                   UserAuthorizationService userAuthorizationService) {
         return new UpdateUserUseCaseImpl(userRepository, userAuthorizationService);
     }
 }
