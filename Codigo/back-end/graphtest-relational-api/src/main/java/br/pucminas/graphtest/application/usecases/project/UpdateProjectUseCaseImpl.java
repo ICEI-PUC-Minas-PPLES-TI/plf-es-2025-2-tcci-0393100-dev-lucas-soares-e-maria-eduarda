@@ -7,6 +7,8 @@ import br.pucminas.graphtest.application.port.input.project.records.UpdateProjec
 import br.pucminas.graphtest.application.port.output.repositories.ProjectRepository;
 import br.pucminas.graphtest.application.service.interfaces.ProjectAccessService;
 
+import java.util.Objects;
+
 /**
  * Caso de uso responsavel por atualizar os dados de um projeto acessivel ao
  * usuario autenticado.
@@ -41,22 +43,27 @@ public class UpdateProjectUseCaseImpl implements UpdateProjectUseCase {
     @Override
     public ProjectOutput execute(UpdateProjectInput input) {
         Project project = projectAccessService.findAuthorizedProject(input.id());
+        boolean changed = false;
 
-        updateNameIfProvided(project, input.name());
-        updateDescriptionIfProvided(project, input.description());
+        if (isUpdatableValue(input.name(), project.getName())) {
+            project.setName(input.name());
+            changed = true;
+        }
+
+        if (isUpdatableValue(input.description(), project.getDescription())) {
+            project.setDescription(input.description());
+            changed = true;
+        }
+
+        if (!changed) return ProjectOutput.from(project);
 
         return ProjectOutput.from(projectRepository.save(project));
     }
 
-    private void updateNameIfProvided(Project project, String name) {
-        if (name != null && !name.isBlank()) {
-            project.setName(name);
-        }
-    }
 
-    private void updateDescriptionIfProvided(Project project, String description) {
-        if (description != null && !description.isBlank()) {
-            project.setDescription(description);
-        }
+    private boolean isUpdatableValue(String newValue, String currentValue) {
+        return newValue != null
+                && !newValue.isBlank()
+                && !Objects.equals(currentValue, newValue);
     }
 }

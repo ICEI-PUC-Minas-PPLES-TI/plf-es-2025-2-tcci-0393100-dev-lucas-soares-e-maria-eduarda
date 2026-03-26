@@ -22,7 +22,7 @@ import static br.pucminas.graphtest.adapters.inbound.util.SecurityHttpConstantsU
 import static br.pucminas.graphtest.adapters.inbound.util.SecurityHttpConstantsUtil.CORPO_RESPOSTA_REQUISICAO;
 import static br.pucminas.graphtest.adapters.inbound.util.SecurityHttpConstantsUtil.HEADER_AUTORIZACAO;
 import static br.pucminas.graphtest.adapters.inbound.util.SecurityHttpConstantsUtil.VALOR_HEADER_AUTORIZACAO;
-import static br.pucminas.graphtest.shared.logging.LogTopics.JWT_AUTHENTICATION_FILTER;
+import static br.pucminas.graphtest.shared.LogTopicsUtil.JWT_AUTHENTICATION_FILTER;
 import static java.lang.String.format;
 
 @Slf4j(topic = JWT_AUTHENTICATION_FILTER)

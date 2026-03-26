@@ -14,7 +14,7 @@ import static java.util.stream.IntStream.range;
 public class JsonResponseBuilderUtil {
 
     /**
-     * ConstrÃ³i o Json de resposta
+     * Constrói o Json de resposta
      *
      * @param keys     chaves do Json
      * @param arguments argumentos do Json
@@ -30,7 +30,7 @@ public class JsonResponseBuilderUtil {
     }
 
     /**
-     * Valida se a quantidade de chaves Ã© igual ao nÃºmero de argumentos
+     * Valida se a quantidade de chaves igual ao numero de argumentos
      *
      * @param keys    chaves do Json
      * @param arguments argumentos do Json

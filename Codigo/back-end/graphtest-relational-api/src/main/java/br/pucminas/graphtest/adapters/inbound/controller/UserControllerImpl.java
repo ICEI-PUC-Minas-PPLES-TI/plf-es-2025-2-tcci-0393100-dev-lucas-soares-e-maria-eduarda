@@ -48,7 +48,7 @@ import static br.pucminas.graphtest.adapters.inbound.util.ControllerConstantsUti
 import static br.pucminas.graphtest.adapters.inbound.util.ControllerConstantsUtil.MSG_USUARIO_SENHA;
 import static br.pucminas.graphtest.adapters.inbound.util.EntityDtoConverterUtil.toDto;
 import static br.pucminas.graphtest.adapters.inbound.util.JsonResponseBuilderUtil.buildJsonResponse;
-import static br.pucminas.graphtest.shared.logging.LogTopics.USUARIO_CONTROLLER;
+import static br.pucminas.graphtest.shared.LogTopicsUtil.USUARIO_CONTROLLER;
 import static java.util.Arrays.asList;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;

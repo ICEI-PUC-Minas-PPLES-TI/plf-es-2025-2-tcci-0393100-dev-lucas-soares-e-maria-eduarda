@@ -23,7 +23,7 @@ import java.io.IOException;
 import static br.pucminas.graphtest.adapters.inbound.util.ValidatorErrorConstantsUtil.MSG_ERRO_USUARIO_SENHA;
 import static br.pucminas.graphtest.adapters.inbound.util.ValidatorErrorConstantsUtil.MSG_ERRO_VALIDACAO;
 import static br.pucminas.graphtest.adapters.inbound.util.SecurityHttpConstantsUtil.CONTENT_TYPE;
-import static br.pucminas.graphtest.shared.logging.LogTopics.INTERCEPTADOR_EXCECOES;
+import static br.pucminas.graphtest.shared.LogTopicsUtil.INTERCEPTADOR_EXCECOES;
 
 
 /**
@@ -37,9 +37,7 @@ public class GlobalExceptionHandler implements AuthenticationFailureHandler {
     @Value("${spring.web.error.include-exception}")
     private boolean imprimirStackTrace;
 
-    /**
-     * Pra que serve o método da linha 44? Resposta: Ele é um método de callback do Spring Security que é chamado quando uma tentativa de autenticação falha. Ele captura a exceção de autenticação e constrói uma resposta HTTP com status 401 (Unauthorized) e uma mensagem de erro personalizada, indicando que o usuário ou senha estão incorretos. A resposta é enviada de volta ao cliente para informar sobre a falha na autenticação.
-     */
+
     @Override
     public void onAuthenticationFailure(HttpServletRequest request,
                                         @NotNull HttpServletResponse response,

@@ -8,7 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
-import static br.pucminas.graphtest.shared.logging.LogTopics.CONVERSOR_ENTIDADE_DTO_UTIL;
+import static br.pucminas.graphtest.shared.LogTopicsUtil.CONVERSOR_ENTIDADE_DTO_UTIL;
 import static java.lang.String.format;
 
 @UtilityClass

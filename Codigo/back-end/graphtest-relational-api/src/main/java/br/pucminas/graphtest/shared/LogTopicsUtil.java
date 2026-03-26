@@ -1,9 +1,9 @@
-package br.pucminas.graphtest.shared.logging;
+package br.pucminas.graphtest.shared;
 
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
-public class LogTopics {
+public class LogTopicsUtil {
 
     public static final String USUARIO_SPRING_SECURITY_SERVICE = "USUARIO_SPRING_SECURITY_SERVICE";
 

@@ -24,24 +24,41 @@ public class UpdateUserUseCaseImpl implements UpdateUserUseCase {
 
     @Override
     public UserOutput execute(UpdateUserInput input) {
-        AuthenticatedUser currentUser = userAuthorizationService.authorizeForUser(input.id());
+        AuthenticatedUser currentUser = authorizeUser(input);
+        User user = findRegisteredUser(input);
 
-        User usuarioCadastrado = userRepository.findById(input.id())
+        validateEmailUniqueness(input);
+        updateUserData(input, currentUser, user);
+
+        return UserOutput.from(userRepository.save(user));
+    }
+
+    private AuthenticatedUser authorizeUser(UpdateUserInput input) {
+        return userAuthorizationService.authorizeForUser(input.id());
+    }
+
+    private User findRegisteredUser(UpdateUserInput input) {
+        return userRepository.findById(input.id())
                 .orElseThrow(() -> new EntityNotFoundException("Usuario nao encontrado"));
+    }
 
+    private void validateEmailUniqueness(UpdateUserInput input) {
         userRepository.findByEmail(input.email())
-                .filter(usuario -> !usuario.getId().equals(input.id()))
-                .ifPresent(usuario -> {
+                .filter(user -> !user.getId().equals(input.id()))
+                .ifPresent(user -> {
                     throw new DuplicateEmailException("Ja existe um usuario cadastrado com o email informado");
                 });
+    }
 
-        usuarioCadastrado.setName(input.name());
-        usuarioCadastrado.setEmail(input.email());
+    private void updateUserData(UpdateUserInput input, AuthenticatedUser currentUser, User user) {
+        user.setName(input.name());
+        user.setEmail(input.email());
+        updateProfileIfAllowed(input, currentUser, user);
+    }
 
+    private void updateProfileIfAllowed(UpdateUserInput input, AuthenticatedUser currentUser, User user) {
         if (currentUser.isAdmin() && input.profileCode() != null) {
-            usuarioCadastrado.setProfile(UserProfileEnum.getPerfilUsuarioOrThrow(input.profileCode()));
+            user.setProfile(UserProfileEnum.getPerfilUsuarioOrThrow(input.profileCode()));
         }
-
-        return UserOutput.from(userRepository.save(usuarioCadastrado));
     }
 }

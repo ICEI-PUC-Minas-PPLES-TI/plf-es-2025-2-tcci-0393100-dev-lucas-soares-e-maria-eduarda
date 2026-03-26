@@ -15,6 +15,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -79,5 +80,37 @@ class UpdateProjectUseCaseImplTest {
         assertEquals("Projeto Novo", output.name());
         assertEquals("Descricao Atual", output.description());
         verify(projectRepository).save(project);
+    }
+
+    @Test
+    void shouldNotSaveWhenInputDoesNotChangeProject() {
+        UUID projectId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        Project project = new Project(projectId, "Projeto Atual", "Descricao Atual", userId);
+        UpdateProjectInput input = new UpdateProjectInput(projectId, "Projeto Atual", "Descricao Atual");
+
+        when(projectAccessService.findAuthorizedProject(projectId)).thenReturn(project);
+
+        ProjectOutput output = useCase.execute(input);
+
+        assertEquals("Projeto Atual", output.name());
+        assertEquals("Descricao Atual", output.description());
+        verify(projectRepository, never()).save(any(Project.class));
+    }
+
+    @Test
+    void shouldNotSaveWhenUpdateProvidesNoFields() {
+        UUID projectId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        Project project = new Project(projectId, "Projeto Atual", "Descricao Atual", userId);
+        UpdateProjectInput input = new UpdateProjectInput(projectId, null, null);
+
+        when(projectAccessService.findAuthorizedProject(projectId)).thenReturn(project);
+
+        ProjectOutput output = useCase.execute(input);
+
+        assertEquals("Projeto Atual", output.name());
+        assertEquals("Descricao Atual", output.description());
+        verify(projectRepository, never()).save(any(Project.class));
     }
 }

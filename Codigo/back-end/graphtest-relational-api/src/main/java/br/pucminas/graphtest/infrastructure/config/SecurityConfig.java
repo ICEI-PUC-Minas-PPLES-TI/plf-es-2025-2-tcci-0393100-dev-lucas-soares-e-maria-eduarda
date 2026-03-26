@@ -27,7 +27,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
-import static br.pucminas.graphtest.shared.logging.LogTopics.SEGURANCA_CONFIG;
+import static br.pucminas.graphtest.shared.LogTopicsUtil.SEGURANCA_CONFIG;
 import static org.springframework.http.HttpMethod.POST;
 
 @Slf4j(topic = SEGURANCA_CONFIG)

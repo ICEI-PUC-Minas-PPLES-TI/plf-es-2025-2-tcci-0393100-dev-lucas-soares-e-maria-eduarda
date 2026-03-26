@@ -36,7 +36,7 @@ import static br.pucminas.graphtest.adapters.inbound.util.ControllerConstantsUti
 import static br.pucminas.graphtest.adapters.inbound.util.ControllerConstantsUtil.MSG_PROJETO_DELETADO;
 import static br.pucminas.graphtest.adapters.inbound.util.EntityDtoConverterUtil.toDto;
 import static br.pucminas.graphtest.adapters.inbound.util.JsonResponseBuilderUtil.buildJsonResponse;
-import static br.pucminas.graphtest.shared.logging.LogTopics.PROJETO_CONTROLLER;
+import static br.pucminas.graphtest.shared.LogTopicsUtil.PROJETO_CONTROLLER;
 import static java.util.Arrays.asList;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;

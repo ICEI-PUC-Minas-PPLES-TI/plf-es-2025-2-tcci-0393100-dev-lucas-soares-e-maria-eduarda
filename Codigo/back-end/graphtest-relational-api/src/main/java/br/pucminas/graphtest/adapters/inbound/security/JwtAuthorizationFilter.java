@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.util.List;
 import static br.pucminas.graphtest.adapters.inbound.util.SecurityHttpConstantsUtil.HEADER_AUTORIZACAO;
 import static br.pucminas.graphtest.adapters.inbound.util.SecurityHttpConstantsUtil.TIPO_TOKEN;
-import static br.pucminas.graphtest.shared.logging.LogTopics.JWT_AUTHORIZATION_FILTER;
+import static br.pucminas.graphtest.shared.LogTopicsUtil.JWT_AUTHORIZATION_FILTER;
 import static java.util.Objects.nonNull;
 import static org.springframework.util.StringUtils.trimAllWhitespace;
 

@@ -10,7 +10,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import static br.pucminas.graphtest.shared.logging.LogTopics.USUARIO_SPRING_SECURITY_SERVICE;
+import static br.pucminas.graphtest.shared.LogTopicsUtil.USUARIO_SPRING_SECURITY_SERVICE;
 
 @Slf4j(topic = USUARIO_SPRING_SECURITY_SERVICE)
 @Service
