@@ -8,7 +8,8 @@ public final class SecurityRequestPaths {
     public static final String[] CAMINHOS_PUBLICOS = {
             "/v3/api-docs/**",
             "/swagger-ui/**",
-            "/swagger-ui.html"
+            "/swagger-ui.html",
+            "/test/neo4j"
     };
 
     public static final String[] CAMINHOS_PUBLICOS_POST = {
