@@ -1,8 +1,18 @@
 import { User, LogOut } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../features/auth/hooks/useAuth';
+import { Breadcrumb } from './Breadcrumb';
 
-export function Header() {
+interface BreadcrumbItem {
+  label: string;
+  href?: string;
+}
+
+interface HeaderProps {
+  breadcrumb?: BreadcrumbItem[];
+}
+
+export function Header({ breadcrumb }: HeaderProps) {
   const { logout } = useAuth();
   const navigate = useNavigate();
 
@@ -14,20 +24,11 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 bg-surface border-b border-gray-800">
       <div className="container mx-auto px-6 h-14 flex items-center justify-between">
-        <div className="flex items-center gap-8">
-          <h1 className="text-primary-light font-mono text-lg">GraphTest</h1>
-
-          <nav className="hidden md:flex items-center gap-6">
-            <a href="#projetos" className="text-gray-300 hover:text-primary-light transition-colors text-sm">
-              Projetos
-            </a>
-            <a href="#gfc" className="text-gray-300 hover:text-primary-light transition-colors text-sm">
-              GFC
-            </a>
-            <a href="#gce" className="text-gray-300 hover:text-primary-light transition-colors text-sm">
-              GCE
-            </a>
-          </nav>
+        <div className="flex items-center gap-4">
+          <Link to="/homepage" className="text-primary-light font-mono text-lg hover:text-cyan-300 transition-colors">
+            GraphTest
+          </Link>
+          {breadcrumb && <Breadcrumb items={breadcrumb} />}
         </div>
 
         <div className="flex items-center gap-3">

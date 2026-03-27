@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from '../pages/LoginPage';
 import { SignUpPage } from '../pages/SignUpPage';
 import { HomePage } from '../pages/HomePage';
+import { ProjectPage } from '../pages/ProjectPage';
 import { useAuth } from '../context/AuthContext';
 import type { ReactNode } from 'react';
 
@@ -17,6 +18,7 @@ export function AppRouter() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/cadastro" element={<SignUpPage />} />
         <Route path="/homepage" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
+        <Route path="/projeto/:id" element={<ProtectedRoute><ProjectPage /></ProtectedRoute>} />
         <Route path="/" element={<Navigate to="/homepage" replace />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>

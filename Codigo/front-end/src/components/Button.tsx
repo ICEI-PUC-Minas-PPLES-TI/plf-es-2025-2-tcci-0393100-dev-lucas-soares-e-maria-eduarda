@@ -1,7 +1,8 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'accent';
+  variant?: 'primary' | 'secondary' | 'outline' | 'accent' | 'ghost' | 'danger';
+  size?: 'sm' | 'md' | 'lg';
   children: ReactNode;
 }
 
@@ -10,12 +11,20 @@ const variants = {
   secondary: 'bg-gray-800 hover:bg-gray-700 text-gray-100',
   outline: 'bg-surface-elevated border border-gray-700 text-gray-300 hover:border-primary',
   accent: 'bg-primary/10 hover:bg-primary text-primary-light hover:text-white',
+  ghost: 'bg-transparent hover:bg-surface-elevated text-gray-300',
+  danger: 'bg-transparent border border-red-900/50 text-red-400 hover:bg-red-950/30 hover:border-red-800',
 };
 
-export function Button({ variant = 'primary', className = '', children, ...props }: ButtonProps) {
+const sizes = {
+  sm: 'px-3 py-1.5 text-sm',
+  md: 'px-4 py-2',
+  lg: 'px-6 py-3',
+};
+
+export function Button({ variant = 'primary', size = 'md', className = '', children, ...props }: ButtonProps) {
   return (
     <button
-      className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${variants[variant]} ${className}`}
+      className={`rounded-lg transition-colors flex items-center gap-2 ${variants[variant]} ${sizes[size]} ${className}`}
       {...props}
     >
       {children}
