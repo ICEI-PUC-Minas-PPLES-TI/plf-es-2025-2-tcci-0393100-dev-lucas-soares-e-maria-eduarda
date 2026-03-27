@@ -7,25 +7,30 @@ interface Node {
   vy: number;
 }
 
-export function GraphBackground() {
+interface GraphBackgroundProps {
+  className?: string;
+  nodeCount?: number;
+}
+
+export function GraphBackground({ className, nodeCount = 50 }: GraphBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    const parent = canvas.parentElement;
+    if (!parent) return;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     const setCanvasSize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      canvas.width = parent.clientWidth;
+      canvas.height = parent.clientHeight;
     };
     setCanvasSize();
 
-    const nodeCount = 50;
     const nodes: Node[] = [];
-
     for (let i = 0; i < nodeCount; i++) {
       nodes.push({
         x: Math.random() * canvas.width,
@@ -84,20 +89,19 @@ export function GraphBackground() {
 
     animate();
 
-    const handleResize = () => setCanvasSize();
-    window.addEventListener('resize', handleResize);
+    const resizeObserver = new ResizeObserver(setCanvasSize);
+    resizeObserver.observe(parent);
 
     return () => {
-      window.removeEventListener('resize', handleResize);
+      resizeObserver.disconnect();
       cancelAnimationFrame(animationId);
     };
-  }, []);
+  }, [nodeCount]);
 
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 w-full h-full"
-      style={{ background: '#020617' }}
+      className={className ?? 'absolute inset-0 w-full h-full'}
     />
   );
 }
