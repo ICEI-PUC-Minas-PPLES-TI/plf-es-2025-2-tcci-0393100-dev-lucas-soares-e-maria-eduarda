@@ -16,7 +16,8 @@ export function AppRouter() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/cadastro" element={<SignUpPage />} />
-        <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
+        <Route path="/homepage" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
+        <Route path="/" element={<Navigate to="/homepage" replace />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
