@@ -18,6 +18,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import java.util.Map;
 import java.util.UUID;
 
+import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.ID;
+import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.USUARIO_SENHA;
+import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.USUARIO_VERIFICAR_TOKEN;
+
 public interface UserController extends BaseCRUDController<UserDTO> {
 
     @PostMapping
@@ -25,15 +29,15 @@ public interface UserController extends BaseCRUDController<UserDTO> {
             @Validated(UserDTO.Create.class) @RequestBody UserDTO obj
     );
 
-    @PutMapping("/{id}")
+    @PutMapping(ID)
     ResponseEntity<Map<String, Object>> update(
             @PathVariable UUID id,
             @Validated(UserDTO.Update.class) @RequestBody @NotNull UserDTO obj
     );
 
-    @PatchMapping("/{id}/senha")
+    @PatchMapping(USUARIO_SENHA)
     ResponseEntity<Map<String, Object>> updatePassword(@PathVariable UUID id, @Valid @RequestBody PasswordDTO passwordDTO);
 
-    @GetMapping("/verificar-token")
+    @GetMapping(USUARIO_VERIFICAR_TOKEN)
     ResponseEntity<TokenValidationDTO> verifyToken(@RequestParam("token") String token);
 }

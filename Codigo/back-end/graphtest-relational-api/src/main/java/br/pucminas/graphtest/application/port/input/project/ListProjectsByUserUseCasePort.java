@@ -6,6 +6,6 @@ import java.util.List;
 /**
  * Interface que provê a funcionalidade de listar os projetos associados a um usuário específico, retornando uma lista de outputs com os detalhes dos projetos relacionados ao usuário.
  */
-public interface ListProjectsByUserUseCase  {
+public interface ListProjectsByUserUseCasePort {
     List<ProjectOutput> execute();
 }

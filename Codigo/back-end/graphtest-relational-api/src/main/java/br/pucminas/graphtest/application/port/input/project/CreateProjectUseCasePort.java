@@ -6,6 +6,6 @@ import br.pucminas.graphtest.application.port.input.project.records.ProjectOutpu
 /**
  * Interface que provê a funcionalidade de criar um novo projeto, recebendo um input com os dados necessários para a criação do projeto e retornando um output com os detalhes do projeto criado.
  */
-public interface CreateProjectUseCase {
+public interface CreateProjectUseCasePort {
     ProjectOutput execute(CreateProjectInput input);
 }

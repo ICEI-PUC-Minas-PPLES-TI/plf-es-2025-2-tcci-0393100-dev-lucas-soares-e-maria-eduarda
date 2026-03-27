@@ -14,6 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.ID;
+import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.PROJETO_MEUS;
+
 public interface ProjectController extends BaseCRUDController<ProjectDTO> {
 
     @PostMapping
@@ -21,12 +24,12 @@ public interface ProjectController extends BaseCRUDController<ProjectDTO> {
             @Validated(ProjectDTO.Create.class) @RequestBody ProjectDTO obj
     );
 
-    @PutMapping("/{id}")
+    @PutMapping(ID)
     ResponseEntity<Map<String, Object>> update(
             @PathVariable UUID id,
             @Validated(ProjectDTO.Update.class) @RequestBody @NotNull ProjectDTO obj
     );
 
-    @GetMapping("/meus")
+    @GetMapping(PROJETO_MEUS)
     ResponseEntity<List<ProjectDTO>> listMine();
 }

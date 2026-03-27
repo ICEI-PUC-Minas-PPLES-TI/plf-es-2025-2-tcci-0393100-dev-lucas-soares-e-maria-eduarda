@@ -3,12 +3,12 @@ package br.pucminas.graphtest.adapters.inbound.controller;
 import br.pucminas.graphtest.adapters.inbound.controller.interfaces.ProjectController;
 import br.pucminas.graphtest.adapters.inbound.dto.ProjectDTO;
 import br.pucminas.graphtest.adapters.inbound.util.EntityDtoConverterUtil;
-import br.pucminas.graphtest.application.port.input.project.CreateProjectUseCase;
-import br.pucminas.graphtest.application.port.input.project.DeleteProjectUseCase;
-import br.pucminas.graphtest.application.port.input.project.FindProjectByIdUseCase;
-import br.pucminas.graphtest.application.port.input.project.ListProjectsByUserUseCase;
-import br.pucminas.graphtest.application.port.input.project.ListProjectsUseCase;
-import br.pucminas.graphtest.application.port.input.project.UpdateProjectUseCase;
+import br.pucminas.graphtest.application.port.input.project.CreateProjectUseCasePort;
+import br.pucminas.graphtest.application.port.input.project.DeleteProjectUseCasePort;
+import br.pucminas.graphtest.application.port.input.project.FindProjectByIdUseCasePort;
+import br.pucminas.graphtest.application.port.input.project.ListProjectsByUserUseCasePort;
+import br.pucminas.graphtest.application.port.input.project.ListProjectsUseCasePort;
+import br.pucminas.graphtest.application.port.input.project.UpdateProjectUseCasePort;
 import br.pucminas.graphtest.application.port.input.project.records.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -30,12 +30,14 @@ import java.util.Map;
 import java.util.UUID;
 
 import static br.pucminas.graphtest.adapters.inbound.util.ControllerConstantsUtil.CHAVES_PROJETO_CONTROLLER;
-import static br.pucminas.graphtest.adapters.inbound.util.ControllerConstantsUtil.ENDPOINT_PROJETO;
 import static br.pucminas.graphtest.adapters.inbound.util.ControllerConstantsUtil.MSG_PROJETO_ATUALIZADO;
 import static br.pucminas.graphtest.adapters.inbound.util.ControllerConstantsUtil.MSG_PROJETO_CRIADO;
 import static br.pucminas.graphtest.adapters.inbound.util.ControllerConstantsUtil.MSG_PROJETO_DELETADO;
 import static br.pucminas.graphtest.adapters.inbound.util.EntityDtoConverterUtil.toDto;
 import static br.pucminas.graphtest.adapters.inbound.util.JsonResponseBuilderUtil.buildJsonResponse;
+import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.ID;
+import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.PROJETO;
+import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.PROJETO_MEUS;
 import static br.pucminas.graphtest.shared.LogTopicsUtil.PROJETO_CONTROLLER;
 import static java.util.Arrays.asList;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -44,16 +46,16 @@ import static org.springframework.http.HttpStatus.OK;
 @Slf4j(topic = PROJETO_CONTROLLER)
 @RestController
 @Validated
-@RequestMapping(ENDPOINT_PROJETO)
+@RequestMapping(PROJETO)
 @AllArgsConstructor
 public class ProjectControllerImpl implements ProjectController {
 
-    private final CreateProjectUseCase createProjectUseCase;
-    private final DeleteProjectUseCase deleteProjectUseCase;
-    private final FindProjectByIdUseCase findProjectByIdUseCase;
-    private final ListProjectsUseCase listProjectsUseCase;
-    private final ListProjectsByUserUseCase listProjectsByUserUseCase;
-    private final UpdateProjectUseCase updateProjectUseCase;
+    private final CreateProjectUseCasePort createProjectUseCasePort;
+    private final DeleteProjectUseCasePort deleteProjectUseCasePort;
+    private final FindProjectByIdUseCasePort findProjectByIdUseCasePort;
+    private final ListProjectsUseCasePort listProjectsUseCasePort;
+    private final ListProjectsByUserUseCasePort listProjectsByUserUseCasePort;
+    private final UpdateProjectUseCasePort updateProjectUseCasePort;
 
     @Override
     @PostMapping
@@ -62,10 +64,10 @@ public class ProjectControllerImpl implements ProjectController {
     ) {
         log.info(">>> criar: recebendo requisicao para criar projeto");
 
-        ProjectOutput projectCreated = createProjectUseCase.execute(
+        ProjectOutput projectCreated = createProjectUseCasePort.execute(
                 new CreateProjectInput(projeto.name(), projeto.description()));
 
-        return ResponseEntity.created(URI.create("/projeto/" + projectCreated.id()))
+        return ResponseEntity.created(URI.create(PROJETO + "/" + projectCreated.id()))
                 .body(buildJsonResponse(
                         CHAVES_PROJETO_CONTROLLER,
                         asList(CREATED.value(), MSG_PROJETO_CRIADO, projectCreated.id())
@@ -73,11 +75,11 @@ public class ProjectControllerImpl implements ProjectController {
     }
 
     @Override
-    @GetMapping("/{id}")
+    @GetMapping(ID)
     public ResponseEntity<ProjectDTO> findById(@PathVariable UUID id) {
         log.info(">>> encontrarPorId: recebendo requisicao para encontrar projeto por id");
 
-        ProjectOutput project = findProjectByIdUseCase.execute(new FindProjectByIdInput(id));
+        ProjectOutput project = findProjectByIdUseCasePort.execute(new FindProjectByIdInput(id));
 
         return ResponseEntity.ok().body(toDto(project));
     }
@@ -87,7 +89,7 @@ public class ProjectControllerImpl implements ProjectController {
     public ResponseEntity<List<ProjectDTO>> listAll() {
         log.info(">>> listarTodos: recebendo requisicao para listar todos projetos");
 
-        List<ProjectOutput> projects = listProjectsUseCase.execute();
+        List<ProjectOutput> projects = listProjectsUseCasePort.execute();
 
         return ResponseEntity.ok()
                 .body(projects.stream()
@@ -96,11 +98,11 @@ public class ProjectControllerImpl implements ProjectController {
     }
 
     @Override
-    @GetMapping("/meus")
+    @GetMapping(PROJETO_MEUS)
     public ResponseEntity<List<ProjectDTO>> listMine() {
         log.info(">>> listarMeus: recebendo requisicao para listar projetos do usuario autenticado");
 
-        List<ProjectOutput> projects = listProjectsByUserUseCase.execute();
+        List<ProjectOutput> projects = listProjectsByUserUseCasePort.execute();
 
         return ResponseEntity.ok()
                 .body(projects.stream()
@@ -109,14 +111,14 @@ public class ProjectControllerImpl implements ProjectController {
     }
 
     @Override
-    @PutMapping("/{id}")
+    @PutMapping(ID)
     public ResponseEntity<Map<String, Object>> update(
             @PathVariable UUID id,
             @Validated(ProjectDTO.Update.class) @RequestBody @NotNull ProjectDTO projeto
     ) {
         log.info(">>> atualizar: recebendo requisicao para atualizar projeto");
 
-        ProjectOutput projectUpdated = updateProjectUseCase.execute(
+        ProjectOutput projectUpdated = updateProjectUseCasePort.execute(
                 new UpdateProjectInput(id, projeto.name(), projeto.description())
         );
 
@@ -128,11 +130,11 @@ public class ProjectControllerImpl implements ProjectController {
     }
 
     @Override
-    @DeleteMapping("/{id}")
+    @DeleteMapping(ID)
     public ResponseEntity<Map<String, Object>> delete(@PathVariable UUID id) {
         log.info(">>> deletar: recebendo requisicao para deletar projeto");
 
-        deleteProjectUseCase.execute(new DeleteProjectInput(id));
+        deleteProjectUseCasePort.execute(new DeleteProjectInput(id));
 
         return ResponseEntity.ok()
                 .body(buildJsonResponse(

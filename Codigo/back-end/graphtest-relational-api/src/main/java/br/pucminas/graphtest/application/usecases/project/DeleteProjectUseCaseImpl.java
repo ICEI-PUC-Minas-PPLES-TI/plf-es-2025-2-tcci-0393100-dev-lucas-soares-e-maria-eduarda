@@ -1,9 +1,9 @@
 package br.pucminas.graphtest.application.usecases.project;
 
 import br.pucminas.graphtest.application.domain.Project;
-import br.pucminas.graphtest.application.port.input.project.DeleteProjectUseCase;
+import br.pucminas.graphtest.application.port.input.project.DeleteProjectUseCasePort;
 import br.pucminas.graphtest.application.port.input.project.records.DeleteProjectInput;
-import br.pucminas.graphtest.application.port.output.repositories.ProjectRepository;
+import br.pucminas.graphtest.application.port.output.repositories.ProjectRepositoryPort;
 import br.pucminas.graphtest.application.service.interfaces.ProjectAccessService;
 
 /**
@@ -11,9 +11,9 @@ import br.pucminas.graphtest.application.service.interfaces.ProjectAccessService
  * autenticado. A remocao somente e realizada apos a validacao de acesso ao
  * projeto solicitado.
  */
-public class DeleteProjectUseCaseImpl implements DeleteProjectUseCase {
+public class DeleteProjectUseCaseImpl implements DeleteProjectUseCasePort {
 
-    private final ProjectRepository projectRepository;
+    private final ProjectRepositoryPort projectRepository;
     private final ProjectAccessService projectAccessService;
 
     /**
@@ -24,7 +24,7 @@ public class DeleteProjectUseCaseImpl implements DeleteProjectUseCase {
      * @param projectAccessService servico responsavel por validar o acesso ao
      * projeto informado
      */
-    public DeleteProjectUseCaseImpl(ProjectRepository projectRepository,
+    public DeleteProjectUseCaseImpl(ProjectRepositoryPort projectRepository,
                                     ProjectAccessService projectAccessService) {
         this.projectRepository = projectRepository;
         this.projectAccessService = projectAccessService;

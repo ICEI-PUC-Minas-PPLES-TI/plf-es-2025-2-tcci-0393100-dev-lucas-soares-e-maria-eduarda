@@ -4,7 +4,7 @@ import br.pucminas.graphtest.adapters.outbound.entities.JpaProjectEntity;
 import br.pucminas.graphtest.adapters.outbound.repositories.interfaces.JpaProjectRepository;
 import br.pucminas.graphtest.adapters.outbound.repositories.mappers.PersistenceMapper;
 import br.pucminas.graphtest.application.domain.Project;
-import br.pucminas.graphtest.application.port.output.repositories.ProjectRepository;
+import br.pucminas.graphtest.application.port.output.repositories.ProjectRepositoryPort;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
 import java.util.List;
@@ -13,11 +13,11 @@ import java.util.UUID;
 
 /**
  * Adaptador de saida responsavel por implementar as operacoes de persistencia
- * de projetos definidas pela porta {@link ProjectRepository}.
+ * de projetos definidas pela porta {@link ProjectRepositoryPort}.
  */
 @Repository
 @AllArgsConstructor
-public class ProjectRepositoryImpl implements ProjectRepository {
+public class ProjectRepositoryPortImpl implements ProjectRepositoryPort {
 
     private final JpaProjectRepository jpaProjectRepository;
     private final PersistenceMapper<Project, JpaProjectEntity> mapper;

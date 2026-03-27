@@ -6,7 +6,7 @@ import br.pucminas.graphtest.application.domain.records.AuthenticatedUser;
 import br.pucminas.graphtest.application.exception.DuplicateEmailException;
 import br.pucminas.graphtest.application.exception.InvalidUserProfileException;
 import br.pucminas.graphtest.application.port.input.user.records.UpdateUserInput;
-import br.pucminas.graphtest.application.port.output.repositories.UserRepository;
+import br.pucminas.graphtest.application.port.output.repositories.UserRepositoryPort;
 import br.pucminas.graphtest.application.service.interfaces.UserAuthorizationService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 class UpdateUserUseCaseImplTest {
 
     @Mock
-    private UserRepository userRepository;
+    private UserRepositoryPort userRepository;
 
     @Mock
     private UserAuthorizationService userAuthorizationService;

@@ -1,7 +1,7 @@
 package br.pucminas.graphtest.adapters.inbound.security;
 
 import br.pucminas.graphtest.application.domain.records.AuthenticatedUser;
-import br.pucminas.graphtest.application.port.input.security.ResolveAuthenticatedUserByTokenUseCase;
+import br.pucminas.graphtest.application.port.input.security.AuthenticatedUserByTokenUseCasePort;
 import jakarta.annotation.Nullable;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -23,16 +23,16 @@ import static java.util.Objects.nonNull;
 import static org.springframework.util.StringUtils.trimAllWhitespace;
 
 @Slf4j(topic = JWT_AUTHORIZATION_FILTER)
-public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
+public class JwtAuthorizationFilterAdapter extends BasicAuthenticationFilter {
 
-    private final ResolveAuthenticatedUserByTokenUseCase resolveAuthenticatedUserByTokenUseCase;
+    private final AuthenticatedUserByTokenUseCasePort authenticatedUserByTokenUseCasePort;
 
-    public JwtAuthorizationFilter(
+    public JwtAuthorizationFilterAdapter(
             AuthenticationManager authenticationManager,
-            ResolveAuthenticatedUserByTokenUseCase resolveAuthenticatedUserByTokenUseCase
+            AuthenticatedUserByTokenUseCasePort authenticatedUserByTokenUseCasePort
     ) {
         super(authenticationManager);
-        this.resolveAuthenticatedUserByTokenUseCase = resolveAuthenticatedUserByTokenUseCase;
+        this.authenticatedUserByTokenUseCasePort = authenticatedUserByTokenUseCasePort;
     }
 
     @Override
@@ -59,7 +59,7 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
     private @Nullable UsernamePasswordAuthenticationToken getAutenticacao(String token) {
         log.info(">>> getAutenticacao: obtendo autenticacao do usuario");
 
-        AuthenticatedUser authenticatedUser = resolveAuthenticatedUserByTokenUseCase.execute(token);
+        AuthenticatedUser authenticatedUser = authenticatedUserByTokenUseCasePort.execute(token);
         if (authenticatedUser != null) {
             return new UsernamePasswordAuthenticationToken(
                     authenticatedUser,

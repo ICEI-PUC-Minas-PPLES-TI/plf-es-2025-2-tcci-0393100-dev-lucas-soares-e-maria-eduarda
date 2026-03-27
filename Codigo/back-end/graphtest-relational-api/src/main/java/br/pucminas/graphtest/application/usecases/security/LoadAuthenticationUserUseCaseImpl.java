@@ -1,18 +1,18 @@
 package br.pucminas.graphtest.application.usecases.security;
 
 import br.pucminas.graphtest.application.exception.EntityNotFoundException;
-import br.pucminas.graphtest.application.port.input.security.LoadAuthenticationUserUseCase;
+import br.pucminas.graphtest.application.port.input.security.LoadAuthenticationUserUseCasePort;
 import br.pucminas.graphtest.application.port.input.security.records.LoadAuthenticationUserInput;
 import br.pucminas.graphtest.application.port.input.security.records.AuthenticationUserResult;
-import br.pucminas.graphtest.application.port.output.repositories.UserRepository;
+import br.pucminas.graphtest.application.port.output.repositories.UserRepositoryPort;
 
 import static java.lang.String.format;
 
-public class LoadAuthenticationUserUseCaseImpl implements LoadAuthenticationUserUseCase {
+public class LoadAuthenticationUserUseCaseImpl implements LoadAuthenticationUserUseCasePort {
 
-    private final UserRepository userRepository;
+    private final UserRepositoryPort userRepository;
 
-    public LoadAuthenticationUserUseCaseImpl(UserRepository userRepository) {
+    public LoadAuthenticationUserUseCaseImpl(UserRepositoryPort userRepository) {
         this.userRepository = userRepository;
     }
 

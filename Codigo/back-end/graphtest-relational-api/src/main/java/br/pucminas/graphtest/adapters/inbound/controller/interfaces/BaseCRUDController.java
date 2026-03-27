@@ -7,16 +7,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.ID;
+
 public interface BaseCRUDController<O> {
 
-    @GetMapping("/{id}")
+    @GetMapping(ID)
     ResponseEntity<O> findById(@PathVariable UUID id);
 
     @GetMapping
     ResponseEntity<List<O>> listAll();
 
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping(ID)
     ResponseEntity<Map<String, Object>> delete(@PathVariable UUID id);
 
 }

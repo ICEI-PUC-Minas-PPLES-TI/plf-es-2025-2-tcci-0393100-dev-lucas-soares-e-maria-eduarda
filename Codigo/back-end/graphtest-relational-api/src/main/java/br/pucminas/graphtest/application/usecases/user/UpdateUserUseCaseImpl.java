@@ -5,18 +5,18 @@ import br.pucminas.graphtest.application.domain.User;
 import br.pucminas.graphtest.application.domain.enums.UserProfileEnum;
 import br.pucminas.graphtest.application.exception.DuplicateEmailException;
 import br.pucminas.graphtest.application.exception.EntityNotFoundException;
-import br.pucminas.graphtest.application.port.input.user.UpdateUserUseCase;
+import br.pucminas.graphtest.application.port.input.user.UpdateUserUseCasePort;
 import br.pucminas.graphtest.application.port.input.user.records.UpdateUserInput;
 import br.pucminas.graphtest.application.port.input.user.records.UserOutput;
-import br.pucminas.graphtest.application.port.output.repositories.UserRepository;
+import br.pucminas.graphtest.application.port.output.repositories.UserRepositoryPort;
 import br.pucminas.graphtest.application.service.interfaces.UserAuthorizationService;
 
-public class UpdateUserUseCaseImpl implements UpdateUserUseCase {
+public class UpdateUserUseCaseImpl implements UpdateUserUseCasePort {
 
-    private final UserRepository userRepository;
+    private final UserRepositoryPort userRepository;
     private final UserAuthorizationService userAuthorizationService;
 
-    public UpdateUserUseCaseImpl(UserRepository userRepository, UserAuthorizationService userAuthorizationService) {
+    public UpdateUserUseCaseImpl(UserRepositoryPort userRepository, UserAuthorizationService userAuthorizationService) {
         this.userAuthorizationService = userAuthorizationService;
         this.userRepository = userRepository;
 

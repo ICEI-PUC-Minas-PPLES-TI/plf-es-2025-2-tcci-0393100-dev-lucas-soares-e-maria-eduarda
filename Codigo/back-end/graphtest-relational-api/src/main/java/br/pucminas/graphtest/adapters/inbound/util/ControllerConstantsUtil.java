@@ -13,10 +13,6 @@ import static java.util.Arrays.asList;
 @UtilityClass
 public class ControllerConstantsUtil {
 
-    public static final String ENDPOINT_USUARIO = "/usuario";
-
-    public static final String ENDPOINT_PROJETO = "/projeto";
-
     public static final List<String> CHAVES_USUARIO_CONTROLLER =
             new ArrayList<>(asList("status", "mensagem", "id_usuario"));
 

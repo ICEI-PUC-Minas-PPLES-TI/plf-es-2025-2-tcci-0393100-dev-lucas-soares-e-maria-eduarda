@@ -6,6 +6,6 @@ import java.util.List;
 /**
  * Interface que provê a funcionalidade de listar todos os projetos disponíveis, retornando uma lista de outputs com os detalhes de cada projeto registrado no sistema.
  */
-public interface ListProjectsUseCase {
+public interface ListProjectsUseCasePort {
     List<ProjectOutput> execute();
 }

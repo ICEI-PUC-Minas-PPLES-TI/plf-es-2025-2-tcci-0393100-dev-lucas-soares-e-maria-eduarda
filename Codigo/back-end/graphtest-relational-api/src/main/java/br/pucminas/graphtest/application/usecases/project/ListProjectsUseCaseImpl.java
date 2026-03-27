@@ -2,9 +2,9 @@ package br.pucminas.graphtest.application.usecases.project;
 
 import br.pucminas.graphtest.application.domain.records.AuthenticatedUser;
 import br.pucminas.graphtest.application.exception.UnauthorizedUserException;
-import br.pucminas.graphtest.application.port.input.project.ListProjectsUseCase;
+import br.pucminas.graphtest.application.port.input.project.ListProjectsUseCasePort;
 import br.pucminas.graphtest.application.port.input.project.records.ProjectOutput;
-import br.pucminas.graphtest.application.port.output.repositories.ProjectRepository;
+import br.pucminas.graphtest.application.port.output.repositories.ProjectRepositoryPort;
 import br.pucminas.graphtest.application.port.output.security.CurrentUserPort;
 import java.util.List;
 
@@ -12,9 +12,9 @@ import java.util.List;
  * Caso de uso responsavel por listar todos os projetos cadastrados no sistema.
  * Essa operacao é restrita a usuarios com perfil de administrador.
  */
-public class ListProjectsUseCaseImpl implements ListProjectsUseCase {
+public class ListProjectsUseCaseImpl implements ListProjectsUseCasePort {
 
-    private final ProjectRepository projectRepository;
+    private final ProjectRepositoryPort projectRepository;
     private final CurrentUserPort currentUserPort;
 
     /**
@@ -24,7 +24,7 @@ public class ListProjectsUseCaseImpl implements ListProjectsUseCase {
      * @param projectRepository repositorio usado para listar todos os projetos
      * @param currentUserPort porta responsavel por fornecer o usuario autenticado
      */
-    public ListProjectsUseCaseImpl(ProjectRepository projectRepository,
+    public ListProjectsUseCaseImpl(ProjectRepositoryPort projectRepository,
                                    CurrentUserPort currentUserPort) {
         this.projectRepository = projectRepository;
         this.currentUserPort = currentUserPort;

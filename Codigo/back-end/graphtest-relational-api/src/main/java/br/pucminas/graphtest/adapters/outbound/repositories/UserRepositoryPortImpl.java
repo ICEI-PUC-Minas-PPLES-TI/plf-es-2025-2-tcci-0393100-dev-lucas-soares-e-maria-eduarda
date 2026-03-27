@@ -4,7 +4,7 @@ import br.pucminas.graphtest.adapters.outbound.entities.JpaUserEntity;
 import br.pucminas.graphtest.adapters.outbound.repositories.interfaces.JpaUserRepository;
 import br.pucminas.graphtest.adapters.outbound.repositories.mappers.PersistenceMapper;
 import br.pucminas.graphtest.application.domain.User;
-import br.pucminas.graphtest.application.port.output.repositories.UserRepository;
+import br.pucminas.graphtest.application.port.output.repositories.UserRepositoryPort;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -13,10 +13,10 @@ import java.util.UUID;
 
 /**
  * Adaptador de saida responsavel por implementar as operacoes de persistencia
- * de usuarios definidas pela porta {@link UserRepository}.
+ * de usuarios definidas pela porta {@link UserRepositoryPort}.
  */
 @Repository
-public class UserRepositoryImpl implements UserRepository {
+public class UserRepositoryPortImpl implements UserRepositoryPort {
 
     private final JpaUserRepository jpaUserRepository;
     private final PersistenceMapper<User, JpaUserEntity> mapper;
@@ -28,7 +28,7 @@ public class UserRepositoryImpl implements UserRepository {
      * @param jpaUserRepository repositorio JPA usado nas operacoes de banco
      * @param mapper mapper usado nas conversoes entre dominio e entidade
      */
-    public UserRepositoryImpl(JpaUserRepository jpaUserRepository, PersistenceMapper<User, JpaUserEntity> mapper) {
+    public UserRepositoryPortImpl(JpaUserRepository jpaUserRepository, PersistenceMapper<User, JpaUserEntity> mapper) {
         this.jpaUserRepository = jpaUserRepository;
         this.mapper = mapper;
     }

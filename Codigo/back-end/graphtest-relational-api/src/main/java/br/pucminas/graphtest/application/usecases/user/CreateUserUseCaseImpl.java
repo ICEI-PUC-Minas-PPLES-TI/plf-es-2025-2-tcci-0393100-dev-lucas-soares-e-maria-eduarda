@@ -3,19 +3,19 @@ package br.pucminas.graphtest.application.usecases.user;
 import br.pucminas.graphtest.application.domain.User;
 import br.pucminas.graphtest.application.domain.enums.UserProfileEnum;
 import br.pucminas.graphtest.application.exception.DuplicateEmailException;
-import br.pucminas.graphtest.application.port.input.user.CreateUserUseCase;
+import br.pucminas.graphtest.application.port.input.user.CreateUserUseCasePort;
 import br.pucminas.graphtest.application.port.input.user.records.CreateUserInput;
 import br.pucminas.graphtest.application.port.input.user.records.UserOutput;
 import br.pucminas.graphtest.application.port.output.security.PasswordEncoderPort;
-import br.pucminas.graphtest.application.port.output.repositories.UserRepository;
+import br.pucminas.graphtest.application.port.output.repositories.UserRepositoryPort;
 
-public class CreateUserUseCaseImpl implements CreateUserUseCase {
+public class CreateUserUseCaseImpl implements CreateUserUseCasePort {
 
-    private final UserRepository userRepository;
+    private final UserRepositoryPort userRepository;
     private final PasswordEncoderPort passwordEncoder;
 
 
-    public CreateUserUseCaseImpl(UserRepository userRepository, PasswordEncoderPort passwordEncoder) {
+    public CreateUserUseCaseImpl(UserRepositoryPort userRepository, PasswordEncoderPort passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
