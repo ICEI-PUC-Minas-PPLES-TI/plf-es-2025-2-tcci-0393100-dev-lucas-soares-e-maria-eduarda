@@ -1,39 +1,49 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Calendar, Folder, MoreVertical, ExternalLink, Edit2, Trash2, Download } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Button } from '../../../components/Button';
 import { SearchBar } from '../../../components/SearchBar';
-
-const mockProjects = [
-  {
-    id: 1,
-    name: 'Sistema de Login',
-    createdAt: '2025-11-10',
-    artifacts: 8,
-  },
-  {
-    id: 2,
-    name: 'Calculadora Científica',
-    createdAt: '2025-11-08',
-    artifacts: 12,
-  },
-  {
-    id: 3,
-    name: 'Ordenação de Arrays',
-    createdAt: '2025-11-05',
-    artifacts: 5,
-  },
-  {
-    id: 4,
-    name: 'Busca em Grafos',
-    createdAt: '2025-11-01',
-    artifacts: 15,
-  },
-];
+import ProjectService from '../../../services/Project/ProjectService';
+import type { ProjectDTO } from '../../../services/Project/types/project';
 
 export function ProjectsSection() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [openMenu, setOpenMenu] = useState<number | null>(null);
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [projects, setProjects] = useState<ProjectDTO[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    ProjectService.listarMeus()
+      .then((data) => {
+        if (!cancelled) setProjects(data);
+      })
+      .catch(() => {
+        if (!cancelled) setError('Erro ao carregar projetos.');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => { cancelled = true; };
+  }, []);
+
+  const handleDelete = async (id: string) => {
+    try {
+      await ProjectService.excluir(id);
+      setProjects((prev) => prev.filter((p) => p.id !== id));
+      setOpenMenu(null);
+    } catch {
+      setError('Erro ao excluir projeto.');
+    }
+  };
+
+  const filteredProjects = projects.filter((p) =>
+    p.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <section className="container mx-auto px-6 py-16" id="projetos">
@@ -52,8 +62,20 @@ export function ProjectsSection() {
           </Button>
         </div>
 
+        {loading && (
+          <p className="text-gray-400 text-center py-8">Carregando projetos...</p>
+        )}
+
+        {error && (
+          <p className="text-red-400 text-center py-8">{error}</p>
+        )}
+
+        {!loading && !error && filteredProjects.length === 0 && (
+          <p className="text-gray-400 text-center py-8">Nenhum projeto encontrado.</p>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {mockProjects.map((project, index) => (
+          {filteredProjects.map((project, index) => (
             <motion.div
               key={project.id}
               initial={{ opacity: 0, y: 20 }}
@@ -83,7 +105,10 @@ export function ProjectsSection() {
                         <Download className="w-3 h-3" />
                         Exportar
                       </button>
-                      <button className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-surface-hover flex items-center gap-2">
+                      <button
+                        onClick={() => handleDelete(project.id)}
+                        className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-surface-hover flex items-center gap-2"
+                      >
                         <Trash2 className="w-3 h-3" />
                         Excluir
                       </button>
@@ -103,10 +128,12 @@ export function ProjectsSection() {
                 </p>
               </div>
 
-              <Button variant="accent" className="w-full justify-center group-hover:bg-primary group-hover:text-white">
-                <ExternalLink className="w-4 h-4" />
-                Abrir
-              </Button>
+              <Link to={`/projeto/${project.id}`}>
+                <Button variant="accent" className="w-full justify-center group-hover:bg-primary group-hover:text-white">
+                  <ExternalLink className="w-4 h-4" />
+                  Abrir
+                </Button>
+              </Link>
             </motion.div>
           ))}
         </div>

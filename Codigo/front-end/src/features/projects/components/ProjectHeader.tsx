@@ -4,9 +4,11 @@ import { Button } from '../../../components/Button';
 interface ProjectHeaderProps {
   projectName: string;
   projectDescription: string;
+  onEdit?: () => void;
+  onDelete?: () => void;
 }
 
-export function ProjectHeader({ projectName, projectDescription }: ProjectHeaderProps) {
+export function ProjectHeader({ projectName, projectDescription, onEdit, onDelete }: ProjectHeaderProps) {
   return (
     <div className="container mx-auto px-6 py-4 flex items-center justify-between border-b border-edge">
         <div className="flex-1">
@@ -15,12 +17,12 @@ export function ProjectHeader({ projectName, projectDescription }: ProjectHeader
         </div>
 
         <div className="flex items-center gap-3">
-          <Button variant="outline">
+          <Button variant="outline" onClick={onEdit}>
             <Settings className="w-4 h-4" />
             Editar Projeto
           </Button>
 
-          <Button variant="danger">
+          <Button variant="danger" onClick={onDelete}>
             <Trash2 className="w-4 h-4" />
             Excluir Projeto
           </Button>

@@ -3,7 +3,11 @@ import { motion } from 'motion/react';
 import { GraphBackground } from '../../../components/GraphBackground';
 import { Button } from '../../../components/Button';
 
-export function HeroSection() {
+interface HeroSectionProps {
+  onCreateProject: () => void;
+}
+
+export function HeroSection({ onCreateProject }: HeroSectionProps) {
   return (
     <section className="relative overflow-hidden border-b border-edge">
       <GraphBackground className="absolute inset-0 w-full h-full" nodeCount={30} />
@@ -23,7 +27,7 @@ export function HeroSection() {
           </p>
 
           <div className="flex flex-wrap gap-4 justify-center">
-            <Button className="px-6 py-3">
+            <Button className="px-6 py-3" onClick={onCreateProject}>
               <Plus className="w-5 h-5" />
               Criar novo projeto
             </Button>
