@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.springframework.data.neo4j.core.schema.Node;
+import org.springframework.data.neo4j.core.schema.Relationship;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,9 +20,11 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-@ToString
+@ToString(exclude = "appliesTo")
 public class Neo4jGceRestrictionEntity extends Neo4jBaseEntity {
 
     private RestrictionTypeEnum type;
-    private List<String> nodeCodes = new ArrayList<>();
+
+    @Relationship(type = "APPLIES_TO")
+    private List<Neo4jGceNodeEntity> appliesTo = new ArrayList<>();
 }

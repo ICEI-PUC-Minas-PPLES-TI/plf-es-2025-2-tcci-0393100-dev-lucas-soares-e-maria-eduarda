@@ -56,7 +56,7 @@ public class GceMapper implements PersistenceMapper<Gce, Neo4jGceEntity> {
         }
 
         List<Neo4jGceRestrictionEntity> restrictionEntities = graph.getRestrictions().stream()
-                .map(this::toRestrictionEntity)
+                .map(restriction -> toRestrictionEntity(restriction, nodeEntities))
                 .toList();
 
         entity.setNodes(new ArrayList<>(nodeEntities.values()));
@@ -116,11 +116,17 @@ public class GceMapper implements PersistenceMapper<Gce, Neo4jGceEntity> {
         );
     }
 
-    private Neo4jGceRestrictionEntity toRestrictionEntity(GceRestriction restriction) {
+    private Neo4jGceRestrictionEntity toRestrictionEntity(
+            GceRestriction restriction,
+            Map<String, Neo4jGceNodeEntity> nodeEntities
+    ) {
         Neo4jGceRestrictionEntity entity = new Neo4jGceRestrictionEntity();
         applyId(entity, restriction.getId());
         entity.setType(restriction.getType());
-        entity.setNodeCodes(new ArrayList<>(restriction.getNodeCodes()));
+        entity.setAppliesTo(restriction.getNodeCodes().stream()
+                .map(nodeEntities::get)
+                .filter(java.util.Objects::nonNull)
+                .toList());
         return entity;
     }
 
@@ -166,7 +172,11 @@ public class GceMapper implements PersistenceMapper<Gce, Neo4jGceEntity> {
         return new GceRestriction(
                 entity.getId(),
                 entity.getType(),
-                entity.getNodeCodes()
+                entity.getAppliesTo() == null
+                        ? List.of()
+                        : entity.getAppliesTo().stream()
+                        .map(Neo4jGceNodeEntity::getCode)
+                        .toList()
         );
     }
 
