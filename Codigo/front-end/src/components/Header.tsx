@@ -22,7 +22,7 @@ export function Header({ breadcrumb }: HeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-surface border-b border-gray-800">
+    <header className="sticky top-0 z-50 bg-surface border-b border-edge">
       <div className="container mx-auto px-6 h-14 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link to="/homepage" className="text-primary-light font-mono text-lg hover:text-cyan-300 transition-colors">
@@ -32,12 +32,12 @@ export function Header({ breadcrumb }: HeaderProps) {
         </div>
 
         <div className="flex items-center gap-3">
-          <button className="p-2 hover:bg-gray-800 rounded-lg transition-colors">
+          <button className="p-2 hover:bg-surface-hover rounded-lg transition-colors">
             <User className="w-5 h-5 text-gray-300" />
           </button>
           <button
             onClick={handleLogout}
-            className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+            className="p-2 hover:bg-surface-hover rounded-lg transition-colors"
             title="Sair"
           >
             <LogOut className="w-5 h-5 text-gray-300" />

@@ -1,19 +1,18 @@
-import { FileCode, GitBranch, Network, Table, TrendingUp } from 'lucide-react';
+import { TrendingUp } from 'lucide-react';
+import { SectionHeader } from '../../../components/SectionHeader';
+import { ARTIFACT_TYPES } from '../../../shared/artifactTypes';
 
 const stats = [
-  { label: 'Artefatos', value: 12, icon: FileCode, color: 'text-blue-400' },
-  { label: 'GFCs', value: 8, icon: GitBranch, color: 'text-cyan-400' },
-  { label: 'GCEs', value: 5, icon: Network, color: 'text-green-400' },
-  { label: 'Tabelas de Decisão', value: 3, icon: Table, color: 'text-yellow-400' },
+  { label: 'Artefatos', value: 12, icon: ARTIFACT_TYPES.CODE.icon, color: ARTIFACT_TYPES.CODE.color },
+  { label: 'GFCs', value: 8, icon: ARTIFACT_TYPES.GFC.icon, color: ARTIFACT_TYPES.GFC.color },
+  { label: 'GCEs', value: 5, icon: ARTIFACT_TYPES.GCE.icon, color: ARTIFACT_TYPES.GCE.color },
+  { label: 'Tabelas de Decisão', value: 3, icon: ARTIFACT_TYPES.TABLE.icon, color: ARTIFACT_TYPES.TABLE.color },
 ];
 
 export function ProjectSummary() {
   return (
     <div className="bg-surface-card border border-edge rounded-lg p-5">
-      <div className="flex items-center gap-2 mb-4">
-        <TrendingUp className="w-5 h-5 text-primary-light" />
-        <h2 className="text-lg">Resumo do Projeto</h2>
-      </div>
+      <SectionHeader title="Resumo do Projeto" icon={TrendingUp} />
 
       <div className="space-y-4">
         {stats.map((stat) => {

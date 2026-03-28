@@ -5,7 +5,7 @@ import { Button } from '../../../components/Button';
 
 export function HeroSection() {
   return (
-    <section className="relative overflow-hidden border-b border-gray-800">
+    <section className="relative overflow-hidden border-b border-edge">
       <GraphBackground className="absolute inset-0 w-full h-full" nodeCount={30} />
 
       <div className="container mx-auto px-6 py-20 relative z-10">

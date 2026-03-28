@@ -2,7 +2,7 @@ import { BookOpen, HelpCircle, Github } from 'lucide-react';
 
 export function Footer() {
   return (
-    <footer className="border-t border-gray-800 bg-surface mt-16">
+    <footer className="border-t border-edge bg-surface mt-16">
       <div className="container mx-auto px-6 py-8">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="text-sm text-gray-400">

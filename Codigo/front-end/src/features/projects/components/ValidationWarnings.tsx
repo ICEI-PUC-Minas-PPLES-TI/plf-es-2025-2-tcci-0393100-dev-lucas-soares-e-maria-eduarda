@@ -1,4 +1,5 @@
 import { AlertTriangle, XCircle, AlertCircle, ChevronRight } from 'lucide-react';
+import { SectionHeader } from '../../../components/SectionHeader';
 
 type Severity = 'high' | 'medium' | 'low';
 
@@ -65,12 +66,14 @@ const severityConfig = {
 export function ValidationWarnings() {
   return (
     <div className="bg-surface-card border border-edge rounded-lg p-5">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg">Avisos e Validações</h2>
-        <span className="text-xs text-gray-500">
-          {warnings.length} {warnings.length === 1 ? 'item' : 'itens'}
-        </span>
-      </div>
+      <SectionHeader
+        title="Avisos e Validações"
+        action={
+          <span className="text-xs text-gray-500">
+            {warnings.length} {warnings.length === 1 ? 'item' : 'itens'}
+          </span>
+        }
+      />
 
       <div className="space-y-2">
         {warnings.map((warning) => {

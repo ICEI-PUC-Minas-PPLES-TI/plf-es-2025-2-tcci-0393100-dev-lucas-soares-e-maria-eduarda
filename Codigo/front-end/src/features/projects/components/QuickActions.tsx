@@ -1,4 +1,5 @@
 import { GitBranch, Upload, Network, Table } from 'lucide-react';
+import { SectionHeader } from '../../../components/SectionHeader';
 
 const actions = [
   {
@@ -38,7 +39,7 @@ const actions = [
 export function QuickActions() {
   return (
     <div className="bg-surface-card border border-edge rounded-lg p-5">
-      <h2 className="text-lg mb-4">Ações Rápidas</h2>
+      <SectionHeader title="Ações Rápidas" />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {actions.map((action) => {

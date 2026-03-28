@@ -59,7 +59,7 @@ export function ProjectsSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: index * 0.1 }}
-              className="bg-surface-elevated border border-gray-700 rounded-lg p-5 hover:border-primary transition-colors group"
+              className="bg-surface-elevated border border-edge rounded-lg p-5 hover:border-primary transition-colors group"
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="p-2 bg-primary/10 rounded-lg">
@@ -68,22 +68,22 @@ export function ProjectsSection() {
                 <div className="relative">
                   <button
                     onClick={() => setOpenMenu(openMenu === project.id ? null : project.id)}
-                    className="p-1 hover:bg-gray-700 rounded transition-colors"
+                    className="p-1 hover:bg-surface-hover rounded transition-colors"
                   >
                     <MoreVertical className="w-4 h-4 text-gray-400" />
                   </button>
 
                   {openMenu === project.id && (
-                    <div className="absolute right-0 mt-2 w-40 bg-surface border border-gray-700 rounded-lg shadow-xl z-10">
-                      <button className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-800 flex items-center gap-2">
+                    <div className="absolute right-0 mt-2 w-40 bg-surface border border-edge rounded-lg shadow-xl z-10">
+                      <button className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-surface-hover flex items-center gap-2">
                         <Edit2 className="w-3 h-3" />
                         Renomear
                       </button>
-                      <button className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-800 flex items-center gap-2">
+                      <button className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-surface-hover flex items-center gap-2">
                         <Download className="w-3 h-3" />
                         Exportar
                       </button>
-                      <button className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-gray-800 flex items-center gap-2">
+                      <button className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-surface-hover flex items-center gap-2">
                         <Trash2 className="w-3 h-3" />
                         Excluir
                       </button>
