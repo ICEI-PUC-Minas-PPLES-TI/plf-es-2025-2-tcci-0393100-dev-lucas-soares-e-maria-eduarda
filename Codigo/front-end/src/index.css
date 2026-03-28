@@ -7,6 +7,10 @@
   --color-surface-deep: #020617;
   --color-surface: #0d1117;
   --color-surface-elevated: #1c2333;
+  --color-surface-card: #161b22;
+  --color-surface-hover: #21262d;
+  --color-edge: #30363d;
+  --color-edge-hover: #8b949e;
 }
 
 :root {

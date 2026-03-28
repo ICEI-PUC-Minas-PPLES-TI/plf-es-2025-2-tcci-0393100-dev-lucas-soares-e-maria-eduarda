@@ -1,39 +1,49 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Calendar, Folder, MoreVertical, ExternalLink, Edit2, Trash2, Download } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Button } from '../../../components/Button';
 import { SearchBar } from '../../../components/SearchBar';
-
-const mockProjects = [
-  {
-    id: 1,
-    name: 'Sistema de Login',
-    createdAt: '2025-11-10',
-    artifacts: 8,
-  },
-  {
-    id: 2,
-    name: 'Calculadora Científica',
-    createdAt: '2025-11-08',
-    artifacts: 12,
-  },
-  {
-    id: 3,
-    name: 'Ordenação de Arrays',
-    createdAt: '2025-11-05',
-    artifacts: 5,
-  },
-  {
-    id: 4,
-    name: 'Busca em Grafos',
-    createdAt: '2025-11-01',
-    artifacts: 15,
-  },
-];
+import ProjectService from '../../../services/Project/ProjectService';
+import type { ProjectDTO } from '../../../services/Project/types/project';
 
 export function ProjectsSection() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [openMenu, setOpenMenu] = useState<number | null>(null);
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [projects, setProjects] = useState<ProjectDTO[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    ProjectService.listarMeus()
+      .then((data) => {
+        if (!cancelled) setProjects(data);
+      })
+      .catch(() => {
+        if (!cancelled) setError('Erro ao carregar projetos.');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => { cancelled = true; };
+  }, []);
+
+  const handleDelete = async (id: string) => {
+    try {
+      await ProjectService.excluir(id);
+      setProjects((prev) => prev.filter((p) => p.id !== id));
+      setOpenMenu(null);
+    } catch {
+      setError('Erro ao excluir projeto.');
+    }
+  };
+
+  const filteredProjects = projects.filter((p) =>
+    p.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <section className="container mx-auto px-6 py-16" id="projetos">
@@ -52,14 +62,26 @@ export function ProjectsSection() {
           </Button>
         </div>
 
+        {loading && (
+          <p className="text-gray-400 text-center py-8">Carregando projetos...</p>
+        )}
+
+        {error && (
+          <p className="text-red-400 text-center py-8">{error}</p>
+        )}
+
+        {!loading && !error && filteredProjects.length === 0 && (
+          <p className="text-gray-400 text-center py-8">Nenhum projeto encontrado.</p>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {mockProjects.map((project, index) => (
+          {filteredProjects.map((project, index) => (
             <motion.div
               key={project.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: index * 0.1 }}
-              className="bg-surface-elevated border border-gray-700 rounded-lg p-5 hover:border-primary transition-colors group"
+              className="bg-surface-elevated border border-edge rounded-lg p-5 hover:border-primary transition-colors group"
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="p-2 bg-primary/10 rounded-lg">
@@ -68,22 +90,25 @@ export function ProjectsSection() {
                 <div className="relative">
                   <button
                     onClick={() => setOpenMenu(openMenu === project.id ? null : project.id)}
-                    className="p-1 hover:bg-gray-700 rounded transition-colors"
+                    className="p-1 hover:bg-surface-hover rounded transition-colors"
                   >
                     <MoreVertical className="w-4 h-4 text-gray-400" />
                   </button>
 
                   {openMenu === project.id && (
-                    <div className="absolute right-0 mt-2 w-40 bg-surface border border-gray-700 rounded-lg shadow-xl z-10">
-                      <button className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-800 flex items-center gap-2">
+                    <div className="absolute right-0 mt-2 w-40 bg-surface border border-edge rounded-lg shadow-xl z-10">
+                      <button className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-surface-hover flex items-center gap-2">
                         <Edit2 className="w-3 h-3" />
                         Renomear
                       </button>
-                      <button className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-800 flex items-center gap-2">
+                      <button className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-surface-hover flex items-center gap-2">
                         <Download className="w-3 h-3" />
                         Exportar
                       </button>
-                      <button className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-gray-800 flex items-center gap-2">
+                      <button
+                        onClick={() => handleDelete(project.id)}
+                        className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-surface-hover flex items-center gap-2"
+                      >
                         <Trash2 className="w-3 h-3" />
                         Excluir
                       </button>
@@ -94,19 +119,16 @@ export function ProjectsSection() {
 
               <h4 className="text-gray-100 font-medium mb-2">{project.name}</h4>
 
-              <div className="space-y-2 mb-4">
-                <p className="text-sm text-gray-400">
-                  Criado em {new Date(project.createdAt).toLocaleDateString('pt-BR')}
-                </p>
-                <p className="text-sm text-gray-400">
-                  {project.artifacts} artefatos
-                </p>
-              </div>
+              {project.description && (
+                <p className="text-sm text-gray-400 mb-4">{project.description}</p>
+              )}
 
-              <Button variant="accent" className="w-full justify-center group-hover:bg-primary group-hover:text-white">
-                <ExternalLink className="w-4 h-4" />
-                Abrir
-              </Button>
+              <Link to={`/projeto/${project.id}`}>
+                <Button variant="accent" className="w-full justify-center group-hover:bg-primary group-hover:text-white">
+                  <ExternalLink className="w-4 h-4" />
+                  Abrir
+                </Button>
+              </Link>
             </motion.div>
           ))}
         </div>
