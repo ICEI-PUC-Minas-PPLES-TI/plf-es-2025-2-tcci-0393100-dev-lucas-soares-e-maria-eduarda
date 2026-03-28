@@ -20,24 +20,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
 /**
  * Implementa a validacao completa de um Grafo de Causa e Efeito.
- *
- * <p>O processo combina verificacoes estruturais, topologicas e semanticas para
- * identificar inconsistencias no modelo antes de seu uso pelos casos de uso.</p>
  */
 public class GceValidationResultServiceImpl implements GceValidationResultService {
 
     private static final int MAX_CAUSES_FOR_FULL_ENUMERATION = 16;
 
-    /**
-     * Executa a validacao estrutural e semantica completa de um GCE.
-     *
-     * @param graph agregado de GCE a ser analisado
-     * @return resultado consolidado da validacao
-     */
     @Override
     public ValidationGceOutput validate(Gce graph) {
         List<ValidationGceMessage> errors = new ArrayList<>();
@@ -62,22 +52,10 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
         return new ValidationGceOutput(errors, warnings);
     }
 
-    /**
-     * Indica se ja foram encontrados erros que impedem validacoes subsequentes.
-     *
-     * @param errors erros acumulados da validacao
-     * @return {@code true} quando existem erros criticos
-     */
     private boolean hasCriticalErrors(List<ValidationGceMessage> errors) {
         return !errors.isEmpty();
     }
 
-    /**
-     * Executa verificacoes basicas de existencia e referencia no modelo.
-     *
-     * @param graph grafo analisado
-     * @param errors erros acumulados
-     */
     private void validateBasicStructure(Gce graph, List<ValidationGceMessage> errors) {
         if (graph.getNodes().isEmpty()) {
             addError(errors, "GCE_001", "O grafo deve possuir ao menos um no.");
@@ -98,26 +76,19 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
         });
 
         for (GceEdge edge : graph.getEdges()) {
-            if (graph.findNode(edge.getSourceNodeId()).isEmpty()) {
-                addError(errors, "GCE_005", "Aresta " + edge.getId() + " possui origem inexistente.");
+            if (graph.findNode(edge.getSourceNodeCode()).isEmpty()) {
+                addError(errors, "GCE_005", "Aresta possui origem inexistente: " + edge.getSourceNodeCode());
             }
-            if (graph.findNode(edge.getTargetNodeId()).isEmpty()) {
-                addError(errors, "GCE_006", "Aresta " + edge.getId() + " possui destino inexistente.");
+            if (graph.findNode(edge.getTargetNodeCode()).isEmpty()) {
+                addError(errors, "GCE_006", "Aresta possui destino inexistente: " + edge.getTargetNodeCode());
             }
         }
     }
 
-    /**
-     * Valida cardinalidade e posicionamento de causas, efeitos e operadores.
-     *
-     * @param graph grafo analisado
-     * @param errors erros acumulados
-     * @param warnings avisos acumulados
-     */
     private void validateNodeTypesAndCardinality(Gce graph, List<ValidationGceMessage> errors, List<ValidationGceMessage> warnings) {
         for (GceNode node : graph.getNodes()) {
-            List<GceEdge> incoming = graph.incomingEdges(node.getId());
-            List<GceEdge> outgoing = graph.outgoingEdges(node.getId());
+            List<GceEdge> incoming = graph.incomingEdges(node.getCode());
+            List<GceEdge> outgoing = graph.outgoingEdges(node.getCode());
 
             if (node.isCause()) {
                 if (!incoming.isEmpty()) {
@@ -148,21 +119,15 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
         }
     }
 
-    /**
-     * Verifica se as restricoes referenciam apenas nos compativeis.
-     *
-     * @param graph grafo analisado
-     * @param errors erros acumulados
-     */
     private void validateRestrictions(Gce graph, List<ValidationGceMessage> errors) {
         for (GceRestriction restriction : graph.getRestrictions()) {
-            List<GceNode> nodes = restriction.getNodeIds().stream()
+            List<GceNode> nodes = restriction.getNodeCodes().stream()
                     .map(graph::findNode)
                     .flatMap(Optional::stream)
                     .toList();
 
-            if (nodes.size() != restriction.getNodeIds().size()) {
-                addError(errors, "GCE_013", "Restricao " + restriction.getId() + " referencia no inexistente.");
+            if (nodes.size() != restriction.getNodeCodes().size()) {
+                addError(errors, "GCE_013", "Restricao referencia no inexistente.");
                 continue;
             }
 
@@ -183,47 +148,32 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
         }
     }
 
-    /**
-     * Verifica se o grafo e aciclico.
-     *
-     * @param graph grafo analisado
-     * @param errors erros acumulados
-     */
     private void validateAcyclic(Gce graph, List<ValidationGceMessage> errors) {
-        Map<UUID, List<UUID>> adjacency = new HashMap<>();
+        Map<String, List<String>> adjacency = new HashMap<>();
         for (GceNode node : graph.getNodes()) {
-            adjacency.put(node.getId(), new ArrayList<>());
+            adjacency.put(node.getCode(), new ArrayList<>());
         }
 
         for (GceEdge edge : graph.getEdges()) {
-            adjacency.computeIfAbsent(edge.getSourceNodeId(), ignored -> new ArrayList<>())
-                    .add(edge.getTargetNodeId());
+            adjacency.computeIfAbsent(edge.getSourceNodeCode(), ignored -> new ArrayList<>())
+                    .add(edge.getTargetNodeCode());
         }
 
-        Set<UUID> visited = new HashSet<>();
-        Set<UUID> stack = new HashSet<>();
+        Set<String> visited = new HashSet<>();
+        Set<String> stack = new HashSet<>();
 
         for (GceNode node : graph.getNodes()) {
-            if (detectCycle(node.getId(), adjacency, visited, stack)) {
+            if (detectCycle(node.getCode(), adjacency, visited, stack)) {
                 addError(errors, "GCE_016", "O grafo possui ciclo, o que torna a avaliacao logica ambigua.");
                 return;
             }
         }
     }
 
-    /**
-     * Percorre recursivamente o grafo para detectar ciclos.
-     *
-     * @param current no atual da busca
-     * @param adjacency lista de adjacencia do grafo
-     * @param visited nos ja visitados
-     * @param stack pilha logica da busca em profundidade
-     * @return {@code true} quando um ciclo e encontrado
-     */
-    private boolean detectCycle(UUID current,
-                                Map<UUID, List<UUID>> adjacency,
-                                Set<UUID> visited,
-                                Set<UUID> stack) {
+    private boolean detectCycle(String current,
+                                Map<String, List<String>> adjacency,
+                                Set<String> visited,
+                                Set<String> stack) {
         if (stack.contains(current)) {
             return true;
         }
@@ -234,7 +184,7 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
         visited.add(current);
         stack.add(current);
 
-        for (UUID next : adjacency.getOrDefault(current, List.of())) {
+        for (String next : adjacency.getOrDefault(current, List.of())) {
             if (detectCycle(next, adjacency, visited, stack)) {
                 return true;
             }
@@ -244,44 +194,31 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
         return false;
     }
 
-    /**
-     * Verifica se todos os efeitos sao alcancaveis a partir de alguma causa.
-     *
-     * @param graph grafo analisado
-     * @param errors erros acumulados
-     */
     private void validateReachability(Gce graph, List<ValidationGceMessage> errors) {
-        Set<UUID> reachable = new HashSet<>();
-        Deque<UUID> queue = new ArrayDeque<>();
+        Set<String> reachable = new HashSet<>();
+        Deque<String> queue = new ArrayDeque<>();
 
         for (GceNode cause : graph.getCauseNodes()) {
-            queue.add(cause.getId());
-            reachable.add(cause.getId());
+            queue.add(cause.getCode());
+            reachable.add(cause.getCode());
         }
 
         while (!queue.isEmpty()) {
-            UUID current = queue.poll();
+            String current = queue.poll();
             for (GceEdge edge : graph.outgoingEdges(current)) {
-                if (reachable.add(edge.getTargetNodeId())) {
-                    queue.add(edge.getTargetNodeId());
+                if (reachable.add(edge.getTargetNodeCode())) {
+                    queue.add(edge.getTargetNodeCode());
                 }
             }
         }
 
         for (GceNode effect : graph.getEffectNodes()) {
-            if (!reachable.contains(effect.getId())) {
+            if (!reachable.contains(effect.getCode())) {
                 addError(errors, "GCE_017", "Efeito " + effect.getCode() + " nao e alcancavel a partir de nenhuma causa.");
             }
         }
     }
 
-    /**
-     * Executa a validacao semantica por enumeracao de combinacoes de causas.
-     *
-     * @param graph grafo analisado
-     * @param errors erros acumulados
-     * @param warnings avisos acumulados
-     */
     private void validateSemanticConsistency(Gce graph, List<ValidationGceMessage> errors, List<ValidationGceMessage> warnings) {
         List<GceNode> causes = graph.getCauseNodes();
         if (causes.size() > MAX_CAUSES_FOR_FULL_ENUMERATION) {
@@ -289,15 +226,15 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
             return;
         }
 
-        List<Map<UUID, Boolean>> assignments = enumerateAssignments(causes);
+        List<Map<String, Boolean>> assignments = enumerateAssignments(causes);
         boolean hasAnyValidAssignment = false;
 
-        for (Map<UUID, Boolean> assignment : assignments) {
+        for (Map<String, Boolean> assignment : assignments) {
             if (!respectsCauseRestrictions(graph, assignment)) {
                 continue;
             }
 
-            Map<UUID, Boolean> allValues = evaluateGraph(graph, assignment);
+            Map<String, Boolean> allValues = evaluateGraph(graph, assignment);
             if (allValues == null) {
                 continue;
             }
@@ -319,44 +256,24 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
         }
     }
 
-    /**
-     * Registra um erro de validacao na colecao acumulada.
-     *
-     * @param errors lista de erros acumulados
-     * @param code codigo identificador da regra violada
-     * @param message descricao textual do problema encontrado
-     */
     private void addError(List<ValidationGceMessage> errors, String code, String message) {
         errors.add(new ValidationGceMessage(code, message));
     }
 
-    /**
-     * Registra um aviso de validacao na colecao acumulada.
-     *
-     * @param warnings lista de avisos acumulados
-     * @param code codigo identificador do aviso
-     * @param message descricao textual do ponto observado
-     */
     private void addWarning(List<ValidationGceMessage> warnings, String code, String message) {
         warnings.add(new ValidationGceMessage(code, message));
     }
 
-    /**
-     * Gera todas as atribuicoes booleanas possiveis para o conjunto de causas.
-     *
-     * @param causes lista de causas do grafo
-     * @return lista de atribuicoes possiveis
-     */
-    private List<Map<UUID, Boolean>> enumerateAssignments(List<GceNode> causes) {
+    private List<Map<String, Boolean>> enumerateAssignments(List<GceNode> causes) {
         int size = causes.size();
         int combinations = 1 << size;
-        List<Map<UUID, Boolean>> assignments = new ArrayList<>(combinations);
+        List<Map<String, Boolean>> assignments = new ArrayList<>(combinations);
 
         for (int mask = 0; mask < combinations; mask++) {
-            Map<UUID, Boolean> assignment = new HashMap<>();
+            Map<String, Boolean> assignment = new HashMap<>();
             for (int i = 0; i < size; i++) {
                 boolean value = (mask & (1 << i)) != 0;
-                assignment.put(causes.get(i).getId(), value);
+                assignment.put(causes.get(i).getCode(), value);
             }
             assignments.add(assignment);
         }
@@ -364,20 +281,13 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
         return assignments;
     }
 
-    /**
-     * Verifica se uma atribuicao de causas respeita as restricoes entre causas.
-     *
-     * @param graph grafo analisado
-     * @param assignment atribuicao candidata
-     * @return {@code true} quando a atribuicao e permitida
-     */
-    private boolean respectsCauseRestrictions(Gce graph, Map<UUID, Boolean> assignment) {
+    private boolean respectsCauseRestrictions(Gce graph, Map<String, Boolean> assignment) {
         for (GceRestriction restriction : graph.getRestrictions()) {
             if (restriction.getType() == RestrictionTypeEnum.MASKS) {
                 continue;
             }
 
-            List<Boolean> values = restriction.getNodeIds().stream()
+            List<Boolean> values = restriction.getNodeCodes().stream()
                     .map(assignment::get)
                     .filter(Objects::nonNull)
                     .toList();
@@ -416,14 +326,7 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
         return true;
     }
 
-    /**
-     * Verifica se os efeitos avaliados respeitam as restricoes de mascaramento.
-     *
-     * @param graph grafo analisado
-     * @param allValues valores calculados para todos os nos
-     * @return {@code true} quando nao ha violacao de mascaramento
-     */
-    private boolean respectsMaskRestrictions(Gce graph, Map<UUID, Boolean> allValues) {
+    private boolean respectsMaskRestrictions(Gce graph, Map<String, Boolean> allValues) {
         for (GceRestriction restriction : graph.getRestrictions()) {
             if (restriction.getType() != RestrictionTypeEnum.MASKS) {
                 continue;
@@ -440,15 +343,8 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
         return true;
     }
 
-    /**
-     * Avalia o grafo inteiro a partir dos valores fixados para as causas.
-     *
-     * @param graph grafo analisado
-     * @param causeValues valores atribuídos as causas
-     * @return mapa com valores avaliados para todos os nos ou {@code null} quando a avaliacao falha
-     */
-    private Map<UUID, Boolean> evaluateGraph(Gce graph, Map<UUID, Boolean> causeValues) {
-        Map<UUID, Boolean> values = new HashMap<>(causeValues);
+    private Map<String, Boolean> evaluateGraph(Gce graph, Map<String, Boolean> causeValues) {
+        Map<String, Boolean> values = new HashMap<>(causeValues);
 
         List<GceNode> ordered = topologicalOrder(graph);
         if (ordered.isEmpty()) {
@@ -460,11 +356,11 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
                 continue;
             }
 
-            List<GceEdge> incoming = graph.incomingEdges(node.getId());
+            List<GceEdge> incoming = graph.incomingEdges(node.getCode());
             List<Boolean> inputs = new ArrayList<>();
 
             for (GceEdge edge : incoming) {
-                Boolean sourceValue = values.get(edge.getSourceNodeId());
+                Boolean sourceValue = values.get(edge.getSourceNodeCode());
                 if (sourceValue == null) {
                     return null;
                 }
@@ -481,19 +377,12 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
                 resolved = inputs.get(0);
             }
 
-            values.put(node.getId(), resolved);
+            values.put(node.getCode(), resolved);
         }
 
         return values;
     }
 
-    /**
-     * Resolve o valor de um operador logico com base em suas entradas.
-     *
-     * @param operatorType tipo do operador
-     * @param inputs entradas booleanas do operador
-     * @return resultado da operacao
-     */
     private boolean resolveOperator(GceOperatorTypeEnum operatorType, List<Boolean> inputs) {
         return switch (operatorType) {
             case AND -> inputs.stream().allMatch(Boolean::booleanValue);
@@ -501,29 +390,23 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
         };
     }
 
-    /**
-     * Calcula uma ordenacao topologica dos nos do grafo.
-     *
-     * @param graph grafo analisado
-     * @return lista ordenada dos nos ou lista vazia quando ha ciclo
-     */
     private List<GceNode> topologicalOrder(Gce graph) {
-        Map<UUID, Integer> inDegree = new HashMap<>();
-        Map<UUID, List<UUID>> adjacency = new HashMap<>();
+        Map<String, Integer> inDegree = new HashMap<>();
+        Map<String, List<String>> adjacency = new HashMap<>();
 
         for (GceNode node : graph.getNodes()) {
-            inDegree.put(node.getId(), 0);
-            adjacency.put(node.getId(), new ArrayList<>());
+            inDegree.put(node.getCode(), 0);
+            adjacency.put(node.getCode(), new ArrayList<>());
         }
 
         for (GceEdge edge : graph.getEdges()) {
-            adjacency.computeIfAbsent(edge.getSourceNodeId(), ignored -> new ArrayList<>())
-                    .add(edge.getTargetNodeId());
-            inDegree.compute(edge.getTargetNodeId(), (key, value) -> value == null ? 1 : value + 1);
+            adjacency.computeIfAbsent(edge.getSourceNodeCode(), ignored -> new ArrayList<>())
+                    .add(edge.getTargetNodeCode());
+            inDegree.compute(edge.getTargetNodeCode(), (key, value) -> value == null ? 1 : value + 1);
         }
 
-        Deque<UUID> queue = new ArrayDeque<>();
-        for (Map.Entry<UUID, Integer> entry : inDegree.entrySet()) {
+        Deque<String> queue = new ArrayDeque<>();
+        for (Map.Entry<String, Integer> entry : inDegree.entrySet()) {
             if (entry.getValue() == 0) {
                 queue.add(entry.getKey());
             }
@@ -531,10 +414,10 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
 
         List<GceNode> ordered = new ArrayList<>();
         while (!queue.isEmpty()) {
-            UUID current = queue.poll();
+            String current = queue.poll();
             graph.findNode(current).ifPresent(ordered::add);
 
-            for (UUID next : adjacency.getOrDefault(current, List.of())) {
+            for (String next : adjacency.getOrDefault(current, List.of())) {
                 int newValue = inDegree.compute(next, (key, value) -> value - 1);
                 if (newValue == 0) {
                     queue.add(next);

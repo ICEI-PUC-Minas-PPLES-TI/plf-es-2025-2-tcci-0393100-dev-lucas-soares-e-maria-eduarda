@@ -61,10 +61,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ApplicationBeansConfig {
 
-    @Bean
-    public GceRepositoryPort gceRepositoryPort(Neo4jGceRepository neo4jGceRepository, GceMapper gceMapper) {
-        return new GceRepositoryPortImpl(neo4jGceRepository, gceMapper);
-    }
 
     @Bean
     public GceValidationResultService gceValidationResultService() {

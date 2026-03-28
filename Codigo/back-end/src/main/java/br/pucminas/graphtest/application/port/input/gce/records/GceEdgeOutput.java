@@ -3,15 +3,13 @@ package br.pucminas.graphtest.application.port.input.gce.records;
 import br.pucminas.graphtest.application.domain.GceEdge;
 import br.pucminas.graphtest.application.domain.enums.GceEdgeTypeEnum;
 
-import java.util.UUID;
-
 /**
  * Saida de uma aresta do GCE.
  */
 public record GceEdgeOutput(
-        UUID id,
-        UUID sourceNodeId,
-        UUID targetNodeId,
+        Long id,
+        String sourceNodeCode,
+        String targetNodeCode,
         GceEdgeTypeEnum type
 ) {
 
@@ -24,8 +22,8 @@ public record GceEdgeOutput(
     public static GceEdgeOutput from(GceEdge edge) {
         return new GceEdgeOutput(
                 edge.getId(),
-                edge.getSourceNodeId(),
-                edge.getTargetNodeId(),
+                edge.getSourceNodeCode(),
+                edge.getTargetNodeCode(),
                 edge.getType()
         );
     }

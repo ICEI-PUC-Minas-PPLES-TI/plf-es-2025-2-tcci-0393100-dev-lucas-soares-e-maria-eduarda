@@ -12,7 +12,6 @@ import org.springframework.data.neo4j.core.schema.Relationship;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Entidade Neo4j que representa um no pertencente a um GCE.
@@ -21,7 +20,7 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 @ToString(exclude = "outgoingEdges")
 public class Neo4jGceNodeEntity extends Neo4jBaseEntity {
 
@@ -30,6 +29,6 @@ public class Neo4jGceNodeEntity extends Neo4jBaseEntity {
     private GceNodeTypeEnum type;
     private GceOperatorTypeEnum operatorType;
 
-    @Relationship(type = "CONNECTS_TO")
+    @Relationship(type = "CONNECTS_TO", direction = Relationship.Direction.OUTGOING)
     private List<Neo4jGceEdgeRelationship> outgoingEdges = new ArrayList<>();
 }

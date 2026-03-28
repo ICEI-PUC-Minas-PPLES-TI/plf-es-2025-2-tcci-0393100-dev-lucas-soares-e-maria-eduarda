@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
 import java.util.Map;
-import java.util.UUID;
 
 import static br.pucminas.graphtest.adapters.inbound.util.ControllerConstantsUtil.CHAVES_GCE_CONTROLLER;
 import static br.pucminas.graphtest.adapters.inbound.util.GceDtoConverterUtil.toCreateInput;
@@ -68,7 +67,7 @@ public class GceControllerImpl implements GceController {
 
     @Override
     @GetMapping(ID)
-    public ResponseEntity<GceDTO> findById(@PathVariable UUID id) {
+    public ResponseEntity<GceDTO> findById(@PathVariable Long id) {
         log.info(">>> encontrarPorId: recebendo requisicao para encontrar GCE por id");
 
         GceOutput graph = findGceByIdUseCasePort.execute(new FindGceByIdInput(id));

@@ -18,10 +18,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 import static br.pucminas.graphtest.shared.LogTopicsUtil.CONVERSOR_ENTIDADE_DTO_UTIL;
 import static java.lang.String.format;
@@ -49,31 +46,28 @@ public class GceDtoConverterUtil {
 
     public static Gce toDomain(@NotNull GceInputDTO graph) {
         log.info(format(">>> toDomain: convertendo GceInputDTO para dominio (projectId: %s)", graph.projectId()));
-        Map<String, UUID> nodeIdsByCode = createNodeIdsByCode(graph.nodes());
         return new Gce(
-                UUID.randomUUID(),
+                null,
                 graph.projectId(),
                 graph.name(),
                 graph.description(),
                 Boolean.TRUE.equals(graph.selected()),
                 toNodeInputs(graph.nodes()).stream()
-                        .map(node -> new GceNode(resolveNodeId(nodeIdsByCode, node.code()), node.code(), node.label(), node.type(), node.operatorType()))
+                        .map(node -> new GceNode(null, node.code(), node.label(), node.type(), node.operatorType()))
                         .toList(),
                 toEdgeInputs(graph.edges()).stream()
                         .map(edge -> new GceEdge(
-                                UUID.randomUUID(),
-                                resolveNodeId(nodeIdsByCode, edge.sourceNodeCode()),
-                                resolveNodeId(nodeIdsByCode, edge.targetNodeCode()),
+                                null,
+                                edge.sourceNodeCode(),
+                                edge.targetNodeCode(),
                                 edge.type()
                         ))
                         .toList(),
                 toRestrictionInputs(graph.restrictions()).stream()
                         .map(restriction -> new GceRestriction(
-                                UUID.randomUUID(),
+                                null,
                                 restriction.type(),
-                                restriction.nodeCodes().stream()
-                                        .map(code -> resolveNodeId(nodeIdsByCode, code))
-                                        .toList()
+                                restriction.nodeCodes()
                         ))
                         .toList()
         );
@@ -99,8 +93,8 @@ public class GceDtoConverterUtil {
                 .edges(graph.edges().stream()
                         .map(edge -> new GceDTO.GceEdgeDTO(
                                 edge.id(),
-                                edge.sourceNodeId(),
-                                edge.targetNodeId(),
+                                edge.sourceNodeCode(),
+                                edge.targetNodeCode(),
                                 edge.type()
                         ))
                         .toList())
@@ -108,7 +102,7 @@ public class GceDtoConverterUtil {
                         .map(restriction -> new GceDTO.GceRestrictionDTO(
                                 restriction.id(),
                                 restriction.type(),
-                                restriction.nodeIds()
+                                restriction.nodeCodes()
                         ))
                         .toList())
                 .build();
@@ -166,30 +160,6 @@ public class GceDtoConverterUtil {
                 })
                 .map(restriction -> new GceRestrictionInput(restriction.type(), restriction.nodeCodes()))
                 .toList();
-    }
-
-    private static Map<String, UUID> createNodeIdsByCode(List<GceInputDTO.GceNodeInputDTO> nodes) {
-        Map<String, UUID> nodeIdsByCode = new LinkedHashMap<>();
-        if (nodes == null) {
-            return nodeIdsByCode;
-        }
-
-        for (GceInputDTO.GceNodeInputDTO node : nodes) {
-            if (node == null) {
-                throw new IllegalArgumentException("Payload de nodes nao pode conter itens nulos.");
-            }
-            nodeIdsByCode.put(node.code(), UUID.randomUUID());
-        }
-
-        return nodeIdsByCode;
-    }
-
-    private static UUID resolveNodeId(Map<String, UUID> nodeIdsByCode, String nodeCode) {
-        UUID nodeId = nodeIdsByCode.get(nodeCode);
-        if (nodeId == null) {
-            throw new IllegalArgumentException("Referencia para no inexistente no payload: " + nodeCode);
-        }
-        return nodeId;
     }
 
     private static List<ValidationGceDTO.ValidationGceMessageDTO> toMessageDtos(List<ValidationGceMessage> messages) {

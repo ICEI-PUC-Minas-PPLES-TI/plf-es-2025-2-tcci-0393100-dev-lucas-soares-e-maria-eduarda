@@ -10,7 +10,6 @@ import org.springframework.data.neo4j.core.schema.Node;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Entidade Neo4j que representa uma restricao associada ao GCE.
@@ -19,10 +18,10 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 @ToString
 public class Neo4jGceRestrictionEntity extends Neo4jBaseEntity {
 
     private RestrictionTypeEnum type;
-    private List<UUID> nodeIds = new ArrayList<>();
+    private List<String> nodeCodes = new ArrayList<>();
 }

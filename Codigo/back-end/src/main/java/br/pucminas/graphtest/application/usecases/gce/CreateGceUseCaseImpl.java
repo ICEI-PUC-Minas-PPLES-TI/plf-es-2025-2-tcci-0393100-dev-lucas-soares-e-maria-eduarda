@@ -16,10 +16,7 @@ import br.pucminas.graphtest.application.port.output.repositories.GceRepositoryP
 import br.pucminas.graphtest.application.service.interfaces.GceValidationResultService;
 
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 /**
  * Caso de uso responsavel por criar um novo GCE.
@@ -48,17 +45,15 @@ public class CreateGceUseCaseImpl implements CreateGceUseCasePort {
      */
     @Override
     public GceOutput execute(CreateGceInput input) {
-        Map<String, UUID> nodeIdsByCode = createNodeIdsByCode(input.nodes());
-
         Gce graph = new Gce(
-                UUID.randomUUID(),
+                null,
                 input.projectId(),
                 input.name(),
                 input.description(),
                 Boolean.TRUE.equals(input.selected()),
-                toNodes(input.nodes(), nodeIdsByCode),
-                toEdges(input.edges(), nodeIdsByCode),
-                toRestrictions(input.restrictions(), nodeIdsByCode)
+                toNodes(input.nodes()),
+                toEdges(input.edges()),
+                toRestrictions(input.restrictions())
         );
 
         ValidationGceOutput validation = gceValidationResultService.validate(graph);
@@ -69,69 +64,43 @@ public class CreateGceUseCaseImpl implements CreateGceUseCasePort {
         return GceOutput.from(gceRepository.save(graph));
     }
 
-    private Map<String, UUID> createNodeIdsByCode(List<GceNodeInput> nodes) {
-        Map<String, UUID> nodeIdsByCode = new LinkedHashMap<>();
-        if (nodes == null) {
-            return nodeIdsByCode;
-        }
-
-        for (GceNodeInput node : nodes) {
-            if (node == null) {
-                throw new InvalidGceModelException("Payload de nodes nao pode conter itens nulos.");
-            }
-            nodeIdsByCode.put(node.code(), UUID.randomUUID());
-        }
-
-        return nodeIdsByCode;
-    }
-
-    private Collection<GceNode> toNodes(List<GceNodeInput> nodes, Map<String, UUID> nodeIdsByCode) {
+    private Collection<GceNode> toNodes(List<GceNodeInput> nodes) {
         if (nodes == null) {
             return List.of();
         }
 
         return nodes.stream()
-                .map(node -> new GceNode(resolveNodeId(nodeIdsByCode, node.code()), node.code(), node.label(), node.type(), node.operatorType()))
+                .map(node -> new GceNode(null, node.code(), node.label(), node.type(), node.operatorType()))
                 .toList();
     }
 
-    private Collection<GceEdge> toEdges(List<GceEdgeInput> edges, Map<String, UUID> nodeIdsByCode) {
+    private Collection<GceEdge> toEdges(List<GceEdgeInput> edges) {
         if (edges == null) {
             return List.of();
         }
 
         return edges.stream()
                 .map(edge -> new GceEdge(
-                        UUID.randomUUID(),
-                        resolveNodeId(nodeIdsByCode, edge.sourceNodeCode()),
-                        resolveNodeId(nodeIdsByCode, edge.targetNodeCode()),
+                        null,
+                        edge.sourceNodeCode(),
+                        edge.targetNodeCode(),
                         edge.type()
                 ))
                 .toList();
     }
 
-    private Collection<GceRestriction> toRestrictions(List<GceRestrictionInput> restrictions, Map<String, UUID> nodeIdsByCode) {
+    private Collection<GceRestriction> toRestrictions(List<GceRestrictionInput> restrictions) {
         if (restrictions == null) {
             return List.of();
         }
 
         return restrictions.stream()
                 .map(restriction -> new GceRestriction(
-                        UUID.randomUUID(),
+                        null,
                         restriction.type(),
-                        restriction.nodeCodes().stream()
-                                .map(code -> resolveNodeId(nodeIdsByCode, code))
-                                .toList()
+                        restriction.nodeCodes()
                 ))
                 .toList();
-    }
-
-    private UUID resolveNodeId(Map<String, UUID> nodeIdsByCode, String nodeCode) {
-        UUID nodeId = nodeIdsByCode.get(nodeCode);
-        if (nodeId == null) {
-            throw new InvalidGceModelException("Referencia para no inexistente no payload: " + nodeCode);
-        }
-        return nodeId;
     }
 
     /**

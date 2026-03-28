@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * Mapper responsavel por converter GCEs entre dominio e persistencia Neo4j.
@@ -22,12 +21,6 @@ import java.util.UUID;
 @Component
 public class GceMapper implements PersistenceMapper<Gce, Neo4jGceEntity> {
 
-    /**
-     * Converte um agregado de dominio na entidade Neo4j correspondente.
-     *
-     * @param graph agregado de dominio
-     * @return entidade Neo4j equivalente
-     */
     @Override
     public Neo4jGceEntity toEntity(Gce graph) {
         if (graph == null) {
@@ -41,7 +34,7 @@ public class GceMapper implements PersistenceMapper<Gce, Neo4jGceEntity> {
         entity.setDescription(graph.getDescription());
         entity.setSelected(graph.isSelected());
 
-        Map<UUID, Neo4jGceNodeEntity> nodeEntities = new LinkedHashMap<>();
+        Map<String, Neo4jGceNodeEntity> nodeEntities = new LinkedHashMap<>();
         for (GceNode node : graph.getNodes()) {
             Neo4jGceNodeEntity nodeEntity = new Neo4jGceNodeEntity();
             nodeEntity.setId(node.getId());
@@ -50,15 +43,18 @@ public class GceMapper implements PersistenceMapper<Gce, Neo4jGceEntity> {
             nodeEntity.setType(node.getType());
             nodeEntity.setOperatorType(node.getOperatorType());
             nodeEntity.setOutgoingEdges(new ArrayList<>());
-            nodeEntities.put(node.getId(), nodeEntity);
+            nodeEntities.put(node.getCode(), nodeEntity);
         }
 
         for (GceEdge edge : graph.getEdges()) {
-            Neo4jGceNodeEntity sourceNode = nodeEntities.get(edge.getSourceNodeId());
-            Neo4jGceNodeEntity targetNode = nodeEntities.get(edge.getTargetNodeId());
+            Neo4jGceNodeEntity sourceNode = nodeEntities.get(edge.getSourceNodeCode());
+            Neo4jGceNodeEntity targetNode = nodeEntities.get(edge.getTargetNodeCode());
+            if (sourceNode == null || targetNode == null) {
+                continue;
+            }
 
             Neo4jGceEdgeRelationship relationship = new Neo4jGceEdgeRelationship();
-            relationship.setEdgeId(edge.getId());
+            relationship.setId(edge.getId());
             relationship.setType(edge.getType());
             relationship.setTargetNode(targetNode);
 
@@ -74,12 +70,6 @@ public class GceMapper implements PersistenceMapper<Gce, Neo4jGceEntity> {
         return entity;
     }
 
-    /**
-     * Converte a entidade Neo4j para o agregado de dominio correspondente.
-     *
-     * @param entity entidade Neo4j
-     * @return agregado de dominio equivalente
-     */
     @Override
     public Gce toDomain(Neo4jGceEntity entity) {
         if (entity == null) {
@@ -100,14 +90,14 @@ public class GceMapper implements PersistenceMapper<Gce, Neo4jGceEntity> {
                 }
 
                 for (Neo4jGceEdgeRelationship edgeRelationship : sourceNode.getOutgoingEdges()) {
-                    if (edgeRelationship == null || edgeRelationship.getTargetNode() == null || edgeRelationship.getEdgeId() == null) {
+                    if (edgeRelationship == null || edgeRelationship.getTargetNode() == null) {
                         continue;
                     }
 
                     edges.add(new GceEdge(
-                            edgeRelationship.getEdgeId(),
-                            sourceNode.getId(),
-                            edgeRelationship.getTargetNode().getId(),
+                            edgeRelationship.getId(),
+                            sourceNode.getCode(),
+                            edgeRelationship.getTargetNode().getCode(),
                             edgeRelationship.getType()
                     ));
                 }
@@ -136,7 +126,7 @@ public class GceMapper implements PersistenceMapper<Gce, Neo4jGceEntity> {
         Neo4jGceRestrictionEntity entity = new Neo4jGceRestrictionEntity();
         entity.setId(restriction.getId());
         entity.setType(restriction.getType());
-        entity.setNodeIds(new ArrayList<>(restriction.getNodeIds()));
+        entity.setNodeCodes(new ArrayList<>(restriction.getNodeCodes()));
         return entity;
     }
 
@@ -154,7 +144,7 @@ public class GceMapper implements PersistenceMapper<Gce, Neo4jGceEntity> {
         return new GceRestriction(
                 entity.getId(),
                 entity.getType(),
-                entity.getNodeIds()
+                entity.getNodeCodes()
         );
     }
 }

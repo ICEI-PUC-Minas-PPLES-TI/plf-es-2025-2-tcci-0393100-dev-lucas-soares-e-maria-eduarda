@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Map;
-import java.util.UUID;
 
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GCE_VALIDAR;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.ID;
@@ -25,7 +24,7 @@ public interface GceController {
     ResponseEntity<Map<String, Object>> create(@Validated @RequestBody GceInputDTO graph);
 
     @GetMapping(ID)
-    ResponseEntity<GceDTO> findById(@PathVariable UUID id);
+    ResponseEntity<GceDTO> findById(@PathVariable Long id);
 
     @PostMapping(GCE_VALIDAR)
     ResponseEntity<ValidationGceDTO> validate(@Validated @RequestBody GceInputDTO graph);
