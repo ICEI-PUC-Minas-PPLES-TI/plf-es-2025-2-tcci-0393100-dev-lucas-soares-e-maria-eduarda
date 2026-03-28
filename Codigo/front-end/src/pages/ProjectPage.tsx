@@ -8,6 +8,7 @@ import { QuickActions } from '../features/projects/components/QuickActions';
 import { RecentArtifacts } from '../features/projects/components/RecentArtifacts';
 import { ValidationWarnings } from '../features/projects/components/ValidationWarnings';
 import { EditProjectModal } from '../features/projects/components/EditProjectModal';
+import { DeleteProjectModal } from '../features/projects/components/DeleteProjectModal';
 import ProjectService from '../services/Project/ProjectService';
 import type { ProjectDTO } from '../services/Project/types/project';
 
@@ -17,6 +18,7 @@ export function ProjectPage() {
   const [activeTab, setActiveTab] = useState('overview');
   const [project, setProject] = useState<ProjectDTO | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -77,7 +79,7 @@ export function ProjectPage() {
         projectName={project.name}
         projectDescription={project.description}
         onEdit={() => setShowEditModal(true)}
-        onDelete={handleDelete}
+        onDelete={() => setShowDeleteModal(true)}
       />
       <ProjectTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
@@ -95,6 +97,13 @@ export function ProjectPage() {
           </div>
         )}
       </main>
+      {showDeleteModal && (
+        <DeleteProjectModal
+          projectName={project.name}
+          onClose={() => setShowDeleteModal(false)}
+          onConfirm={handleDelete}
+        />
+      )}
       {showEditModal && (
         <EditProjectModal
           project={project}
