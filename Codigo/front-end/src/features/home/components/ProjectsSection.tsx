@@ -119,14 +119,9 @@ export function ProjectsSection() {
 
               <h4 className="text-gray-100 font-medium mb-2">{project.name}</h4>
 
-              <div className="space-y-2 mb-4">
-                <p className="text-sm text-gray-400">
-                  Criado em {new Date(project.createdAt).toLocaleDateString('pt-BR')}
-                </p>
-                <p className="text-sm text-gray-400">
-                  {project.artifacts} artefatos
-                </p>
-              </div>
+              {project.description && (
+                <p className="text-sm text-gray-400 mb-4">{project.description}</p>
+              )}
 
               <Link to={`/projeto/${project.id}`}>
                 <Button variant="accent" className="w-full justify-center group-hover:bg-primary group-hover:text-white">
