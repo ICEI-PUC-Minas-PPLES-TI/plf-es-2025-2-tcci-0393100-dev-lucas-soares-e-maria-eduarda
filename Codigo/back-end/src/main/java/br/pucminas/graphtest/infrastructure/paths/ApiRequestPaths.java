@@ -9,6 +9,8 @@ public final class ApiRequestPaths {
 
     public static final String PROJETO = "/projeto";
 
+    public static final String GCE = "/grafo-de-causa-efeito";
+
     public static final String ID = "/{id}";
 
     public static final String USUARIO_SENHA = "/{id}/senha";
@@ -16,5 +18,7 @@ public final class ApiRequestPaths {
     public static final String USUARIO_VERIFICAR_TOKEN = "/verificar-token";
 
     public static final String PROJETO_MEUS = "/meus";
+
+    public static final String GCE_VALIDAR = "/validar";
 
 }

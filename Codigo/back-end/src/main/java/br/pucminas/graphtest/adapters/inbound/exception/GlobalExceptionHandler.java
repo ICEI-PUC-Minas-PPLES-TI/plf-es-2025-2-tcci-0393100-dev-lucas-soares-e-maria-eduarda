@@ -112,6 +112,7 @@ public class GlobalExceptionHandler implements AuthenticationFailureHandler {
      * Erros de conversão
      */
     @ExceptionHandler({
+            IllegalArgumentException.class,
             MethodArgumentTypeMismatchException.class,
             HttpMessageNotReadableException.class
     })
@@ -161,7 +162,7 @@ public class GlobalExceptionHandler implements AuthenticationFailureHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleGeneric(Exception e) {
 
-        log.error("[ERRO] Exception: {}", e.getMessage());
+        log.error("[ERRO] Exception: {}", e.getMessage(), e);
 
         return construirMsgErro(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }

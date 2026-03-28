@@ -6,6 +6,9 @@ import br.pucminas.graphtest.application.port.input.project.FindProjectByIdUseCa
 import br.pucminas.graphtest.application.port.input.project.ListProjectsByUserUseCasePort;
 import br.pucminas.graphtest.application.port.input.project.ListProjectsUseCasePort;
 import br.pucminas.graphtest.application.port.input.project.UpdateProjectUseCasePort;
+import br.pucminas.graphtest.application.port.input.gce.CreateGceUseCasePort;
+import br.pucminas.graphtest.application.port.input.gce.FindGceByIdUseCasePort;
+import br.pucminas.graphtest.application.port.input.gce.ValidateGceUseCasePort;
 import br.pucminas.graphtest.application.port.input.security.GenerateTokenUseCasePort;
 import br.pucminas.graphtest.application.port.input.security.LoadAuthenticationUserUseCasePort;
 import br.pucminas.graphtest.application.port.input.security.AuthenticatedUserByTokenUseCasePort;
@@ -17,15 +20,24 @@ import br.pucminas.graphtest.application.port.input.user.FindUserByIdUseCasePort
 import br.pucminas.graphtest.application.port.input.user.ListUsersUseCasePort;
 import br.pucminas.graphtest.application.port.input.user.UpdateUserPasswordUseCasePort;
 import br.pucminas.graphtest.application.port.input.user.UpdateUserUseCasePort;
+import br.pucminas.graphtest.adapters.outbound.repositories.GceRepositoryPortImpl;
+import br.pucminas.graphtest.adapters.outbound.repositories.interfaces.Neo4jGceRepository;
+import br.pucminas.graphtest.adapters.outbound.repositories.mappers.GceMapper;
+import br.pucminas.graphtest.application.port.output.repositories.GceRepositoryPort;
 import br.pucminas.graphtest.application.port.output.repositories.ProjectRepositoryPort;
 import br.pucminas.graphtest.application.port.output.repositories.UserRepositoryPort;
 import br.pucminas.graphtest.application.port.output.security.CurrentUserPort;
 import br.pucminas.graphtest.application.port.output.security.PasswordEncoderPort;
 import br.pucminas.graphtest.application.port.output.security.TokenServicePort;
+import br.pucminas.graphtest.application.service.GceValidationResultServiceImpl;
 import br.pucminas.graphtest.application.service.ProjectAccessServiceImpl;
 import br.pucminas.graphtest.application.service.UserAuthorizationServiceImpl;
+import br.pucminas.graphtest.application.service.interfaces.GceValidationResultService;
 import br.pucminas.graphtest.application.service.interfaces.ProjectAccessService;
 import br.pucminas.graphtest.application.service.interfaces.UserAuthorizationService;
+import br.pucminas.graphtest.application.usecases.gce.CreateGceUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.gce.FindGceByIdUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.gce.ValidateGceUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.project.CreateProjectUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.project.DeleteProjectUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.project.FindProjectByIdUseCaseImpl;
@@ -48,6 +60,32 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class ApplicationBeansConfig {
+
+    @Bean
+    public GceRepositoryPort gceRepositoryPort(Neo4jGceRepository neo4jGceRepository, GceMapper gceMapper) {
+        return new GceRepositoryPortImpl(neo4jGceRepository, gceMapper);
+    }
+
+    @Bean
+    public GceValidationResultService gceValidationResultService() {
+        return new GceValidationResultServiceImpl();
+    }
+
+    @Bean
+    public CreateGceUseCasePort createGceUseCase(GceRepositoryPort gceRepositoryPort,
+                                                 GceValidationResultService gceValidationResultService) {
+        return new CreateGceUseCaseImpl(gceRepositoryPort, gceValidationResultService);
+    }
+
+    @Bean
+    public FindGceByIdUseCasePort findGceByIdUseCase(GceRepositoryPort gceRepositoryPort) {
+        return new FindGceByIdUseCaseImpl(gceRepositoryPort);
+    }
+
+    @Bean
+    public ValidateGceUseCasePort validateGceUseCase(GceValidationResultService gceValidationResultService) {
+        return new ValidateGceUseCaseImpl(gceValidationResultService);
+    }
 
     @Bean
     public ProjectAccessService projectAccessService(ProjectRepositoryPort projectRepository, CurrentUserPort currentUserPort) {

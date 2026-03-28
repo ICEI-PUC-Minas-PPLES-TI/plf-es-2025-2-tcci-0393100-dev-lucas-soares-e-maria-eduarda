@@ -11,6 +11,8 @@ public class LogTopicsUtil {
 
     public static final String PROJETO_CONTROLLER = "PROJETO_CONTROLLER";
 
+    public static final String GCE_CONTROLLER = "GCE_CONTROLLER";
+
     public static final String JWT = "JWT";
 
     public static final String SEGURANCA_CONFIG = "SEGURANCA_CONFIG";
