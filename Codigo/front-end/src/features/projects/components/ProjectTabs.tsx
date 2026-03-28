@@ -15,8 +15,7 @@ const tabs = [
 
 export function ProjectTabs({ activeTab, onTabChange }: ProjectTabsProps) {
   return (
-    <nav className="bg-surface border-b border-edge">
-      <div className="px-6 flex gap-1">
+    <div className="container mx-auto px-6 flex gap-1 border-b border-edge">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -39,7 +38,6 @@ export function ProjectTabs({ activeTab, onTabChange }: ProjectTabsProps) {
             </button>
           );
         })}
-      </div>
-    </nav>
+    </div>
   );
 }

@@ -8,8 +8,7 @@ interface ProjectHeaderProps {
 
 export function ProjectHeader({ projectName, projectDescription }: ProjectHeaderProps) {
   return (
-    <div className="bg-surface border-b border-edge">
-      <div className="px-6 py-4 flex items-center justify-between">
+    <div className="container mx-auto px-6 py-4 flex items-center justify-between border-b border-edge">
         <div className="flex-1">
           <h1 className="text-2xl mb-1">{projectName} — Projeto</h1>
           <p className="text-gray-400 text-sm">{projectDescription}</p>
@@ -26,7 +25,6 @@ export function ProjectHeader({ projectName, projectDescription }: ProjectHeader
             Excluir Projeto
           </Button>
         </div>
-      </div>
     </div>
   );
 }

@@ -29,9 +29,9 @@ export function ProjectPage() {
       />
       <ProjectTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
-      <main className="flex-1 p-6">
+      <main className="flex-1">
         {activeTab === 'overview' && (
-          <div className="flex gap-6">
+          <div className="container mx-auto px-6 py-6 flex gap-6">
             <div className="flex-1 space-y-6 min-w-0">
               <QuickActions />
               <RecentArtifacts />
