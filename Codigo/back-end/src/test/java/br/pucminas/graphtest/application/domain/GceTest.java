@@ -17,10 +17,10 @@ class GceTest {
 
     @Test
     void shouldAddNodeEdgeAndRestrictionThroughAggregateOperations() {
-        GceNode cause = GceNode.cause(1L, "C1", "Causa 1");
-        GceNode effect = GceNode.effect(2L, "E1", "Efeito 1");
+        GceNode cause = GceNode.cause(UUID.randomUUID(), "C1", "Causa 1");
+        GceNode effect = GceNode.effect(UUID.randomUUID(), "E1", "Efeito 1");
         Gce gce = new Gce(
-                10L,
+                UUID.randomUUID(),
                 UUID.randomUUID(),
                 "GCE 1",
                 "Descricao",
@@ -30,9 +30,9 @@ class GceTest {
                 List.of()
         );
 
-        GceNode operator = GceNode.operator(3L, "O1", "Operador 1", GceOperatorTypeEnum.AND);
-        GceEdge edgeOne = new GceEdge(11L, cause.getCode(), operator.getCode(), GceEdgeTypeEnum.IDENTITY);
-        GceEdge edgeTwo = new GceEdge(12L, effect.getCode(), operator.getCode(), GceEdgeTypeEnum.IDENTITY);
+        GceNode operator = GceNode.operator(UUID.randomUUID(), "O1", "Operador 1", GceOperatorTypeEnum.AND);
+        GceEdge edgeOne = new GceEdge(UUID.randomUUID(), cause.getCode(), operator.getCode(), GceEdgeTypeEnum.IDENTITY);
+        GceEdge edgeTwo = new GceEdge(UUID.randomUUID(), effect.getCode(), operator.getCode(), GceEdgeTypeEnum.IDENTITY);
 
         gce.addNode(operator);
         gce.addEdge(edgeOne);
@@ -43,9 +43,9 @@ class GceTest {
 
     @Test
     void shouldPreventDuplicateNodeCodeWhenAddingNode() {
-        GceNode cause = GceNode.cause(1L, "C1", "Causa 1");
+        GceNode cause = GceNode.cause(UUID.randomUUID(), "C1", "Causa 1");
         Gce gce = new Gce(
-                10L,
+                UUID.randomUUID(),
                 UUID.randomUUID(),
                 "GCE 1",
                 null,
@@ -57,7 +57,7 @@ class GceTest {
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> gce.addNode(GceNode.effect(2L, "C1", "Efeito duplicado"))
+                () -> gce.addNode(GceNode.effect(UUID.randomUUID(), "C1", "Efeito duplicado"))
         );
 
         assertTrue(exception.getMessage().contains("codigo"));
@@ -65,11 +65,11 @@ class GceTest {
 
     @Test
     void shouldPreventNodeRemovalWhenStillReferenced() {
-        GceNode cause = GceNode.cause(1L, "C1", "Causa 1");
-        GceNode effect = GceNode.effect(2L, "E1", "Efeito 1");
-        GceEdge edge = new GceEdge(11L, cause.getCode(), effect.getCode(), GceEdgeTypeEnum.IDENTITY);
+        GceNode cause = GceNode.cause(UUID.randomUUID(), "C1", "Causa 1");
+        GceNode effect = GceNode.effect(UUID.randomUUID(), "E1", "Efeito 1");
+        GceEdge edge = new GceEdge(UUID.randomUUID(), cause.getCode(), effect.getCode(), GceEdgeTypeEnum.IDENTITY);
         Gce gce = new Gce(
-                10L,
+                UUID.randomUUID(),
                 UUID.randomUUID(),
                 "GCE 1",
                 null,
@@ -85,15 +85,16 @@ class GceTest {
 
     @Test
     void shouldRollbackNodeReplacementWhenItBreaksRestrictionTyping() {
-        GceNode cause = GceNode.cause(1L, "C1", "Causa 1");
-        GceNode otherCause = GceNode.cause(2L, "C2", "Causa 2");
+        UUID causeId = UUID.randomUUID();
+        GceNode cause = GceNode.cause(causeId, "C1", "Causa 1");
+        GceNode otherCause = GceNode.cause(UUID.randomUUID(), "C2", "Causa 2");
         GceRestriction restriction = new GceRestriction(
-                20L,
+                UUID.randomUUID(),
                 RestrictionTypeEnum.EXCLUSIVE,
                 List.of(cause.getCode(), otherCause.getCode())
         );
         Gce gce = new Gce(
-                10L,
+                UUID.randomUUID(),
                 UUID.randomUUID(),
                 "GCE 1",
                 null,
@@ -105,7 +106,7 @@ class GceTest {
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> gce.replaceNode(GceNode.effect(1L, "C1", "Agora efeito"))
+                () -> gce.replaceNode(GceNode.effect(causeId, "C1", "Agora efeito"))
         );
 
         assertTrue(exception.getMessage().contains("CAUSE"));
@@ -114,9 +115,9 @@ class GceTest {
 
     @Test
     void shouldUpdateDetailsAndSelectionState() {
-        GceNode cause = GceNode.cause(1L, "C1", "Causa 1");
+        GceNode cause = GceNode.cause(UUID.randomUUID(), "C1", "Causa 1");
         Gce gce = new Gce(
-                10L,
+                UUID.randomUUID(),
                 UUID.randomUUID(),
                 "Nome inicial",
                 "Descricao inicial",

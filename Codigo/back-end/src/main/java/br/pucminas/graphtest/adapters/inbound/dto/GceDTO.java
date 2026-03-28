@@ -14,7 +14,7 @@ import java.util.UUID;
  */
 @Builder
 public record GceDTO(
-        Long id,
+        UUID id,
         UUID projectId,
         String name,
         String description,
@@ -28,7 +28,7 @@ public record GceDTO(
      * DTO de no do GCE.
      */
     public record GceNodeDTO(
-            Long id,
+            UUID id,
             String code,
             String label,
             GceNodeTypeEnum type,
@@ -40,7 +40,7 @@ public record GceDTO(
      * DTO de aresta do GCE.
      */
     public record GceEdgeDTO(
-            Long id,
+            UUID id,
             String sourceNodeCode,
             String targetNodeCode,
             GceEdgeTypeEnum type
@@ -51,7 +51,7 @@ public record GceDTO(
      * DTO de restricao do GCE.
      */
     public record GceRestrictionDTO(
-            Long id,
+            UUID id,
             RestrictionTypeEnum type,
             List<String> nodeCodes
     ) {

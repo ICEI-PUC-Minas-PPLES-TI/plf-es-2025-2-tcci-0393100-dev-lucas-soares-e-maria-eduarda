@@ -3,11 +3,13 @@ package br.pucminas.graphtest.application.port.input.gce.records;
 import br.pucminas.graphtest.application.domain.GceEdge;
 import br.pucminas.graphtest.application.domain.enums.GceEdgeTypeEnum;
 
+import java.util.UUID;
+
 /**
  * Saida de uma aresta do GCE.
  */
 public record GceEdgeOutput(
-        Long id,
+        UUID id,
         String sourceNodeCode,
         String targetNodeCode,
         GceEdgeTypeEnum type

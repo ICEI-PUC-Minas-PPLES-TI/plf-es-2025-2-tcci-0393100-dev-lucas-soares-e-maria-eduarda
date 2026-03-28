@@ -28,7 +28,7 @@ public class GceMapper implements PersistenceMapper<Gce, Neo4jGceEntity> {
         }
 
         Neo4jGceEntity entity = new Neo4jGceEntity();
-        entity.setId(graph.getId());
+        applyId(entity, graph.getId());
         entity.setProjectId(graph.getProjectId());
         entity.setName(graph.getName());
         entity.setDescription(graph.getDescription());
@@ -36,12 +36,7 @@ public class GceMapper implements PersistenceMapper<Gce, Neo4jGceEntity> {
 
         Map<String, Neo4jGceNodeEntity> nodeEntities = new LinkedHashMap<>();
         for (GceNode node : graph.getNodes()) {
-            Neo4jGceNodeEntity nodeEntity = new Neo4jGceNodeEntity();
-            nodeEntity.setId(node.getId());
-            nodeEntity.setCode(node.getCode());
-            nodeEntity.setLabel(node.getLabel());
-            nodeEntity.setType(node.getType());
-            nodeEntity.setOperatorType(node.getOperatorType());
+            Neo4jGceNodeEntity nodeEntity = toNodeEntity(node);
             nodeEntity.setOutgoingEdges(new ArrayList<>());
             nodeEntities.put(node.getCode(), nodeEntity);
         }
@@ -54,10 +49,9 @@ public class GceMapper implements PersistenceMapper<Gce, Neo4jGceEntity> {
             }
 
             Neo4jGceEdgeRelationship relationship = new Neo4jGceEdgeRelationship();
-            relationship.setId(edge.getId());
+            relationship.setEdgeId(edge.getId());
             relationship.setType(edge.getType());
             relationship.setTargetNode(targetNode);
-
             sourceNode.getOutgoingEdges().add(relationship);
         }
 
@@ -95,7 +89,7 @@ public class GceMapper implements PersistenceMapper<Gce, Neo4jGceEntity> {
                     }
 
                     edges.add(new GceEdge(
-                            edgeRelationship.getId(),
+                            edgeRelationship.getEdgeId(),
                             sourceNode.getCode(),
                             edgeRelationship.getTargetNode().getCode(),
                             edgeRelationship.getType()
@@ -124,10 +118,38 @@ public class GceMapper implements PersistenceMapper<Gce, Neo4jGceEntity> {
 
     private Neo4jGceRestrictionEntity toRestrictionEntity(GceRestriction restriction) {
         Neo4jGceRestrictionEntity entity = new Neo4jGceRestrictionEntity();
-        entity.setId(restriction.getId());
+        applyId(entity, restriction.getId());
         entity.setType(restriction.getType());
         entity.setNodeCodes(new ArrayList<>(restriction.getNodeCodes()));
         return entity;
+    }
+
+    private Neo4jGceNodeEntity toNodeEntity(GceNode node) {
+        Neo4jGceNodeEntity entity = new Neo4jGceNodeEntity();
+        applyId(entity, node.getId());
+        entity.setCode(node.getCode());
+        entity.setLabel(node.getLabel());
+        entity.setType(node.getType());
+        entity.setOperatorType(node.getOperatorType());
+        return entity;
+    }
+
+    private void applyId(Neo4jGceEntity entity, java.util.UUID id) {
+        if (id != null) {
+            entity.setId(id);
+        }
+    }
+
+    private void applyId(Neo4jGceNodeEntity entity, java.util.UUID id) {
+        if (id != null) {
+            entity.setId(id);
+        }
+    }
+
+    private void applyId(Neo4jGceRestrictionEntity entity, java.util.UUID id) {
+        if (id != null) {
+            entity.setId(id);
+        }
     }
 
     private GceNode toDomainNode(Neo4jGceNodeEntity entity) {
@@ -147,4 +169,5 @@ public class GceMapper implements PersistenceMapper<Gce, Neo4jGceEntity> {
                 entity.getNodeCodes()
         );
     }
+
 }

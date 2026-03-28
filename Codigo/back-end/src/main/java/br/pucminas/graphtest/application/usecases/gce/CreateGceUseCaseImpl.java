@@ -17,6 +17,7 @@ import br.pucminas.graphtest.application.service.interfaces.GceValidationResultS
 
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Caso de uso responsavel por criar um novo GCE.
@@ -81,7 +82,7 @@ public class CreateGceUseCaseImpl implements CreateGceUseCasePort {
 
         return edges.stream()
                 .map(edge -> new GceEdge(
-                        null,
+                        UUID.randomUUID(),
                         edge.sourceNodeCode(),
                         edge.targetNodeCode(),
                         edge.type()

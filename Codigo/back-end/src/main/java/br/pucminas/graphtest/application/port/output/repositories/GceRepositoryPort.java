@@ -3,6 +3,7 @@ package br.pucminas.graphtest.application.port.output.repositories;
 import br.pucminas.graphtest.application.domain.Gce;
 
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Porta de saida responsavel por persistir e recuperar agregados de GCE.
@@ -23,5 +24,5 @@ public interface GceRepositoryPort {
      * @param id identificador do grafo
      * @return agregado encontrado, quando existir
      */
-    Optional<Gce> findById(Long id);
+    Optional<Gce> findById(UUID id);
 }

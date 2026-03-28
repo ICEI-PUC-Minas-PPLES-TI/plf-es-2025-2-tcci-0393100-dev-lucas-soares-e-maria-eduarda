@@ -3,29 +3,46 @@ package br.pucminas.graphtest.infrastructure.config;
 import jakarta.persistence.EntityManagerFactory;
 import org.neo4j.driver.Driver;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.neo4j.core.DatabaseSelectionProvider;
 import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.data.neo4j.core.Neo4jTemplate;
 import org.springframework.data.neo4j.core.mapping.Neo4jMappingContext;
+import org.springframework.data.neo4j.repository.config.EnableNeo4jRepositories;
 import org.springframework.data.neo4j.core.transaction.Neo4jTransactionManager;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
- * Configuracao explicita do SDN para garantir suporte transacional ao Neo4j.
+ * Separa o escopo de varredura dos repositorios JPA e Neo4j.
+ *
+ * <p>Como a aplicacao usa dois modulos Spring Data, a configuracao explicita
+ * evita ambiguidade no binding entre interface de repositorio e tecnologia de
+ * persistencia.</p>
  */
 @Configuration
-public class Neo4jConfig {
+@EnableJpaRepositories(
+        basePackages = "br.pucminas.graphtest.adapters.outbound.repositories.interfaces.jpa",
+        transactionManagerRef = "transactionManager"
+)
+@EnableNeo4jRepositories(
+        basePackages = "br.pucminas.graphtest.adapters.outbound.repositories.interfaces.neo4j",
+        transactionManagerRef = "neo4jTransactionManager",
+        neo4jTemplateRef = "neo4jTemplate"
+)
+public class PersistenceRepositoriesConfig {
 
     /**
-     * Registra o transaction manager padrao do JPA com o nome esperado pelo Spring.
+     * Registra o transaction manager padrao do JPA.
      *
      * @param entityManagerFactory fabrica de entity managers do JPA
-     * @return transaction manager padrao da aplicacao relacional
+     * @return transaction manager primario da aplicacao relacional
      */
     @Bean(name = "transactionManager")
+    @Primary
     public PlatformTransactionManager transactionManager(EntityManagerFactory entityManagerFactory) {
         return new JpaTransactionManager(entityManagerFactory);
     }
@@ -46,13 +63,15 @@ public class Neo4jConfig {
     }
 
     /**
-     * Registra explicitamente o template Neo4j com transaction manager,
-     * evitando que o SDN crie um template sem suporte transacional.
+     * Registra explicitamente o template Neo4j com o transaction manager da tecnologia.
+     *
+     * <p>No contexto atual, apenas expor o transaction manager do Neo4j nao foi
+     * suficiente para o SDN montar um template transacional valido.</p>
      *
      * @param neo4jClient cliente Neo4j do Spring Data
      * @param neo4jMappingContext contexto de mapeamento do SDN
      * @param neo4jTransactionManager transaction manager do Neo4j
-     * @return template Neo4j configurado
+     * @return template Neo4j configurado com suporte transacional
      */
     @Bean
     public Neo4jTemplate neo4jTemplate(

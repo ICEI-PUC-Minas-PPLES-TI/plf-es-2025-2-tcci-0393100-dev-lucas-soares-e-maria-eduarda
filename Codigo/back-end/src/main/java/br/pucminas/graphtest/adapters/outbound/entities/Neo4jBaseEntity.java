@@ -4,6 +4,8 @@ import lombok.Data;
 import org.springframework.data.neo4j.core.schema.GeneratedValue;
 import org.springframework.data.neo4j.core.schema.Id;
 
+import java.util.UUID;
+
 /**
  * Classe base abstrata para entidades persistidas no Neo4j.
  */
@@ -11,9 +13,9 @@ import org.springframework.data.neo4j.core.schema.Id;
 public abstract class Neo4jBaseEntity {
 
     /**
-     * Identificador unico da entidade.
+     * Identificador externo unico da entidade.
      */
     @Id
     @GeneratedValue
-    protected Long id;
+    protected UUID id;
 }

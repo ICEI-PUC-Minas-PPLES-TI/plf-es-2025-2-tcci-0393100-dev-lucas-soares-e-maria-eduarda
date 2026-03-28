@@ -1,21 +1,23 @@
 package br.pucminas.graphtest.application.domain;
 
+import java.util.UUID;
+
 /**
  * Entidade base do dominio do GCE.
  *
- * <p>As entidades relacionadas ao grafo utilizam o mesmo identificador do
- * Neo4j, representado por um {@link Long}.</p>
+ * <p>As entidades relacionadas ao grafo utilizam identificadores externos
+ * gerados pela aplicacao, independentes do id interno do Neo4j.</p>
  */
 public abstract class GceBaseEntity {
 
-    protected Long id;
+    protected UUID id;
 
     /**
-     * Retorna o identificador persistido da entidade.
+     * Retorna o identificador externo da entidade.
      *
-     * @return identificador da entidade no Neo4j
+     * @return identificador externo da entidade
      */
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 }

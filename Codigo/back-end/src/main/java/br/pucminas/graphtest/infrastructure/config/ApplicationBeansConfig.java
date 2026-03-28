@@ -21,7 +21,6 @@ import br.pucminas.graphtest.application.port.input.user.ListUsersUseCasePort;
 import br.pucminas.graphtest.application.port.input.user.UpdateUserPasswordUseCasePort;
 import br.pucminas.graphtest.application.port.input.user.UpdateUserUseCasePort;
 import br.pucminas.graphtest.adapters.outbound.repositories.GceRepositoryPortImpl;
-import br.pucminas.graphtest.adapters.outbound.repositories.interfaces.Neo4jGceRepository;
 import br.pucminas.graphtest.adapters.outbound.repositories.mappers.GceMapper;
 import br.pucminas.graphtest.application.port.output.repositories.GceRepositoryPort;
 import br.pucminas.graphtest.application.port.output.repositories.ProjectRepositoryPort;

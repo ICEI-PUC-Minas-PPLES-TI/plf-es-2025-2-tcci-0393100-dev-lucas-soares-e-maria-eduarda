@@ -4,12 +4,13 @@ import br.pucminas.graphtest.application.domain.GceRestriction;
 import br.pucminas.graphtest.application.domain.enums.RestrictionTypeEnum;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Saida de uma restricao do GCE.
  */
 public record GceRestrictionOutput(
-        Long id,
+        UUID id,
         RestrictionTypeEnum type,
         List<String> nodeCodes
 ) {

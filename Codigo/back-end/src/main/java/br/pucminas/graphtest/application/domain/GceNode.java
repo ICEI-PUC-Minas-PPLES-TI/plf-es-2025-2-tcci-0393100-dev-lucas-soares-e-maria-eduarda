@@ -4,6 +4,7 @@ import br.pucminas.graphtest.application.domain.enums.GceNodeTypeEnum;
 import br.pucminas.graphtest.application.domain.enums.GceOperatorTypeEnum;
 
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * Representa um no do Grafo de Causa e Efeito.
@@ -24,7 +25,7 @@ public class GceNode extends GceBaseEntity {
      * @param type natureza do no no modelo
      * @param operatorType operador logico associado, quando aplicavel
      */
-    public GceNode(Long id, String code, String label, GceNodeTypeEnum type, GceOperatorTypeEnum operatorType) {
+    public GceNode(UUID id, String code, String label, GceNodeTypeEnum type, GceOperatorTypeEnum operatorType) {
         this.id = id;
         this.code = requireText(code, "code");
         this.label = requireText(label, "label");
@@ -34,21 +35,21 @@ public class GceNode extends GceBaseEntity {
     /**
      * Fabrica um no do tipo causa.
      */
-    public static GceNode cause(Long id, String code, String label) {
+    public static GceNode cause(UUID id, String code, String label) {
         return new GceNode(id, code, label, GceNodeTypeEnum.CAUSE, null);
     }
 
     /**
      * Fabrica um no do tipo efeito.
      */
-    public static GceNode effect(Long id, String code, String label) {
+    public static GceNode effect(UUID id, String code, String label) {
         return new GceNode(id, code, label, GceNodeTypeEnum.EFFECT, null);
     }
 
     /**
      * Fabrica um no do tipo operador.
      */
-    public static GceNode operator(Long id, String code, String label, GceOperatorTypeEnum operatorType) {
+    public static GceNode operator(UUID id, String code, String label, GceOperatorTypeEnum operatorType) {
         return new GceNode(id, code, label, GceNodeTypeEnum.OPERATOR, operatorType);
     }
 

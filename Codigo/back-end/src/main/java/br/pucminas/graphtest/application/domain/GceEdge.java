@@ -3,6 +3,7 @@ package br.pucminas.graphtest.application.domain;
 import br.pucminas.graphtest.application.domain.enums.GceEdgeTypeEnum;
 
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * Representa uma aresta do GCE ligando um no de origem a um no de destino.
@@ -21,7 +22,7 @@ public class GceEdge extends GceBaseEntity {
      * @param targetNodeCode codigo do no de destino
      * @param type comportamento logico da propagacao
      */
-    public GceEdge(Long id, String sourceNodeCode, String targetNodeCode, GceEdgeTypeEnum type) {
+    public GceEdge(UUID id, String sourceNodeCode, String targetNodeCode, GceEdgeTypeEnum type) {
         this.id = id;
         this.sourceNodeCode = requireText(sourceNodeCode, "sourceNodeCode");
         this.targetNodeCode = requireText(targetNodeCode, "targetNodeCode");

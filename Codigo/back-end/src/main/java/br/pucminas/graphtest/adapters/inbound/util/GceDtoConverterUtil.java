@@ -19,6 +19,7 @@ import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
+import java.util.UUID;
 
 import static br.pucminas.graphtest.shared.LogTopicsUtil.CONVERSOR_ENTIDADE_DTO_UTIL;
 import static java.lang.String.format;
@@ -57,7 +58,7 @@ public class GceDtoConverterUtil {
                         .toList(),
                 toEdgeInputs(graph.edges()).stream()
                         .map(edge -> new GceEdge(
-                                null,
+                                UUID.randomUUID(),
                                 edge.sourceNodeCode(),
                                 edge.targetNodeCode(),
                                 edge.type()

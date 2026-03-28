@@ -1,7 +1,7 @@
 package br.pucminas.graphtest.adapters.outbound.repositories;
 
 import br.pucminas.graphtest.adapters.outbound.entities.Neo4jGceEntity;
-import br.pucminas.graphtest.adapters.outbound.repositories.interfaces.Neo4jGceRepository;
+import br.pucminas.graphtest.adapters.outbound.repositories.interfaces.neo4j.Neo4jGceRepository;
 import br.pucminas.graphtest.adapters.outbound.repositories.mappers.GceMapper;
 import br.pucminas.graphtest.application.domain.Gce;
 import br.pucminas.graphtest.application.port.output.repositories.GceRepositoryPort;
@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Adaptador de saida responsavel por persistir GCEs no Neo4j.
@@ -27,7 +28,7 @@ public class GceRepositoryPortImpl implements GceRepositoryPort {
     }
 
     @Override
-    public Optional<Gce> findById(Long id) {
+    public Optional<Gce> findById(UUID id) {
         return neo4jGceRepository.findById(id)
                 .map(mapper::toDomain);
     }

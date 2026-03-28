@@ -9,7 +9,7 @@ import java.util.UUID;
  * Saida com a representacao completa de um GCE.
  */
 public record GceOutput(
-        Long id,
+        UUID id,
         UUID projectId,
         String name,
         String description,

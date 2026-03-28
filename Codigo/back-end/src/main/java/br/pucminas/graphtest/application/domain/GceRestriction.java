@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * Representa uma restricao formal aplicada a nos de um GCE.
@@ -22,7 +23,7 @@ public class GceRestriction extends GceBaseEntity {
      * @param type tipo formal da restricao
      * @param nodeCodes codigos dos nos participantes da restricao
      */
-    public GceRestriction(Long id, RestrictionTypeEnum type, List<String> nodeCodes) {
+    public GceRestriction(UUID id, RestrictionTypeEnum type, List<String> nodeCodes) {
         this.id = id;
         this.type = Objects.requireNonNull(type, "type e obrigatorio.");
         this.nodeCodes = normalizeNodeCodes(nodeCodes);

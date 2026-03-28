@@ -1,4 +1,4 @@
-package br.pucminas.graphtest.adapters.outbound.repositories.interfaces;
+package br.pucminas.graphtest.adapters.outbound.repositories.interfaces.jpa;
 
 import br.pucminas.graphtest.adapters.outbound.entities.JpaUserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,7 +10,6 @@ import java.util.UUID;
 
 @Repository
 public interface JpaUserRepository extends JpaRepository<JpaUserEntity, UUID> {
-
 
     boolean existsByEmail(String email);
 

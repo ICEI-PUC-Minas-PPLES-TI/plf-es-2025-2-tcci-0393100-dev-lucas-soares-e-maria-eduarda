@@ -37,7 +37,7 @@ public class Gce extends GceBaseEntity {
      * @param restrictions colecao inicial de restricoes
      */
     public Gce(
-            Long id,
+            UUID id,
             UUID projectId,
             String name,
             String description,
@@ -116,14 +116,14 @@ public class Gce extends GceBaseEntity {
         return node;
     }
 
-    private GceEdge requireEdge(Long edgeId) {
+    private GceEdge requireEdge(UUID edgeId) {
         return edges.stream()
                 .filter(edge -> edgeId != null && edgeId.equals(edge.getId()))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Aresta inexistente: " + edgeId));
     }
 
-    private GceRestriction requireRestriction(Long restrictionId) {
+    private GceRestriction requireRestriction(UUID restrictionId) {
         return restrictions.stream()
                 .filter(restriction -> restrictionId != null && restrictionId.equals(restriction.getId()))
                 .findFirst()
@@ -139,7 +139,7 @@ public class Gce extends GceBaseEntity {
         }
     }
 
-    private void ensureEdgeSignatureAvailable(GceEdge edge, Long ignoredEdgeId) {
+    private void ensureEdgeSignatureAvailable(GceEdge edge, UUID ignoredEdgeId) {
         boolean alreadyInUse = edges.stream()
                 .anyMatch(existingEdge -> existingEdge.sameSignature(edge)
                         && (ignoredEdgeId == null || !ignoredEdgeId.equals(existingEdge.getId())));
@@ -149,7 +149,7 @@ public class Gce extends GceBaseEntity {
         }
     }
 
-    private void ensureRestrictionSignatureAvailable(GceRestriction restriction, Long ignoredRestrictionId) {
+    private void ensureRestrictionSignatureAvailable(GceRestriction restriction, UUID ignoredRestrictionId) {
         boolean alreadyInUse = restrictions.stream()
                 .anyMatch(existingRestriction -> existingRestriction.sameDefinition(restriction)
                         && (ignoredRestrictionId == null || !ignoredRestrictionId.equals(existingRestriction.getId())));
@@ -191,13 +191,13 @@ public class Gce extends GceBaseEntity {
         return Optional.ofNullable(nodes.get(nodeCode));
     }
 
-    public Optional<GceEdge> findEdge(Long edgeId) {
+    public Optional<GceEdge> findEdge(UUID edgeId) {
         return edges.stream()
                 .filter(edge -> edgeId != null && edgeId.equals(edge.getId()))
                 .findFirst();
     }
 
-    public Optional<GceRestriction> findRestriction(Long restrictionId) {
+    public Optional<GceRestriction> findRestriction(UUID restrictionId) {
         return restrictions.stream()
                 .filter(restriction -> restrictionId != null && restrictionId.equals(restriction.getId()))
                 .findFirst();
@@ -327,7 +327,7 @@ public class Gce extends GceBaseEntity {
         }
     }
 
-    public void removeEdge(Long edgeId) {
+    public void removeEdge(UUID edgeId) {
         GceEdge edge = requireEdge(edgeId);
         edges.remove(edge);
     }
@@ -369,7 +369,7 @@ public class Gce extends GceBaseEntity {
         }
     }
 
-    public void removeRestriction(Long restrictionId) {
+    public void removeRestriction(UUID restrictionId) {
         GceRestriction restriction = requireRestriction(restrictionId);
         restrictions.remove(restriction);
     }

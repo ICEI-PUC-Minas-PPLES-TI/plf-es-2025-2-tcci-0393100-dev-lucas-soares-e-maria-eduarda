@@ -4,11 +4,13 @@ import br.pucminas.graphtest.application.domain.GceNode;
 import br.pucminas.graphtest.application.domain.enums.GceNodeTypeEnum;
 import br.pucminas.graphtest.application.domain.enums.GceOperatorTypeEnum;
 
+import java.util.UUID;
+
 /**
  * Saida de um no do GCE.
  */
 public record GceNodeOutput(
-        Long id,
+        UUID id,
         String code,
         String label,
         GceNodeTypeEnum type,
