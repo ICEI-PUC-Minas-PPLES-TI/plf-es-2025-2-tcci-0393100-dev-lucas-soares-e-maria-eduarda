@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { AlertTriangle } from 'lucide-react';
 import { Header } from '../components/Header';
+import { ConfirmModal } from '../components/ConfirmModal';
 import { ProjectHeader } from '../features/projects/components/ProjectHeader';
 import { ProjectTabs } from '../features/projects/components/ProjectTabs';
 import { ProjectSummary } from '../features/projects/components/ProjectSummary';
 import { QuickActions } from '../features/projects/components/QuickActions';
 import { RecentArtifacts } from '../features/projects/components/RecentArtifacts';
 import { ValidationWarnings } from '../features/projects/components/ValidationWarnings';
-import { EditProjectModal } from '../features/projects/components/EditProjectModal';
-import { DeleteProjectModal } from '../features/projects/components/DeleteProjectModal';
+import { ProjectFormModal } from '../features/projects/components/ProjectFormModal';
 import ProjectService from '../services/Project/ProjectService';
 import type { ProjectDTO } from '../services/Project/types/project';
 
@@ -97,18 +98,28 @@ export function ProjectPage() {
           </div>
         )}
       </main>
+
       {showDeleteModal && (
-        <DeleteProjectModal
-          projectName={project.name}
+        <ConfirmModal
+          title="Excluir projeto"
+          message={
+            <>
+              Tem certeza que deseja excluir o projeto <span className="text-gray-200 font-medium">{project.name}</span>? Essa ação não pode ser desfeita.
+            </>
+          }
+          icon={AlertTriangle}
+          confirmLabel="Excluir"
+          confirmLoadingLabel="Excluindo..."
           onClose={() => setShowDeleteModal(false)}
           onConfirm={handleDelete}
         />
       )}
+
       {showEditModal && (
-        <EditProjectModal
+        <ProjectFormModal
           project={project}
           onClose={() => setShowEditModal(false)}
-          onUpdated={(updated) => {
+          onSuccess={(updated) => {
             setProject(updated);
             setShowEditModal(false);
           }}

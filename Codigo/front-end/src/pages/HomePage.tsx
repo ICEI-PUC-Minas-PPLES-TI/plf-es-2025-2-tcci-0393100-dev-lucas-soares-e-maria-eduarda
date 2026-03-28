@@ -6,16 +6,11 @@ import { HeroSection } from '../features/home/components/HeroSection';
 import { ProjectsSection } from '../features/home/components/ProjectsSection';
 import { QuickActionsSection } from '../features/home/components/QuickActionsSection';
 import { RecentArtifactsSection } from '../features/home/components/RecentArtifactsSection';
-import { CreateProjectModal } from '../features/projects/components/CreateProjectModal';
+import { ProjectFormModal } from '../features/projects/components/ProjectFormModal';
 
 export function HomePage() {
   const navigate = useNavigate();
   const [showCreateModal, setShowCreateModal] = useState(false);
-
-  const handleProjectCreated = (id: string) => {
-    setShowCreateModal(false);
-    navigate(`/projeto/${id}`);
-  };
 
   return (
     <div className="min-h-screen bg-surface flex flex-col">
@@ -31,9 +26,12 @@ export function HomePage() {
       <Footer />
 
       {showCreateModal && (
-        <CreateProjectModal
+        <ProjectFormModal
           onClose={() => setShowCreateModal(false)}
-          onCreated={handleProjectCreated}
+          onSuccess={(created) => {
+            setShowCreateModal(false);
+            navigate(`/projeto/${created.id}`);
+          }}
         />
       )}
     </div>
