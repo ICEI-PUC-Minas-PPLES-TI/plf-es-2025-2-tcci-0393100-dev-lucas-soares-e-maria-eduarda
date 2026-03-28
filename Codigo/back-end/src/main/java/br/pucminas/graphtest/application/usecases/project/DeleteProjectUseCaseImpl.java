@@ -2,6 +2,7 @@ package br.pucminas.graphtest.application.usecases.project;
 
 import br.pucminas.graphtest.application.domain.Project;
 import br.pucminas.graphtest.application.port.input.project.DeleteProjectUseCasePort;
+import br.pucminas.graphtest.application.port.output.repositories.GceRepositoryPort;
 import br.pucminas.graphtest.application.port.input.project.records.DeleteProjectInput;
 import br.pucminas.graphtest.application.port.output.repositories.ProjectRepositoryPort;
 import br.pucminas.graphtest.application.service.interfaces.ProjectAccessService;
@@ -14,6 +15,7 @@ import br.pucminas.graphtest.application.service.interfaces.ProjectAccessService
 public class DeleteProjectUseCaseImpl implements DeleteProjectUseCasePort {
 
     private final ProjectRepositoryPort projectRepository;
+    private final GceRepositoryPort gceRepository;
     private final ProjectAccessService projectAccessService;
 
     /**
@@ -25,8 +27,10 @@ public class DeleteProjectUseCaseImpl implements DeleteProjectUseCasePort {
      * projeto informado
      */
     public DeleteProjectUseCaseImpl(ProjectRepositoryPort projectRepository,
+                                    GceRepositoryPort gceRepository,
                                     ProjectAccessService projectAccessService) {
         this.projectRepository = projectRepository;
+        this.gceRepository = gceRepository;
         this.projectAccessService = projectAccessService;
     }
 
@@ -39,6 +43,7 @@ public class DeleteProjectUseCaseImpl implements DeleteProjectUseCasePort {
     @Override
     public void execute(DeleteProjectInput input) {
         Project project = projectAccessService.findAuthorizedProject(input.id());
+        gceRepository.deleteAllByProjectId(project.getId());
         projectRepository.deleteById(project.getId());
     }
 }

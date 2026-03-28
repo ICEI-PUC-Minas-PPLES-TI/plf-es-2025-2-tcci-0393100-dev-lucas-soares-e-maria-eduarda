@@ -23,11 +23,42 @@ import java.util.Set;
 
 /**
  * Implementa a validacao completa de um Grafo de Causa e Efeito.
+ *
+ * <p>Este servico concentra as verificacoes estruturais e semanticas do modelo
+ * de GCE antes de sua persistencia ou quando o grafo salvo precisa ser
+ * reavaliado. O processamento e executado em etapas, interrompendo as fases
+ * seguintes quando um erro critico torna o restante da avaliacao irrelevante.</p>
+ *
+ * <p>As validacoes cobrem, entre outros aspectos:</p>
+ *
+ * <ul>
+ *     <li>estrutura minima do grafo, incluindo existencia de causas e efeitos;</li>
+ *     <li>cardinalidade e direcao esperada para arestas e operadores;</li>
+ *     <li>compatibilidade entre tipos de restricao e os nos referenciados;</li>
+ *     <li>ausencia de ciclos e alcancabilidade dos efeitos a partir das causas;</li>
+ *     <li>consistencia de influencia logica das causas ao longo do grafo;</li>
+ *     <li>avaliacao semantica por enumeracao das combinacoes validas de causas,
+ *     respeitando as constraints declaradas.</li>
+ * </ul>
+ *
+ * <p>Para evitar custo exponencial descontrolado, a enumeracao completa das
+ * combinacoes de causas e limitada por {@value #MAX_CAUSES_FOR_FULL_ENUMERATION}.
+ * Acima desse limite, a validacao estrutural continua sendo executada e a
+ * validacao semantica exaustiva passa a emitir apenas aviso.</p>
  */
 public class GceValidationResultServiceImpl implements GceValidationResultService {
 
     private static final int MAX_CAUSES_FOR_FULL_ENUMERATION = 16;
 
+    /**
+     * Executa o pipeline completo de validacao do GCE informado.
+     *
+     * <p>O resultado consolidado retorna erros e avisos. Quando existem erros,
+     * o campo {@code valid} da saida sera {@code false}.</p>
+     *
+     * @param graph agregado de GCE a ser analisado
+     * @return consolidado da validacao estrutural e semantica
+     */
     @Override
     public ValidationGceOutput validate(Gce graph) {
         List<ValidationGceMessage> errors = new ArrayList<>();
@@ -46,16 +77,35 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
         }
 
         if (!hasCriticalErrors(errors)) {
+            validateInfluenceConsistency(graph, errors);
+        }
+
+        if (!hasCriticalErrors(errors)) {
             validateSemanticConsistency(graph, errors, warnings);
         }
 
         return new ValidationGceOutput(errors, warnings);
     }
 
+    /**
+     * Indica se a etapa atual de validacao ja acumulou erros impeditivos.
+     *
+     * @param errors colecao de erros acumulados
+     * @return {@code true} quando existe ao menos um erro registrado
+     */
     private boolean hasCriticalErrors(List<ValidationGceMessage> errors) {
         return !errors.isEmpty();
     }
 
+    /**
+     * Verifica a estrutura minima e referencias basicas do grafo.
+     *
+     * <p>Esta etapa garante a existencia de nos essenciais e detecta arestas que
+     * apontam para codigos inexistentes antes de validacoes mais sofisticadas.</p>
+     *
+     * @param graph agregado de GCE em analise
+     * @param errors colecao acumuladora de erros encontrados
+     */
     private void validateBasicStructure(Gce graph, List<ValidationGceMessage> errors) {
         if (graph.getNodes().isEmpty()) {
             addError(errors, "GCE_001", "O grafo deve possuir ao menos um no.");
@@ -85,6 +135,17 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
         }
     }
 
+    /**
+     * Valida regras de cardinalidade conforme o tipo de cada no.
+     *
+     * <p>Causas nao podem receber entrada, efeitos nao podem propagar saida e
+     * operadores precisam respeitar a quantidade minima de entradas e a unica
+     * saida esperada pelo modelo.</p>
+     *
+     * @param graph agregado de GCE em analise
+     * @param errors colecao acumuladora de erros encontrados
+     * @param warnings colecao acumuladora de avisos encontrados
+     */
     private void validateNodeTypesAndCardinality(Gce graph, List<ValidationGceMessage> errors, List<ValidationGceMessage> warnings) {
         for (GceNode node : graph.getNodes()) {
             List<GceEdge> incoming = graph.incomingEdges(node.getCode());
@@ -119,6 +180,12 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
         }
     }
 
+    /**
+     * Verifica se cada restricao referencia nos compativeis com seu tipo.
+     *
+     * @param graph agregado de GCE em analise
+     * @param errors colecao acumuladora de erros encontrados
+     */
     private void validateRestrictions(Gce graph, List<ValidationGceMessage> errors) {
         for (GceRestriction restriction : graph.getRestrictions()) {
             List<GceNode> nodes = restriction.getNodeCodes().stream()
@@ -148,6 +215,12 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
         }
     }
 
+    /**
+     * Detecta ciclos direcionados no grafo.
+     *
+     * @param graph agregado de GCE em analise
+     * @param errors colecao acumuladora de erros encontrados
+     */
     private void validateAcyclic(Gce graph, List<ValidationGceMessage> errors) {
         Map<String, List<String>> adjacency = new HashMap<>();
         for (GceNode node : graph.getNodes()) {
@@ -170,6 +243,15 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
         }
     }
 
+    /**
+     * Executa busca em profundidade para identificar ciclos.
+     *
+     * @param current codigo do no atualmente visitado
+     * @param adjacency lista de adjacencia do grafo
+     * @param visited conjunto de nos ja processados definitivamente
+     * @param stack conjunto de nos no caminho atual de recursao
+     * @return {@code true} quando um ciclo e encontrado
+     */
     private boolean detectCycle(String current,
                                 Map<String, List<String>> adjacency,
                                 Set<String> visited,
@@ -194,6 +276,12 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
         return false;
     }
 
+    /**
+     * Garante que todo efeito possa ser alcancado a partir de ao menos uma causa.
+     *
+     * @param graph agregado de GCE em analise
+     * @param errors colecao acumuladora de erros encontrados
+     */
     private void validateReachability(Gce graph, List<ValidationGceMessage> errors) {
         Set<String> reachable = new HashSet<>();
         Deque<String> queue = new ArrayDeque<>();
@@ -219,6 +307,18 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
         }
     }
 
+    /**
+     * Executa a validacao semantica exaustiva do modelo dentro do limite configurado.
+     *
+     * <p>Somente combinacoes de causas que respeitam as restricoes entre causas
+     * sao avaliadas. O metodo falha quando o grafo nao pode ser resolvido para
+     * alguma combinacao valida, quando restricoes entre efeitos sao violadas ou
+     * quando nenhuma combinacao valida produz avaliacao consistente.</p>
+     *
+     * @param graph agregado de GCE em analise
+     * @param errors colecao acumuladora de erros encontrados
+     * @param warnings colecao acumuladora de avisos encontrados
+     */
     private void validateSemanticConsistency(Gce graph, List<ValidationGceMessage> errors, List<ValidationGceMessage> warnings) {
         List<GceNode> causes = graph.getCauseNodes();
         if (causes.size() > MAX_CAUSES_FOR_FULL_ENUMERATION) {
@@ -227,43 +327,126 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
         }
 
         List<Map<String, Boolean>> assignments = enumerateAssignments(causes);
-        boolean hasAnyValidAssignment = false;
+        int validCauseAssignments = 0;
+        int validEvaluatedAssignments = 0;
 
         for (Map<String, Boolean> assignment : assignments) {
             if (!respectsCauseRestrictions(graph, assignment)) {
                 continue;
             }
 
+            validCauseAssignments++;
+
             Map<String, Boolean> allValues = evaluateGraph(graph, assignment);
             if (allValues == null) {
-                continue;
+                addError(errors, "GCE_019", "O modelo nao pode ser avaliado para todas as combinacoes validas de causas.");
+                return;
             }
 
             if (!respectsMaskRestrictions(graph, allValues)) {
-                continue;
+                addError(errors, "GCE_020", "O modelo viola ao menos uma restricao M para uma combinacao valida de causas.");
+                return;
             }
 
-            hasAnyValidAssignment = true;
-            break;
+            validEvaluatedAssignments++;
         }
 
-        if (!hasAnyValidAssignment) {
+        if (validCauseAssignments == 0) {
             addError(
                     errors,
-                    "GCE_019",
+                    "GCE_021",
                     "O modelo e semanticamente inconsistente: nao existe combinacao valida de causas que satisfaca simultaneamente a estrutura e as restricoes."
             );
+            return;
+        }
+
+        if (validEvaluatedAssignments == 0) {
+            addError(errors, "GCE_022", "O modelo nao produz nenhuma avaliacao valida para as combinacoes de causas permitidas.");
         }
     }
 
+    /**
+     * Detecta propagacoes contraditorias de uma mesma causa ao longo do grafo.
+     *
+     * <p>Uma contradicao ocorre quando a mesma causa alcanca um no com duas
+     * polaridades distintas, por exemplo por caminhos em que uma aresta mantem
+     * o valor e outra o nega. Esse tipo de configuracao torna a interpretacao
+     * logica do modelo ambigua.</p>
+     *
+     * @param graph agregado de GCE em analise
+     * @param errors colecao acumuladora de erros encontrados
+     */
+    private void validateInfluenceConsistency(Gce graph, List<ValidationGceMessage> errors) {
+        List<GceNode> ordered = topologicalOrder(graph);
+        if (ordered.isEmpty()) {
+            return;
+        }
+
+        Map<String, Map<String, Set<Boolean>>> influencesByNode = new HashMap<>();
+        for (GceNode node : ordered) {
+            influencesByNode.put(node.getCode(), new HashMap<>());
+            if (node.isCause()) {
+                influencesByNode.get(node.getCode()).put(node.getCode(), new HashSet<>(Set.of(Boolean.TRUE)));
+            }
+        }
+
+        for (GceNode node : ordered) {
+            Map<String, Set<Boolean>> currentInfluences = influencesByNode.getOrDefault(node.getCode(), Map.of());
+            for (GceEdge edge : graph.outgoingEdges(node.getCode())) {
+                Map<String, Set<Boolean>> targetInfluences =
+                        influencesByNode.computeIfAbsent(edge.getTargetNodeCode(), ignored -> new HashMap<>());
+                boolean negated = edge.isNegated();
+
+                for (Map.Entry<String, Set<Boolean>> entry : currentInfluences.entrySet()) {
+                    Set<Boolean> propagatedPolarities =
+                            targetInfluences.computeIfAbsent(entry.getKey(), ignored -> new HashSet<>());
+
+                    for (Boolean polarity : entry.getValue()) {
+                        propagatedPolarities.add(negated ? !polarity : polarity);
+                    }
+
+                    if (propagatedPolarities.size() > 1) {
+                        addError(
+                                errors,
+                                "GCE_023",
+                                "A causa " + entry.getKey() + " alcanca o no " + edge.getTargetNodeCode()
+                                        + " com polaridades contraditorias."
+                        );
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Registra um erro padronizado no resultado da validacao.
+     *
+     * @param errors colecao acumuladora de erros
+     * @param code codigo identificador da regra violada
+     * @param message mensagem descritiva do problema
+     */
     private void addError(List<ValidationGceMessage> errors, String code, String message) {
         errors.add(new ValidationGceMessage(code, message));
     }
 
+    /**
+     * Registra um aviso padronizado no resultado da validacao.
+     *
+     * @param warnings colecao acumuladora de avisos
+     * @param code codigo identificador do aviso
+     * @param message mensagem descritiva da ocorrencia
+     */
     private void addWarning(List<ValidationGceMessage> warnings, String code, String message) {
         warnings.add(new ValidationGceMessage(code, message));
     }
 
+    /**
+     * Gera todas as atribuicoes booleanas possiveis para as causas do grafo.
+     *
+     * @param causes lista de nos do tipo causa
+     * @return lista contendo uma atribuicao por combinacao possivel
+     */
     private List<Map<String, Boolean>> enumerateAssignments(List<GceNode> causes) {
         int size = causes.size();
         int combinations = 1 << size;
@@ -281,6 +464,17 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
         return assignments;
     }
 
+    /**
+     * Verifica se uma atribuicao de causas respeita as restricoes entre causas.
+     *
+     * <p>As restricoes do tipo {@code MASKS} sao ignoradas aqui porque dependem
+     * do valor dos efeitos, os quais so podem ser avaliados apos a execucao do
+     * grafo.</p>
+     *
+     * @param graph agregado de GCE em analise
+     * @param assignment atribuicao booleana das causas
+     * @return {@code true} quando a combinacao respeita as restricoes de causas
+     */
     private boolean respectsCauseRestrictions(Gce graph, Map<String, Boolean> assignment) {
         for (GceRestriction restriction : graph.getRestrictions()) {
             if (restriction.getType() == RestrictionTypeEnum.MASKS) {
@@ -326,6 +520,13 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
         return true;
     }
 
+    /**
+     * Verifica se os efeitos avaliados respeitam as restricoes do tipo MASKS.
+     *
+     * @param graph agregado de GCE em analise
+     * @param allValues mapa contendo os valores avaliados de causas, operadores e efeitos
+     * @return {@code true} quando nenhuma restricao M e violada
+     */
     private boolean respectsMaskRestrictions(Gce graph, Map<String, Boolean> allValues) {
         for (GceRestriction restriction : graph.getRestrictions()) {
             if (restriction.getType() != RestrictionTypeEnum.MASKS) {
@@ -343,6 +544,19 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
         return true;
     }
 
+    /**
+     * Avalia o grafo a partir de uma atribuicao inicial das causas.
+     *
+     * <p>Os nos sao processados em ordem topologica. Causas usam os valores ja
+     * fornecidos na atribuicao inicial; operadores resolvem sua expressao com
+     * base nas entradas recebidas; efeitos propagam o unico valor de entrada
+     * esperado.</p>
+     *
+     * @param graph agregado de GCE em analise
+     * @param causeValues valores booleanos atribuidos as causas
+     * @return mapa com todos os valores avaliados, ou {@code null} quando a
+     * estrutura impede a avaliacao consistente
+     */
     private Map<String, Boolean> evaluateGraph(Gce graph, Map<String, Boolean> causeValues) {
         Map<String, Boolean> values = new HashMap<>(causeValues);
 
@@ -383,6 +597,13 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
         return values;
     }
 
+    /**
+     * Resolve o valor booleano produzido por um no operador.
+     *
+     * @param operatorType operador logico configurado no no
+     * @param inputs valores de entrada ja propagados para o operador
+     * @return resultado da aplicacao do operador sobre as entradas
+     */
     private boolean resolveOperator(GceOperatorTypeEnum operatorType, List<Boolean> inputs) {
         return switch (operatorType) {
             case AND -> inputs.stream().allMatch(Boolean::booleanValue);
@@ -390,6 +611,15 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
         };
     }
 
+    /**
+     * Calcula a ordem topologica dos nos do grafo.
+     *
+     * <p>Quando o grafo contem ciclo, o metodo retorna lista vazia como sinal de
+     * que a avaliacao logica ordenada nao pode ser realizada.</p>
+     *
+     * @param graph agregado de GCE em analise
+     * @return lista ordenada topologicamente ou lista vazia quando ha ciclo
+     */
     private List<GceNode> topologicalOrder(Gce graph) {
         Map<String, Integer> inDegree = new HashMap<>();
         Map<String, List<String>> adjacency = new HashMap<>();

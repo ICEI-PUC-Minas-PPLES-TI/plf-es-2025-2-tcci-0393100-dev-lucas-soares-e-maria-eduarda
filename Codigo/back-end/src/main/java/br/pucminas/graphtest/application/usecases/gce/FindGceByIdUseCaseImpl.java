@@ -6,6 +6,7 @@ import br.pucminas.graphtest.application.port.input.gce.FindGceByIdUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.records.FindGceByIdInput;
 import br.pucminas.graphtest.application.port.input.gce.records.GceOutput;
 import br.pucminas.graphtest.application.port.output.repositories.GceRepositoryPort;
+import br.pucminas.graphtest.application.service.interfaces.ProjectAccessService;
 
 /**
  * Caso de uso responsavel por localizar um GCE por id.
@@ -13,14 +14,16 @@ import br.pucminas.graphtest.application.port.output.repositories.GceRepositoryP
 public class FindGceByIdUseCaseImpl implements FindGceByIdUseCasePort {
 
     private final GceRepositoryPort gceRepository;
+    private final ProjectAccessService projectAccessService;
 
     /**
      * Cria o caso de uso com a dependencia necessaria para recuperar o GCE.
      *
      * @param gceRepository repositorio responsavel pela busca do agregado
      */
-    public FindGceByIdUseCaseImpl(GceRepositoryPort gceRepository) {
+    public FindGceByIdUseCaseImpl(GceRepositoryPort gceRepository, ProjectAccessService projectAccessService) {
         this.gceRepository = gceRepository;
+        this.projectAccessService = projectAccessService;
     }
 
     /**
@@ -33,6 +36,7 @@ public class FindGceByIdUseCaseImpl implements FindGceByIdUseCasePort {
     public GceOutput execute(FindGceByIdInput input) {
         Gce graph = gceRepository.findById(input.id())
                 .orElseThrow(() -> new EntityNotFoundException("GCE nao encontrado"));
+        projectAccessService.findAuthorizedProject(graph.getProjectId());
 
         return GceOutput.from(graph);
     }

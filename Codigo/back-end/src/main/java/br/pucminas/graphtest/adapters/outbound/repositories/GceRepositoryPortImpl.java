@@ -32,4 +32,9 @@ public class GceRepositoryPortImpl implements GceRepositoryPort {
         return neo4jGceRepository.findById(id)
                 .map(mapper::toDomain);
     }
+
+    @Override
+    public void deleteAllByProjectId(UUID projectId) {
+        neo4jGceRepository.deleteAllByProjectId(projectId);
+    }
 }

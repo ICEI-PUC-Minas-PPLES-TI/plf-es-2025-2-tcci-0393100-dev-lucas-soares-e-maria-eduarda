@@ -25,4 +25,11 @@ public interface GceRepositoryPort {
      * @return agregado encontrado, quando existir
      */
     Optional<Gce> findById(UUID id);
+
+    /**
+     * Remove todos os GCEs associados ao projeto informado.
+     *
+     * @param projectId identificador do projeto dono dos grafos
+     */
+    void deleteAllByProjectId(UUID projectId);
 }

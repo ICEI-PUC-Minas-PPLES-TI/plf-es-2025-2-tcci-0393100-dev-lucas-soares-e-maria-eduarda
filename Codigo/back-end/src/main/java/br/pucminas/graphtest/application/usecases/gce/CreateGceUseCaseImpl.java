@@ -5,6 +5,7 @@ import br.pucminas.graphtest.application.domain.GceEdge;
 import br.pucminas.graphtest.application.domain.GceNode;
 import br.pucminas.graphtest.application.domain.GceRestriction;
 import br.pucminas.graphtest.application.exception.ConflictException;
+import br.pucminas.graphtest.application.exception.InvalidGceModelException;
 import br.pucminas.graphtest.application.port.input.gce.CreateGceUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.records.CreateGceInput;
 import br.pucminas.graphtest.application.port.input.gce.records.GceEdgeInput;
@@ -14,6 +15,7 @@ import br.pucminas.graphtest.application.port.input.gce.records.GceRestrictionIn
 import br.pucminas.graphtest.application.port.input.gce.records.ValidationGceOutput;
 import br.pucminas.graphtest.application.port.output.repositories.GceRepositoryPort;
 import br.pucminas.graphtest.application.service.interfaces.GceValidationResultService;
+import br.pucminas.graphtest.application.service.interfaces.ProjectAccessService;
 
 import java.util.Collection;
 import java.util.List;
@@ -26,6 +28,7 @@ public class CreateGceUseCaseImpl implements CreateGceUseCasePort {
 
     private final GceRepositoryPort gceRepository;
     private final GceValidationResultService gceValidationResultService;
+    private final ProjectAccessService projectAccessService;
 
     /**
      * Cria o caso de uso com as dependencias necessarias para validar e persistir um GCE.
@@ -33,9 +36,14 @@ public class CreateGceUseCaseImpl implements CreateGceUseCasePort {
      * @param gceRepository repositorio responsavel pela persistencia do agregado
      * @param gceValidationResultService servico responsavel pela validacao do modelo
      */
-    public CreateGceUseCaseImpl(GceRepositoryPort gceRepository, GceValidationResultService gceValidationResultService) {
+    public CreateGceUseCaseImpl(
+            GceRepositoryPort gceRepository,
+            GceValidationResultService gceValidationResultService,
+            ProjectAccessService projectAccessService
+    ) {
         this.gceRepository = gceRepository;
         this.gceValidationResultService = gceValidationResultService;
+        this.projectAccessService = projectAccessService;
     }
 
     /**
@@ -46,6 +54,8 @@ public class CreateGceUseCaseImpl implements CreateGceUseCasePort {
      */
     @Override
     public GceOutput execute(CreateGceInput input) {
+        projectAccessService.findAuthorizedProject(input.projectId());
+
         Gce graph = new Gce(
                 null,
                 input.projectId(),
@@ -104,13 +114,5 @@ public class CreateGceUseCaseImpl implements CreateGceUseCasePort {
                 .toList();
     }
 
-    /**
-     * Excecao de conflito usada quando o modelo do GCE nao passa na validacao.
-     */
-    private static final class InvalidGceModelException extends ConflictException {
 
-        private InvalidGceModelException(String message) {
-            super(message);
-        }
-    }
 }

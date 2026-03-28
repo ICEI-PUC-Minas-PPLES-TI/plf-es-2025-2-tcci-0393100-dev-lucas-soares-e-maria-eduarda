@@ -3,10 +3,6 @@ package br.pucminas.graphtest.adapters.inbound.util;
 import br.pucminas.graphtest.adapters.inbound.dto.GceDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.GceInputDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.ValidationGceDTO;
-import br.pucminas.graphtest.application.domain.Gce;
-import br.pucminas.graphtest.application.domain.GceEdge;
-import br.pucminas.graphtest.application.domain.GceNode;
-import br.pucminas.graphtest.application.domain.GceRestriction;
 import br.pucminas.graphtest.application.port.input.gce.records.CreateGceInput;
 import br.pucminas.graphtest.application.port.input.gce.records.GceEdgeInput;
 import br.pucminas.graphtest.application.port.input.gce.records.GceNodeInput;
@@ -19,8 +15,6 @@ import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
-import java.util.UUID;
-
 import static br.pucminas.graphtest.shared.LogTopicsUtil.CONVERSOR_ENTIDADE_DTO_UTIL;
 import static java.lang.String.format;
 
@@ -42,35 +36,6 @@ public class GceDtoConverterUtil {
                 toNodeInputs(graph.nodes()),
                 toEdgeInputs(graph.edges()),
                 toRestrictionInputs(graph.restrictions())
-        );
-    }
-
-    public static Gce toDomain(@NotNull GceInputDTO graph) {
-        log.info(format(">>> toDomain: convertendo GceInputDTO para dominio (projectId: %s)", graph.projectId()));
-        return new Gce(
-                null,
-                graph.projectId(),
-                graph.name(),
-                graph.description(),
-                Boolean.TRUE.equals(graph.selected()),
-                toNodeInputs(graph.nodes()).stream()
-                        .map(node -> new GceNode(null, node.code(), node.label(), node.type(), node.operatorType()))
-                        .toList(),
-                toEdgeInputs(graph.edges()).stream()
-                        .map(edge -> new GceEdge(
-                                UUID.randomUUID(),
-                                edge.sourceNodeCode(),
-                                edge.targetNodeCode(),
-                                edge.type()
-                        ))
-                        .toList(),
-                toRestrictionInputs(graph.restrictions()).stream()
-                        .map(restriction -> new GceRestriction(
-                                null,
-                                restriction.type(),
-                                restriction.nodeCodes()
-                        ))
-                        .toList()
         );
     }
 

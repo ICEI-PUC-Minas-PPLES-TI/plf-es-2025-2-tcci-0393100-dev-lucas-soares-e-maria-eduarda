@@ -9,6 +9,7 @@ import br.pucminas.graphtest.application.port.input.gce.FindGceByIdUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.ValidateGceUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.records.FindGceByIdInput;
 import br.pucminas.graphtest.application.port.input.gce.records.GceOutput;
+import br.pucminas.graphtest.application.port.input.gce.records.ValidateGceByIdInput;
 import br.pucminas.graphtest.application.port.input.gce.records.ValidationGceOutput;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +28,6 @@ import java.util.UUID;
 
 import static br.pucminas.graphtest.adapters.inbound.util.ControllerConstantsUtil.CHAVES_GCE_CONTROLLER;
 import static br.pucminas.graphtest.adapters.inbound.util.GceDtoConverterUtil.toCreateInput;
-import static br.pucminas.graphtest.adapters.inbound.util.GceDtoConverterUtil.toDomain;
 import static br.pucminas.graphtest.adapters.inbound.util.ControllerConstantsUtil.MSG_GCE_CRIADO;
 import static br.pucminas.graphtest.adapters.inbound.util.GceDtoConverterUtil.toDto;
 import static br.pucminas.graphtest.adapters.inbound.util.JsonResponseBuilderUtil.buildJsonResponse;
@@ -76,11 +76,11 @@ public class GceControllerImpl implements GceController {
     }
 
     @Override
-    @PostMapping(GCE_VALIDAR)
-    public ResponseEntity<ValidationGceDTO> validate(@Validated @RequestBody GceInputDTO graph) {
+    @GetMapping(GCE_VALIDAR)
+    public ResponseEntity<ValidationGceDTO> validate(@PathVariable UUID id) {
         log.info(">>> validar: recebendo requisicao para validar GCE");
 
-        ValidationGceOutput validation = validateGceUseCasePort.execute(toDomain(graph));
+        ValidationGceOutput validation = validateGceUseCasePort.execute(new ValidateGceByIdInput(id));
         return ResponseEntity.ok(toDto(validation));
     }
 }

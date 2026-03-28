@@ -27,6 +27,6 @@ public interface GceController {
     @GetMapping(ID)
     ResponseEntity<GceDTO> findById(@PathVariable UUID id);
 
-    @PostMapping(GCE_VALIDAR)
-    ResponseEntity<ValidationGceDTO> validate(@Validated @RequestBody GceInputDTO graph);
+    @GetMapping(GCE_VALIDAR)
+    ResponseEntity<ValidationGceDTO> validate(@PathVariable UUID id);
 }

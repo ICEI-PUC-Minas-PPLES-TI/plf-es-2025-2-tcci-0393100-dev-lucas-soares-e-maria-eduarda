@@ -68,18 +68,22 @@ public class ApplicationBeansConfig {
 
     @Bean
     public CreateGceUseCasePort createGceUseCase(GceRepositoryPort gceRepositoryPort,
-                                                 GceValidationResultService gceValidationResultService) {
-        return new CreateGceUseCaseImpl(gceRepositoryPort, gceValidationResultService);
+                                                 GceValidationResultService gceValidationResultService,
+                                                 ProjectAccessService projectAccessService) {
+        return new CreateGceUseCaseImpl(gceRepositoryPort, gceValidationResultService, projectAccessService);
     }
 
     @Bean
-    public FindGceByIdUseCasePort findGceByIdUseCase(GceRepositoryPort gceRepositoryPort) {
-        return new FindGceByIdUseCaseImpl(gceRepositoryPort);
+    public FindGceByIdUseCasePort findGceByIdUseCase(GceRepositoryPort gceRepositoryPort,
+                                                     ProjectAccessService projectAccessService) {
+        return new FindGceByIdUseCaseImpl(gceRepositoryPort, projectAccessService);
     }
 
     @Bean
-    public ValidateGceUseCasePort validateGceUseCase(GceValidationResultService gceValidationResultService) {
-        return new ValidateGceUseCaseImpl(gceValidationResultService);
+    public ValidateGceUseCasePort validateGceUseCase(GceRepositoryPort gceRepositoryPort,
+                                                     ProjectAccessService projectAccessService,
+                                                     GceValidationResultService gceValidationResultService) {
+        return new ValidateGceUseCaseImpl(gceRepositoryPort, projectAccessService, gceValidationResultService);
     }
 
     @Bean
@@ -98,8 +102,10 @@ public class ApplicationBeansConfig {
     }
 
     @Bean
-    public DeleteProjectUseCasePort deleteProjectUseCase(ProjectRepositoryPort projectRepositoryPort, ProjectAccessService projectAccessService) {
-        return new DeleteProjectUseCaseImpl(projectRepositoryPort, projectAccessService);
+    public DeleteProjectUseCasePort deleteProjectUseCase(ProjectRepositoryPort projectRepositoryPort,
+                                                         GceRepositoryPort gceRepositoryPort,
+                                                         ProjectAccessService projectAccessService) {
+        return new DeleteProjectUseCaseImpl(projectRepositoryPort, gceRepositoryPort, projectAccessService);
     }
 
     @Bean
