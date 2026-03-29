@@ -1,12 +1,29 @@
 import { useNodes, useEdges, useReactFlow } from '@xyflow/react';
-import type { GCEFlowNode, GCEFlowEdge, GCENodeData, OperatorType } from '../types/gce';
+import type { GCEFlowNode, GCEFlowEdge, GCENodeData, OperatorType, GCERestriction, RestrictionType } from '../types/gce';
 
 interface PropertiesPanelProps {
   selectedNodeId: string | null;
   selectedEdgeId: string | null;
+  restrictions?: GCERestriction[];
 }
 
-export function PropertiesPanel({ selectedNodeId, selectedEdgeId }: PropertiesPanelProps) {
+const RESTRICTION_LABEL: Record<RestrictionType, string> = {
+  EXCLUSIVE: 'Exclusivo (E)',
+  INCLUSIVE: 'Inclusivo (I)',
+  ONE_AND_ONLY_ONE: 'Somente um (O)',
+  REQUIRE: 'Exige (R)',
+  MASKS: 'Mascara (M)',
+};
+
+const RESTRICTION_SYMBOL: Record<RestrictionType, string> = {
+  EXCLUSIVE: 'E',
+  INCLUSIVE: 'I',
+  ONE_AND_ONLY_ONE: 'O',
+  REQUIRE: 'R',
+  MASKS: 'M',
+};
+
+export function PropertiesPanel({ selectedNodeId, selectedEdgeId, restrictions = [] }: PropertiesPanelProps) {
   const { setNodes, setEdges } = useReactFlow();
   const nodes = useNodes() as GCEFlowNode[];
   const edges = useEdges() as GCEFlowEdge[];
@@ -47,6 +64,7 @@ export function PropertiesPanel({ selectedNodeId, selectedEdgeId }: PropertiesPa
     const { code, label, nodeType, operatorType } = selectedNode.data;
     const typeLabel = nodeType === 'CAUSE' ? 'Causa' : nodeType === 'EFFECT' ? 'Efeito' : 'Operador';
     const typeBg = nodeType === 'CAUSE' ? 'bg-green-600' : nodeType === 'EFFECT' ? 'bg-blue-600' : 'bg-amber-600';
+    const nodeRestrictions = restrictions.filter((r) => r.nodeCodes.includes(code));
 
     return (
       <div className="w-72 bg-surface border-l border-edge p-4 shrink-0 overflow-y-auto">
@@ -106,6 +124,31 @@ export function PropertiesPanel({ selectedNodeId, selectedEdgeId }: PropertiesPa
                 placeholder="Y"
               />
             </div>
+          </Field>
+
+          <Field label="Restricoes">
+            {nodeRestrictions.length === 0 ? (
+              <p className="text-xs text-gray-600 py-1">Nenhuma restricao aplicada</p>
+            ) : (
+              <div className="space-y-1.5">
+                {nodeRestrictions.map((r, i) => {
+                  const others = r.nodeCodes.filter((c) => c !== code);
+                  return (
+                    <div key={i} className="flex items-center gap-2 bg-surface-card border border-edge rounded px-2 py-1.5">
+                      <span className="w-6 h-6 rounded flex items-center justify-center text-xs font-bold bg-surface-hover text-primary-light border border-edge shrink-0">
+                        {RESTRICTION_SYMBOL[r.type]}
+                      </span>
+                      <div className="min-w-0">
+                        <span className="text-xs text-gray-300 block">{RESTRICTION_LABEL[r.type]}</span>
+                        {others.length > 0 && (
+                          <span className="text-xs text-gray-500 truncate block">com {others.join(', ')}</span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </Field>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, forwardRef, useImperativeHandle } from 'react';
+import { useCallback, useMemo, useState, forwardRef, useImperativeHandle, useEffect } from 'react';
 import {
   ReactFlow,
   Background,
@@ -26,6 +26,7 @@ interface GCECanvasProps {
   initialEdges: GCEFlowEdge[];
   initialRestrictions: GCERestriction[];
   onSelectionChange: (nodeId: string | null, edgeId: string | null) => void;
+  onRestrictionsChange?: (restrictions: GCERestriction[]) => void;
 }
 
 export interface GCECanvasHandle {
@@ -41,7 +42,7 @@ const edgeTypes = { negation: NegationEdge };
 let nodeCounter = 100;
 
 export const GCECanvas = forwardRef<GCECanvasHandle, GCECanvasProps>(
-  function GCECanvas({ initialNodes, initialEdges, initialRestrictions, onSelectionChange }, ref) {
+  function GCECanvas({ initialNodes, initialEdges, initialRestrictions, onSelectionChange, onRestrictionsChange }, ref) {
     const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
     const [restrictions, setRestrictions] = useState<GCERestriction[]>(initialRestrictions);
@@ -144,6 +145,10 @@ export const GCECanvas = forwardRef<GCECanvasHandle, GCECanvasProps>(
 
     useImperativeHandle(ref, () => ({ addNode, deleteSelected, hasSelection, getState }), [addNode, deleteSelected, hasSelection, getState]);
 
+    useEffect(() => {
+      onRestrictionsChange?.(restrictions);
+    }, [restrictions, onRestrictionsChange]);
+
     return (
       <div className="flex-1 relative">
         {multiSelected.length === 0 && (
@@ -197,6 +202,7 @@ export const GCECanvas = forwardRef<GCECanvasHandle, GCECanvasProps>(
           <ConstraintMenu
             position={constraintMenuPos}
             selectedCount={multiSelected.length}
+            selectedNodeTypes={multiSelected.map((id) => nodes.find((n) => n.id === id)?.type ?? '')}
             onSelectConstraint={handleConstraint}
             onClose={() => setConstraintMenuPos(null)}
           />

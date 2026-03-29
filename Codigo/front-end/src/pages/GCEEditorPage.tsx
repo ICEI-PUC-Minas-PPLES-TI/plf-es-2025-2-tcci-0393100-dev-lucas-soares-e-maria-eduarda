@@ -15,7 +15,7 @@ import {
   savePositions,
 } from '../features/gce/utils/gceConverters';
 import GCEService from '../services/GCE/GCEService';
-import type { GCEDTO, GCEValidationResponse } from '../features/gce/types/gce';
+import type { GCEDTO, GCEValidationResponse, GCERestriction } from '../features/gce/types/gce';
 
 export function GCEEditorPage() {
   const { projectId, gceId } = useParams<{ projectId: string; gceId: string }>();
@@ -46,6 +46,7 @@ export function GCEEditorPage() {
   const [showValidation, setShowValidation] = useState(false);
   const [validationResult, setValidationResult] = useState<GCEValidationResponse | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [liveRestrictions, setLiveRestrictions] = useState<GCERestriction[]>([]);
   const canvasRef = useRef<GCECanvasHandle>(null);
 
   useEffect(() => {
@@ -159,6 +160,7 @@ export function GCEEditorPage() {
               initialEdges={dtoToFlowEdges(gce)}
               initialRestrictions={dtoToRestrictions(gce)}
               onSelectionChange={handleSelectionChange}
+              onRestrictionsChange={setLiveRestrictions}
             />
 
             {showValidation && (
@@ -172,6 +174,7 @@ export function GCEEditorPage() {
           <PropertiesPanel
             selectedNodeId={selectedNodeId}
             selectedEdgeId={selectedEdgeId}
+            restrictions={liveRestrictions}
           />
         </div>
       </div>

@@ -11,24 +11,26 @@ interface ConstraintOption {
   icon: ComponentType<{ className?: string }>;
   minNodes: number;
   maxNodes?: number;
+  appliesTo: 'cause' | 'effect';
 }
 
 interface ConstraintMenuProps {
   position: { x: number; y: number };
   selectedCount: number;
+  selectedNodeTypes: string[];
   onSelectConstraint: (type: RestrictionType) => void;
   onClose: () => void;
 }
 
 const options: ConstraintOption[] = [
-  { id: 'EXCLUSIVE', label: 'Exclusivo (E)', description: 'no maximo 1', symbol: 'E', icon: ShieldAlert, minNodes: 2 },
-  { id: 'INCLUSIVE', label: 'Inclusivo (I)', description: 'no minimo 1', symbol: 'I', icon: CheckCircle2, minNodes: 2 },
-  { id: 'ONE_AND_ONLY_ONE', label: 'Somente um (O)', description: 'exatamente 1', symbol: 'O', icon: CheckCircle2, minNodes: 2 },
-  { id: 'REQUIRE', label: 'Exige (R)', description: 'c1 -> c2', symbol: 'R', icon: ArrowRight, minNodes: 2, maxNodes: 2 },
-  { id: 'MASKS', label: 'Mascara (M)', description: 'e1 -> !e2', symbol: 'M', icon: Ban, minNodes: 2, maxNodes: 2 },
+  { id: 'EXCLUSIVE', label: 'Exclusivo (E)', description: 'no maximo 1', symbol: 'E', icon: ShieldAlert, minNodes: 2, appliesTo: 'cause' },
+  { id: 'INCLUSIVE', label: 'Inclusivo (I)', description: 'no minimo 1', symbol: 'I', icon: CheckCircle2, minNodes: 2, appliesTo: 'cause' },
+  { id: 'ONE_AND_ONLY_ONE', label: 'Somente um (O)', description: 'exatamente 1', symbol: 'O', icon: CheckCircle2, minNodes: 2, appliesTo: 'cause' },
+  { id: 'REQUIRE', label: 'Exige (R)', description: 'c1 -> c2', symbol: 'R', icon: ArrowRight, minNodes: 2, maxNodes: 2, appliesTo: 'cause' },
+  { id: 'MASKS', label: 'Mascara (M)', description: 'e1 -> !e2', symbol: 'M', icon: Ban, minNodes: 2, maxNodes: 2, appliesTo: 'effect' },
 ];
 
-export function ConstraintMenu({ position, selectedCount, onSelectConstraint, onClose }: ConstraintMenuProps) {
+export function ConstraintMenu({ position, selectedCount, selectedNodeTypes, onSelectConstraint, onClose }: ConstraintMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
@@ -73,6 +75,7 @@ export function ConstraintMenu({ position, selectedCount, onSelectConstraint, on
   const isDisabled = (opt: ConstraintOption) => {
     if (selectedCount < opt.minNodes) return true;
     if (opt.maxNodes && selectedCount > opt.maxNodes) return true;
+    if (!selectedNodeTypes.every((t) => t === opt.appliesTo)) return true;
     return false;
   };
 
