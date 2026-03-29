@@ -1,0 +1,53 @@
+package br.pucminas.graphtest.application.usecases.gce;
+
+import br.pucminas.graphtest.application.domain.Gce;
+import br.pucminas.graphtest.application.domain.GceNode;
+import br.pucminas.graphtest.application.port.input.gce.UpdateGceNodeUseCasePort;
+import br.pucminas.graphtest.application.port.input.gce.records.GceOutput;
+import br.pucminas.graphtest.application.port.input.gce.records.UpdateGceNodeInput;
+import br.pucminas.graphtest.application.port.output.repositories.GceRepositoryPort;
+import br.pucminas.graphtest.application.service.interfaces.GceMutationService;
+import br.pucminas.graphtest.application.service.interfaces.GceValidationResultService;
+import br.pucminas.graphtest.application.service.interfaces.ProjectAccessService;
+
+/**
+ * Caso de uso responsavel por atualizar um no existente do GCE.
+ */
+public class UpdateGceNodeUseCaseImpl implements UpdateGceNodeUseCasePort {
+
+    private final GceRepositoryPort gceRepository;
+    private final ProjectAccessService projectAccessService;
+    private final GceValidationResultService gceValidationResultService;
+    private final GceMutationService gceMutationService;
+
+    public UpdateGceNodeUseCaseImpl(GceRepositoryPort gceRepository,
+                                    ProjectAccessService projectAccessService,
+                                    GceValidationResultService gceValidationResultService,
+                                    GceMutationService gceMutationService) {
+        this.gceRepository = gceRepository;
+        this.projectAccessService = projectAccessService;
+        this.gceValidationResultService = gceValidationResultService;
+        this.gceMutationService = gceMutationService;
+    }
+
+    @Override
+    public GceOutput execute(UpdateGceNodeInput input) {
+        Gce graph = gceMutationService.loadAuthorizedGraph(input.gceId(), gceRepository, projectAccessService);
+        GceNode currentNode = graph.findNode(input.nodeCode())
+                .orElseThrow(() -> new IllegalArgumentException("No inexistente: " + input.nodeCode()));
+
+        GceNode updatedNode = new GceNode(
+                currentNode.getId(),
+                currentNode.getCode(),
+                input.label() != null && !input.label().isBlank() ? input.label() : currentNode.getLabel(),
+                currentNode.getType(),
+                currentNode.isOperator() && input.operatorType() != null
+                        ? input.operatorType()
+                        : currentNode.getOperatorType()
+        );
+
+        graph.replaceNode(updatedNode);
+        gceMutationService.validateAndThrow(graph, gceValidationResultService);
+        return GceOutput.from(gceRepository.save(graph));
+    }
+}
