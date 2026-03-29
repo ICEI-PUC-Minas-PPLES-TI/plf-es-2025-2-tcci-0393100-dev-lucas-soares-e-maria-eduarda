@@ -4,11 +4,13 @@ import br.pucminas.graphtest.application.domain.enums.GceNodeTypeEnum;
 import br.pucminas.graphtest.application.domain.enums.GceOperatorTypeEnum;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
- * Dados de entrada de um no do GCE.
+ * Dados para adicionar um novo no ao GCE.
  */
-public record GceNodeInput(
+public record AddNodeToGceInput(
+        UUID gceId,
         String code,
         String label,
         GceNodeTypeEnum type,
@@ -16,13 +18,4 @@ public record GceNodeInput(
         List<String> sourceNodeCodes,
         List<String> targetNodeCodes
 ) {
-
-    public GceNodeInput(
-            String code,
-            String label,
-            GceNodeTypeEnum type,
-            GceOperatorTypeEnum operatorType
-    ) {
-        this(code, label, type, operatorType, List.of(), List.of());
-    }
 }

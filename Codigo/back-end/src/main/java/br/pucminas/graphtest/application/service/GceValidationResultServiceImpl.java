@@ -139,8 +139,9 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
      * Valida regras de cardinalidade conforme o tipo de cada no.
      *
      * <p>Causas nao podem receber entrada, efeitos nao podem propagar saida e
-     * operadores precisam respeitar a quantidade minima de entradas e a unica
-     * saida esperada pelo modelo.</p>
+     * operadores precisam respeitar a quantidade minima de entradas, possuir
+     * ao menos uma saida e, quando apontarem diretamente para efeitos,
+     * no maximo um efeito por operador.</p>
      *
      * @param graph agregado de GCE em analise
      * @param errors colecao acumuladora de erros encontrados
@@ -173,8 +174,21 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
                 if (incoming.size() < 2) {
                     addError(errors, "GCE_011", "Operador " + node.getCode() + " deve possuir pelo menos duas entradas.");
                 }
-                if (outgoing.size() != 1) {
-                    addError(errors, "GCE_012", "Operador " + node.getCode() + " deve possuir exatamente uma saida.");
+                if (incoming.size() > 2) {
+                    addError(errors, "GCE_024", "Operador " + node.getCode() + " deve possuir no maximo duas entradas.");
+                }
+                if (outgoing.isEmpty()) {
+                    addError(errors, "GCE_012", "Operador " + node.getCode() + " deve possuir ao menos uma saida.");
+                }
+
+                long effectOutputs = outgoing.stream()
+                        .map(edge -> graph.findNode(edge.getTargetNodeCode()))
+                        .flatMap(Optional::stream)
+                        .filter(GceNode::isEffect)
+                        .count();
+
+                if (effectOutputs > 1) {
+                    addError(errors, "GCE_025", "Operador " + node.getCode() + " nao pode possuir mais de uma saida direta para EFFECT.");
                 }
             }
         }

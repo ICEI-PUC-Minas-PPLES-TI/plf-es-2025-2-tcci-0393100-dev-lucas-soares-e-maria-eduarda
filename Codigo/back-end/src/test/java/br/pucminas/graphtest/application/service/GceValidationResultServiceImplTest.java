@@ -30,12 +30,19 @@ class GceValidationResultServiceImplTest {
                 false,
                 List.of(
                         GceNode.cause(UUID.randomUUID(), "C1", "Causa"),
+                        GceNode.cause(UUID.randomUUID(), "C2", "Causa 2"),
+                        GceNode.operator(UUID.randomUUID(), "O1", "Operador 1", GceOperatorTypeEnum.OR),
+                        GceNode.operator(UUID.randomUUID(), "O2", "Operador 2", GceOperatorTypeEnum.OR),
                         GceNode.effect(UUID.randomUUID(), "E1", "Efeito 1"),
                         GceNode.effect(UUID.randomUUID(), "E2", "Efeito 2")
                 ),
                 List.of(
-                        new GceEdge(UUID.randomUUID(), "C1", "E1", GceEdgeTypeEnum.IDENTITY),
-                        new GceEdge(UUID.randomUUID(), "C1", "E2", GceEdgeTypeEnum.IDENTITY)
+                        new GceEdge(UUID.randomUUID(), "C1", "O1", GceEdgeTypeEnum.IDENTITY),
+                        new GceEdge(UUID.randomUUID(), "C2", "O1", GceEdgeTypeEnum.IDENTITY),
+                        new GceEdge(UUID.randomUUID(), "C1", "O2", GceEdgeTypeEnum.IDENTITY),
+                        new GceEdge(UUID.randomUUID(), "C2", "O2", GceEdgeTypeEnum.IDENTITY),
+                        new GceEdge(UUID.randomUUID(), "O1", "E1", GceEdgeTypeEnum.IDENTITY),
+                        new GceEdge(UUID.randomUUID(), "O2", "E2", GceEdgeTypeEnum.IDENTITY)
                 ),
                 List.of(new GceRestriction(UUID.randomUUID(), RestrictionTypeEnum.MASKS, List.of("E1", "E2")))
         );

@@ -1,4 +1,4 @@
-package br.pucminas.graphtest.application.port.input.gce.records;
+package br.pucminas.graphtest.adapters.inbound.dto;
 
 import br.pucminas.graphtest.application.domain.enums.GceNodeTypeEnum;
 import br.pucminas.graphtest.application.domain.enums.GceOperatorTypeEnum;
@@ -6,9 +6,9 @@ import br.pucminas.graphtest.application.domain.enums.GceOperatorTypeEnum;
 import java.util.List;
 
 /**
- * Dados de entrada de um no do GCE.
+ * DTO HTTP para adicionar um novo no a um GCE existente.
  */
-public record GceNodeInput(
+public record AddGceNodeDTO(
         String code,
         String label,
         GceNodeTypeEnum type,
@@ -16,13 +16,4 @@ public record GceNodeInput(
         List<String> sourceNodeCodes,
         List<String> targetNodeCodes
 ) {
-
-    public GceNodeInput(
-            String code,
-            String label,
-            GceNodeTypeEnum type,
-            GceOperatorTypeEnum operatorType
-    ) {
-        this(code, label, type, operatorType, List.of(), List.of());
-    }
 }

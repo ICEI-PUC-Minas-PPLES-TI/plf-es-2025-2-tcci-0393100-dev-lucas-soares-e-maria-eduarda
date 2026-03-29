@@ -4,24 +4,29 @@ import br.pucminas.graphtest.application.domain.Gce;
 import br.pucminas.graphtest.application.domain.Project;
 import br.pucminas.graphtest.application.domain.enums.GceEdgeTypeEnum;
 import br.pucminas.graphtest.application.domain.enums.GceNodeTypeEnum;
+import br.pucminas.graphtest.application.domain.enums.GceOperatorTypeEnum;
 import br.pucminas.graphtest.application.port.input.gce.records.CreateGceInput;
 import br.pucminas.graphtest.application.port.input.gce.records.GceEdgeInput;
 import br.pucminas.graphtest.application.port.input.gce.records.GceNodeInput;
 import br.pucminas.graphtest.application.port.input.gce.records.GceOutput;
 import br.pucminas.graphtest.application.port.input.gce.records.ValidationGceOutput;
 import br.pucminas.graphtest.application.port.output.repositories.GceRepositoryPort;
+import br.pucminas.graphtest.application.service.GceMutationServiceImpl;
+import br.pucminas.graphtest.application.service.interfaces.GceMutationService;
 import br.pucminas.graphtest.application.service.interfaces.GceValidationResultService;
 import br.pucminas.graphtest.application.service.interfaces.ProjectAccessService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -38,6 +43,9 @@ class CreateGceUseCaseImplTest {
     @Mock
     private ProjectAccessService projectAccessService;
 
+    @Spy
+    private GceMutationService gceMutationService = new GceMutationServiceImpl();
+
     @InjectMocks
     private CreateGceUseCaseImpl useCase;
 
@@ -53,9 +61,13 @@ class CreateGceUseCaseImplTest {
                 true,
                 List.of(
                         new GceNodeInput("C1", "Causa", GceNodeTypeEnum.CAUSE, null),
+                        new GceNodeInput("O1", "Operador", GceNodeTypeEnum.OPERATOR, GceOperatorTypeEnum.AND),
                         new GceNodeInput("E1", "Efeito", GceNodeTypeEnum.EFFECT, null)
                 ),
-                List.of(new GceEdgeInput("C1", "E1", GceEdgeTypeEnum.IDENTITY)),
+                List.of(
+                        new GceEdgeInput("C1", "O1", GceEdgeTypeEnum.NEGATED),
+                        new GceEdgeInput("O1", "E1", GceEdgeTypeEnum.IDENTITY)
+                ),
                 List.of()
         );
 
@@ -81,7 +93,53 @@ class CreateGceUseCaseImplTest {
         GceOutput output = useCase.execute(input);
 
         assertEquals(graphId, output.id());
+        assertEquals(GceEdgeTypeEnum.NEGATED, output.edges().stream().filter(edge -> edge.sourceNodeCode().equals("C1")).findFirst().orElseThrow().type());
         verify(projectAccessService).findAuthorizedProject(projectId);
         verify(gceRepository).save(any(Gce.class));
+    }
+
+    @Test
+    void shouldCreateAutomaticIdentityEdgesWhenOperatorNodeDeclaresConnections() {
+        UUID projectId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        UUID graphId = UUID.randomUUID();
+        CreateGceInput input = new CreateGceInput(
+                projectId,
+                "GCE",
+                "Descricao",
+                true,
+                List.of(
+                        new GceNodeInput("C1", "Causa 1", GceNodeTypeEnum.CAUSE, null),
+                        new GceNodeInput("C2", "Causa 2", GceNodeTypeEnum.CAUSE, null),
+                        new GceNodeInput("E1", "Efeito", GceNodeTypeEnum.EFFECT, null),
+                        new GceNodeInput("O1", "Operador", GceNodeTypeEnum.OPERATOR, GceOperatorTypeEnum.AND, List.of("C1", "C2"), List.of("E1"))
+                ),
+                List.of(),
+                List.of()
+        );
+
+        when(projectAccessService.findAuthorizedProject(projectId))
+                .thenReturn(new Project(projectId, "Projeto", "Descricao", userId));
+        when(gceValidationResultService.validate(any(Gce.class)))
+                .thenReturn(new ValidationGceOutput(List.of(), List.of()));
+        when(gceRepository.save(any(Gce.class)))
+                .thenAnswer(invocation -> {
+                    Gce graph = invocation.getArgument(0);
+                    return new Gce(
+                            graphId,
+                            graph.getProjectId(),
+                            graph.getName(),
+                            graph.getDescription(),
+                            graph.isSelected(),
+                            graph.getNodes(),
+                            graph.getEdges(),
+                            graph.getRestrictions()
+                    );
+                });
+
+        GceOutput output = useCase.execute(input);
+
+        assertEquals(3, output.edges().size());
+        assertTrue(output.edges().stream().allMatch(edge -> edge.type() == GceEdgeTypeEnum.IDENTITY));
     }
 }

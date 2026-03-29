@@ -58,14 +58,27 @@ final class GceStructureRules {
             if (sourceNode.isEffect()) {
                 throw new IllegalArgumentException("Efeito nao pode ser origem de aresta: " + sourceNode.getCode());
             }
+            if (sourceNode.isCause() && !targetNode.isOperator()) {
+                throw new IllegalArgumentException("Causa so pode se conectar a operador: " + sourceNode.getCode());
+            }
             if (targetNode.isCause()) {
                 throw new IllegalArgumentException("Causa nao pode ser destino de aresta: " + targetNode.getCode());
+            }
+            if (targetNode.isEffect() && !sourceNode.isOperator()) {
+                throw new IllegalArgumentException("Efeito so pode receber aresta de operador: " + targetNode.getCode());
             }
         }
     }
 
     private static void validateNodeCardinality(Gce graph) {
         for (GceNode node : graph.getNodes()) {
+            if (node.isOperator()) {
+                int incomingEdges = graph.incomingEdges(node.getCode()).size();
+                if (incomingEdges > 2) {
+                    throw new IllegalArgumentException("Operador deve possuir no maximo duas arestas de entrada: " + node.getCode());
+                }
+            }
+
             if (!node.isEffect()) {
                 continue;
             }

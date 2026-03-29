@@ -82,10 +82,12 @@ public class GceRestriction extends GceBaseEntity {
     }
 
     public boolean isEffectRestriction() {
+
         return type == RestrictionTypeEnum.MASKS;
     }
 
     public boolean references(String nodeCode) {
+
         return nodeCodes.contains(nodeCode);
     }
 

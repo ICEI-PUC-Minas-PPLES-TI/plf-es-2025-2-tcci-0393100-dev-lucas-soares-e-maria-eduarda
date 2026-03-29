@@ -30,8 +30,19 @@ public record GceInputDTO(
             String code,
             String label,
             GceNodeTypeEnum type,
-            GceOperatorTypeEnum operatorType
+            GceOperatorTypeEnum operatorType,
+            List<String> sourceNodeCodes,
+            List<String> targetNodeCodes
     ) {
+
+        public GceNodeInputDTO(
+                String code,
+                String label,
+                GceNodeTypeEnum type,
+                GceOperatorTypeEnum operatorType
+        ) {
+            this(code, label, type, operatorType, List.of(), List.of());
+        }
     }
 
     /**

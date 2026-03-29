@@ -8,6 +8,10 @@ import br.pucminas.graphtest.application.port.input.project.ListProjectsUseCaseP
 import br.pucminas.graphtest.application.port.input.project.UpdateProjectUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.CreateGceUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.FindGceByIdUseCasePort;
+import br.pucminas.graphtest.application.port.input.gce.AddNodeToGceUseCasePort;
+import br.pucminas.graphtest.application.port.input.gce.ToggleGceEdgeUseCasePort;
+import br.pucminas.graphtest.application.port.input.gce.UpdateGceNodeUseCasePort;
+import br.pucminas.graphtest.application.port.input.gce.UpdateGceUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.ValidateGceUseCasePort;
 import br.pucminas.graphtest.application.port.input.security.GenerateTokenUseCasePort;
 import br.pucminas.graphtest.application.port.input.security.LoadAuthenticationUserUseCasePort;
@@ -20,8 +24,6 @@ import br.pucminas.graphtest.application.port.input.user.FindUserByIdUseCasePort
 import br.pucminas.graphtest.application.port.input.user.ListUsersUseCasePort;
 import br.pucminas.graphtest.application.port.input.user.UpdateUserPasswordUseCasePort;
 import br.pucminas.graphtest.application.port.input.user.UpdateUserUseCasePort;
-import br.pucminas.graphtest.adapters.outbound.repositories.GceRepositoryPortImpl;
-import br.pucminas.graphtest.adapters.outbound.repositories.mappers.GceMapper;
 import br.pucminas.graphtest.application.port.output.repositories.GceRepositoryPort;
 import br.pucminas.graphtest.application.port.output.repositories.ProjectRepositoryPort;
 import br.pucminas.graphtest.application.port.output.repositories.UserRepositoryPort;
@@ -31,11 +33,17 @@ import br.pucminas.graphtest.application.port.output.security.TokenServicePort;
 import br.pucminas.graphtest.application.service.GceValidationResultServiceImpl;
 import br.pucminas.graphtest.application.service.ProjectAccessServiceImpl;
 import br.pucminas.graphtest.application.service.UserAuthorizationServiceImpl;
+import br.pucminas.graphtest.application.service.GceMutationServiceImpl;
+import br.pucminas.graphtest.application.service.interfaces.GceMutationService;
 import br.pucminas.graphtest.application.service.interfaces.GceValidationResultService;
 import br.pucminas.graphtest.application.service.interfaces.ProjectAccessService;
 import br.pucminas.graphtest.application.service.interfaces.UserAuthorizationService;
 import br.pucminas.graphtest.application.usecases.gce.CreateGceUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gce.FindGceByIdUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.gce.AddNodeToGceUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.gce.ToggleGceEdgeUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.gce.UpdateGceNodeUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.gce.UpdateGceUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gce.ValidateGceUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.project.CreateProjectUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.project.DeleteProjectUseCaseImpl;
@@ -67,10 +75,16 @@ public class ApplicationBeansConfig {
     }
 
     @Bean
+    public GceMutationService gceMutationService() {
+        return new GceMutationServiceImpl();
+    }
+
+    @Bean
     public CreateGceUseCasePort createGceUseCase(GceRepositoryPort gceRepositoryPort,
                                                  GceValidationResultService gceValidationResultService,
-                                                 ProjectAccessService projectAccessService) {
-        return new CreateGceUseCaseImpl(gceRepositoryPort, gceValidationResultService, projectAccessService);
+                                                 ProjectAccessService projectAccessService,
+                                                 GceMutationService gceMutationService) {
+        return new CreateGceUseCaseImpl(gceRepositoryPort, gceValidationResultService, projectAccessService, gceMutationService);
     }
 
     @Bean
@@ -84,6 +98,38 @@ public class ApplicationBeansConfig {
                                                      ProjectAccessService projectAccessService,
                                                      GceValidationResultService gceValidationResultService) {
         return new ValidateGceUseCaseImpl(gceRepositoryPort, projectAccessService, gceValidationResultService);
+    }
+
+    @Bean
+    public UpdateGceUseCasePort updateGceUseCase(GceRepositoryPort gceRepositoryPort,
+                                                 ProjectAccessService projectAccessService,
+                                                 GceValidationResultService gceValidationResultService,
+                                                 GceMutationService gceMutationService) {
+        return new UpdateGceUseCaseImpl(gceRepositoryPort, projectAccessService, gceValidationResultService, gceMutationService);
+    }
+
+    @Bean
+    public AddNodeToGceUseCasePort addNodeToGceUseCase(GceRepositoryPort gceRepositoryPort,
+                                                       ProjectAccessService projectAccessService,
+                                                       GceValidationResultService gceValidationResultService,
+                                                       GceMutationService gceMutationService) {
+        return new AddNodeToGceUseCaseImpl(gceRepositoryPort, projectAccessService, gceValidationResultService, gceMutationService);
+    }
+
+    @Bean
+    public UpdateGceNodeUseCasePort updateGceNodeUseCase(GceRepositoryPort gceRepositoryPort,
+                                                         ProjectAccessService projectAccessService,
+                                                         GceValidationResultService gceValidationResultService,
+                                                         GceMutationService gceMutationService) {
+        return new UpdateGceNodeUseCaseImpl(gceRepositoryPort, projectAccessService, gceValidationResultService, gceMutationService);
+    }
+
+    @Bean
+    public ToggleGceEdgeUseCasePort toggleGceEdgeUseCase(GceRepositoryPort gceRepositoryPort,
+                                                         ProjectAccessService projectAccessService,
+                                                         GceValidationResultService gceValidationResultService,
+                                                         GceMutationService gceMutationService) {
+        return new ToggleGceEdgeUseCaseImpl(gceRepositoryPort, projectAccessService, gceValidationResultService, gceMutationService);
     }
 
     @Bean

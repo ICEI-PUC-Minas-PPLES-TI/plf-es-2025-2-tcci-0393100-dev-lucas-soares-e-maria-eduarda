@@ -66,16 +66,18 @@ class GceTest {
     @Test
     void shouldPreventNodeRemovalWhenStillReferenced() {
         GceNode cause = GceNode.cause(UUID.randomUUID(), "C1", "Causa 1");
+        GceNode operator = GceNode.operator(UUID.randomUUID(), "O1", "Operador 1", GceOperatorTypeEnum.AND);
         GceNode effect = GceNode.effect(UUID.randomUUID(), "E1", "Efeito 1");
-        GceEdge edge = new GceEdge(UUID.randomUUID(), cause.getCode(), effect.getCode(), GceEdgeTypeEnum.IDENTITY);
+        GceEdge edgeOne = new GceEdge(UUID.randomUUID(), cause.getCode(), operator.getCode(), GceEdgeTypeEnum.IDENTITY);
+        GceEdge edgeTwo = new GceEdge(UUID.randomUUID(), operator.getCode(), effect.getCode(), GceEdgeTypeEnum.IDENTITY);
         Gce gce = new Gce(
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 "GCE 1",
                 null,
                 false,
-                List.of(cause, effect),
-                List.of(edge),
+                List.of(cause, operator, effect),
+                List.of(edgeOne, edgeTwo),
                 List.of()
         );
 
@@ -116,14 +118,19 @@ class GceTest {
     @Test
     void shouldUpdateDetailsAndSelectionState() {
         GceNode cause = GceNode.cause(UUID.randomUUID(), "C1", "Causa 1");
+        GceNode operator = GceNode.operator(UUID.randomUUID(), "O1", "Operador 1", GceOperatorTypeEnum.AND);
+        GceNode effect = GceNode.effect(UUID.randomUUID(), "E1", "Efeito 1");
         Gce gce = new Gce(
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 "Nome inicial",
                 "Descricao inicial",
                 false,
-                List.of(cause),
-                List.of(),
+                List.of(cause, operator, effect),
+                List.of(
+                        new GceEdge(UUID.randomUUID(), cause.getCode(), operator.getCode(), GceEdgeTypeEnum.IDENTITY),
+                        new GceEdge(UUID.randomUUID(), operator.getCode(), effect.getCode(), GceEdgeTypeEnum.IDENTITY)
+                ),
                 List.of()
         );
 
@@ -136,5 +143,79 @@ class GceTest {
 
         gce.unselect();
         assertFalse(gce.isSelected());
+    }
+
+    @Test
+    void shouldRejectDirectConnectionFromCauseToEffect() {
+        GceNode cause = GceNode.cause(UUID.randomUUID(), "C1", "Causa 1");
+        GceNode effect = GceNode.effect(UUID.randomUUID(), "E1", "Efeito 1");
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> new Gce(
+                        UUID.randomUUID(),
+                        UUID.randomUUID(),
+                        "GCE 1",
+                        null,
+                        false,
+                        List.of(cause, effect),
+                        List.of(new GceEdge(UUID.randomUUID(), cause.getCode(), effect.getCode(), GceEdgeTypeEnum.IDENTITY)),
+                        List.of()
+                )
+        );
+
+        assertTrue(exception.getMessage().contains("Causa so pode se conectar a operador"));
+    }
+
+    @Test
+    void shouldRejectEffectIncomingEdgeWhenSourceIsNotOperator() {
+        GceNode cause = GceNode.cause(UUID.randomUUID(), "C1", "Causa 1");
+        GceNode effect = GceNode.effect(UUID.randomUUID(), "E1", "Efeito 1");
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> new Gce(
+                        UUID.randomUUID(),
+                        UUID.randomUUID(),
+                        "GCE 1",
+                        null,
+                        false,
+                        List.of(cause, effect),
+                        List.of(new GceEdge(UUID.randomUUID(), cause.getCode(), effect.getCode(), GceEdgeTypeEnum.NEGATED)),
+                        List.of()
+                )
+        );
+
+        assertTrue(exception.getMessage().contains("Causa so pode se conectar a operador"));
+    }
+
+    @Test
+    void shouldRejectOperatorWithMoreThanTwoIncomingEdges() {
+        GceNode causeOne = GceNode.cause(UUID.randomUUID(), "C1", "Causa 1");
+        GceNode causeTwo = GceNode.cause(UUID.randomUUID(), "C2", "Causa 2");
+        GceNode causeThree = GceNode.cause(UUID.randomUUID(), "C3", "Causa 3");
+        GceNode operator = GceNode.operator(UUID.randomUUID(), "O1", "Operador 1", GceOperatorTypeEnum.OR);
+        GceNode effect = GceNode.effect(UUID.randomUUID(), "E1", "Efeito 1");
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> new Gce(
+                        UUID.randomUUID(),
+                        UUID.randomUUID(),
+                        "GCE 1",
+                        null,
+                        false,
+                        List.of(causeOne, causeTwo, causeThree, operator, effect),
+                        List.of(
+                                new GceEdge(UUID.randomUUID(), "C1", "O1", GceEdgeTypeEnum.IDENTITY),
+                                new GceEdge(UUID.randomUUID(), "C2", "O1", GceEdgeTypeEnum.IDENTITY),
+                                new GceEdge(UUID.randomUUID(), "C3", "O1", GceEdgeTypeEnum.IDENTITY),
+                                new GceEdge(UUID.randomUUID(), "O1", "E1", GceEdgeTypeEnum.IDENTITY)
+                        ),
+                        List.of()
+                )
+        );
+
+        assertTrue(exception.getMessage().contains("no maximo duas arestas de entrada"));
     }
 }

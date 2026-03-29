@@ -5,6 +5,7 @@ import br.pucminas.graphtest.application.domain.GceEdge;
 import br.pucminas.graphtest.application.domain.GceNode;
 import br.pucminas.graphtest.application.domain.Project;
 import br.pucminas.graphtest.application.domain.enums.GceEdgeTypeEnum;
+import br.pucminas.graphtest.application.domain.enums.GceOperatorTypeEnum;
 import br.pucminas.graphtest.application.port.input.gce.records.FindGceByIdInput;
 import br.pucminas.graphtest.application.port.input.gce.records.GceOutput;
 import br.pucminas.graphtest.application.port.output.repositories.GceRepositoryPort;
@@ -48,9 +49,13 @@ class FindGceByIdUseCaseImplTest {
                 false,
                 List.of(
                         GceNode.cause(UUID.randomUUID(), "C1", "Causa"),
+                        GceNode.operator(UUID.randomUUID(), "O1", "Operador", GceOperatorTypeEnum.AND),
                         GceNode.effect(UUID.randomUUID(), "E1", "Efeito")
                 ),
-                List.of(new GceEdge(UUID.randomUUID(), "C1", "E1", GceEdgeTypeEnum.IDENTITY)),
+                List.of(
+                        new GceEdge(UUID.randomUUID(), "C1", "O1", GceEdgeTypeEnum.IDENTITY),
+                        new GceEdge(UUID.randomUUID(), "O1", "E1", GceEdgeTypeEnum.IDENTITY)
+                ),
                 List.of()
         );
 

@@ -5,16 +5,22 @@ import br.pucminas.graphtest.application.domain.GceEdge;
 import br.pucminas.graphtest.application.domain.GceNode;
 import br.pucminas.graphtest.application.domain.Project;
 import br.pucminas.graphtest.application.domain.enums.GceEdgeTypeEnum;
+import br.pucminas.graphtest.application.domain.enums.GceNodeTypeEnum;
 import br.pucminas.graphtest.application.domain.enums.GceOperatorTypeEnum;
-import br.pucminas.graphtest.application.port.input.gce.records.ValidateGceByIdInput;
-import br.pucminas.graphtest.application.port.input.gce.records.ValidationGceOutput;
+import br.pucminas.graphtest.application.port.input.gce.records.GceEdgeInput;
+import br.pucminas.graphtest.application.port.input.gce.records.GceNodeInput;
+import br.pucminas.graphtest.application.port.input.gce.records.GceOutput;
+import br.pucminas.graphtest.application.port.input.gce.records.UpdateGceInput;
 import br.pucminas.graphtest.application.port.output.repositories.GceRepositoryPort;
+import br.pucminas.graphtest.application.service.GceMutationServiceImpl;
+import br.pucminas.graphtest.application.service.interfaces.GceMutationService;
 import br.pucminas.graphtest.application.service.interfaces.GceValidationResultService;
 import br.pucminas.graphtest.application.service.interfaces.ProjectAccessService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
@@ -27,7 +33,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ValidateGceUseCaseImplTest {
+class UpdateGceUseCaseImplTest {
 
     @Mock
     private GceRepositoryPort gceRepository;
@@ -38,19 +44,22 @@ class ValidateGceUseCaseImplTest {
     @Mock
     private GceValidationResultService gceValidationResultService;
 
+    @Spy
+    private GceMutationService gceMutationService = new GceMutationServiceImpl();
+
     @InjectMocks
-    private ValidateGceUseCaseImpl useCase;
+    private UpdateGceUseCaseImpl useCase;
 
     @Test
-    void shouldLoadPersistedGraphBeforeValidating() {
+    void shouldReplaceWholeGraphAndKeepExplicitNegatedEdges() {
         UUID graphId = UUID.randomUUID();
         UUID projectId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
         Gce graph = new Gce(
                 graphId,
                 projectId,
-                "GCE",
-                "Descricao",
+                "Nome antigo",
+                "Descricao antiga",
                 false,
                 List.of(
                         GceNode.cause(UUID.randomUUID(), "C1", "Causa"),
@@ -68,13 +77,34 @@ class ValidateGceUseCaseImplTest {
         when(projectAccessService.findAuthorizedProject(projectId))
                 .thenReturn(new Project(projectId, "Projeto", "Descricao", userId));
         when(gceValidationResultService.validate(any(Gce.class)))
-                .thenReturn(new ValidationGceOutput(List.of(), List.of()));
+                .thenReturn(new br.pucminas.graphtest.application.port.input.gce.records.ValidationGceOutput(List.of(), List.of()));
+        when(gceRepository.save(any(Gce.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        ValidationGceOutput output = useCase.execute(new ValidateGceByIdInput(graphId));
+        GceOutput output = useCase.execute(new UpdateGceInput(
+                graphId,
+                projectId,
+                "Nome novo",
+                "Descricao nova",
+                true,
+                List.of(
+                        new GceNodeInput("C1", "Causa 1", GceNodeTypeEnum.CAUSE, null),
+                        new GceNodeInput("C2", "Causa 2", GceNodeTypeEnum.CAUSE, null),
+                        new GceNodeInput("O1", "Operador OR", GceNodeTypeEnum.OPERATOR, GceOperatorTypeEnum.OR),
+                        new GceNodeInput("E1", "Efeito final", GceNodeTypeEnum.EFFECT, null)
+                ),
+                List.of(
+                        new GceEdgeInput("C1", "O1", GceEdgeTypeEnum.NEGATED),
+                        new GceEdgeInput("C2", "O1", GceEdgeTypeEnum.IDENTITY),
+                        new GceEdgeInput("O1", "E1", GceEdgeTypeEnum.IDENTITY)
+                ),
+                List.of()
+        ));
 
-        verify(gceRepository).findById(graphId);
-        verify(projectAccessService).findAuthorizedProject(projectId);
-        verify(gceValidationResultService).validate(graph);
-        assertEquals(true, output.valid());
+        assertEquals("Nome novo", output.name());
+        assertEquals("Descricao nova", output.description());
+        assertEquals(true, output.selected());
+        assertEquals(4, output.nodes().size());
+        assertEquals(GceEdgeTypeEnum.NEGATED, output.edges().stream().filter(edge -> edge.sourceNodeCode().equals("C1")).findFirst().orElseThrow().type());
+        verify(gceRepository).save(any(Gce.class));
     }
 }
