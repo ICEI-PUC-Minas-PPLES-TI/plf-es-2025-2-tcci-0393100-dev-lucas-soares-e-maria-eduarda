@@ -25,6 +25,12 @@ function addToIndex(projectId: string, gceId: string) {
   }
 }
 
+function removeFromIndex(projectId: string, gceId: string) {
+  const index = getIndex();
+  index[projectId] = (index[projectId] ?? []).filter((id) => id !== gceId);
+  localStorage.setItem(INDEX_KEY, JSON.stringify(index));
+}
+
 class GCEService extends BaseService {
   criar = async (data: CreateGCERequest): Promise<{ id: string }> => {
     const res = await this.post<{ status: number; mensagem: string; id_gce: string }, CreateGCERequest>(BASE, data);
@@ -54,6 +60,11 @@ class GCEService extends BaseService {
   validar = async (id: string): Promise<GCEValidationResponse> => {
     const res = await this.get<GCEValidationResponse>(`${BASE}/${id}/validar`);
     return res.data;
+  };
+
+  deletar = async (projectId: string, id: string): Promise<void> => {
+    await this.delete(`${BASE}/${id}`);
+    removeFromIndex(projectId, id);
   };
 }
 

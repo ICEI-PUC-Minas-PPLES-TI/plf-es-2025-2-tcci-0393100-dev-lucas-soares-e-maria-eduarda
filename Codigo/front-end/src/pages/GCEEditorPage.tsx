@@ -103,6 +103,31 @@ export function GCEEditorPage() {
     }
   }, [gce, projectId, navigate]);
 
+  const handleNameChange = useCallback(async (newName: string) => {
+    if (!gce || !projectId) return;
+
+    const updatedGce = { ...gce, name: newName };
+    setGce(updatedGce);
+
+    if (gce.id === 'new') return;
+
+    const state = canvasRef.current?.getState();
+    if (!state) return;
+
+    setSaveStatus('saving');
+    try {
+      savePositions(gce.id, state.nodes);
+      const request = flowToCreateRequest(updatedGce, state.nodes, state.edges, state.restrictions);
+      const updated = await GCEService.atualizar(gce.id, request);
+      setGce(updated);
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus('idle'), 2000);
+    } catch {
+      setSaveStatus('error');
+      setTimeout(() => setSaveStatus('idle'), 3000);
+    }
+  }, [gce, projectId]);
+
   const handleValidate = useCallback(async () => {
     if (!gce || gce.id === 'new') return;
     setValidationResult(null);
@@ -151,6 +176,7 @@ export function GCEEditorPage() {
           onSave={handleSave}
           onValidate={handleValidate}
           onGenerateTable={() => {}}
+          onNameChange={handleNameChange}
           saveStatus={saveStatus}
           canValidate={gce.id !== 'new'}
         />

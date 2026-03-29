@@ -11,6 +11,7 @@ import { RecentArtifacts } from '../features/projects/components/RecentArtifacts
 import { ValidationWarnings } from '../features/projects/components/ValidationWarnings';
 import { ProjectFormModal } from '../features/projects/components/ProjectFormModal';
 import { GCEFormModal } from '../features/gce/components/GCEFormModal';
+import { GCEList } from '../features/gce/components/GCEList';
 import ProjectService from '../services/Project/ProjectService';
 import type { ProjectDTO } from '../services/Project/types/project';
 
@@ -98,6 +99,13 @@ export function ProjectPage() {
               <ProjectSummary />
             </aside>
           </div>
+        )}
+
+        {activeTab === 'gce' && (
+          <GCEList
+            projectId={project.id}
+            onCreateGCE={() => setShowCreateGCEModal(true)}
+          />
         )}
       </main>
 
