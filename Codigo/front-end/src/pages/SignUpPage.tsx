@@ -1,4 +1,4 @@
-import { GraphBackground } from '../features/auth/components/GraphBackground';
+import { GraphBackground } from '../components/GraphBackground';
 import { SignUpCard } from '../features/auth/components/SignUpCard';
 
 export function SignUpPage() {

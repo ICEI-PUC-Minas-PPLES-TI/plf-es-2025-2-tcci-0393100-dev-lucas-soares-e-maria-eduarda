@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AuthCard } from './AuthCard';
 import { FormField } from './FormField';
 import { PasswordField } from './PasswordField';
+import { Button } from '../../../components/Button';
 import UserService from '../../../services/User/UserService';
 
 export function SignUpCard() {
@@ -33,7 +34,6 @@ export function SignUpCard() {
   return (
     <div className="w-full max-w-105 mx-auto px-4">
       <AuthCard>
-        {/* Header */}
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-semibold text-white mb-2">
             Criar nova conta
@@ -43,7 +43,6 @@ export function SignUpCard() {
           </p>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
           <FormField
             id="name"
@@ -77,27 +76,21 @@ export function SignUpCard() {
             <p className="text-sm text-red-400 text-center">{error}</p>
           )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full mt-6 px-6 py-3 bg-cyan-500 hover:bg-cyan-400 disabled:bg-cyan-800 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-cyan-500/50"
-          >
+          <Button type="submit" size="lg" disabled={loading} className="w-full justify-center mt-6">
             {loading ? 'Criando conta...' : 'Criar conta'}
-          </button>
+          </Button>
         </form>
 
-        {/* Secondary Action */}
         <div className="mt-6 text-center">
           <p className="text-gray-400">
             Já possui uma conta?{' '}
-            <Link to="/login" className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors duration-200">
+            <Link to="/login" className="text-primary-light hover:text-cyan-300 font-medium transition-colors">
               Entrar
             </Link>
           </p>
         </div>
       </AuthCard>
 
-      {/* Footer */}
       <div className="mt-8 text-center">
         <p className="text-sm text-gray-500">
           GraphTest — Plataforma de análise estrutural de código Java
