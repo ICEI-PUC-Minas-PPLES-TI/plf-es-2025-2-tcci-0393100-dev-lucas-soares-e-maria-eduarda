@@ -26,7 +26,7 @@ export function PropertiesPanel({ selectedNodeId, selectedEdgeId }: PropertiesPa
     setEdges((eds) =>
       eds.map((e) =>
         e.id === id
-          ? { ...e, type, data: { ...e.data, edgeType: type === 'negation' ? 'NEGATION' : 'IDENTITY' } }
+          ? { ...e, type, data: { ...e.data, edgeType: type === 'negation' ? 'NEGATED' : 'IDENTITY' } }
           : e,
       ),
     );
@@ -85,7 +85,6 @@ export function PropertiesPanel({ selectedNodeId, selectedEdgeId }: PropertiesPa
               >
                 <option value="AND">AND</option>
                 <option value="OR">OR</option>
-                <option value="NOT">NOT</option>
               </select>
             </Field>
           )}

@@ -6,9 +6,11 @@ interface GCEToolbarProps {
   onSave: () => void;
   onValidate: () => void;
   onGenerateTable: () => void;
+  saveStatus?: 'idle' | 'saving' | 'saved' | 'error';
+  canValidate?: boolean;
 }
 
-export function GCEToolbar({ gceName, onSave, onValidate, onGenerateTable }: GCEToolbarProps) {
+export function GCEToolbar({ gceName, onSave, onValidate, onGenerateTable, saveStatus = 'idle', canValidate = true }: GCEToolbarProps) {
   return (
     <div className="h-12 bg-surface-card border-b border-edge flex items-center justify-between px-4 shrink-0">
       <span className="text-sm text-gray-200 font-medium truncate">{gceName}</span>
@@ -18,13 +20,13 @@ export function GCEToolbar({ gceName, onSave, onValidate, onGenerateTable }: GCE
           <Table className="w-4 h-4" />
           Gerar Tabela
         </Button>
-        <Button size="sm" variant="outline" onClick={onValidate}>
+        <Button size="sm" variant="outline" onClick={onValidate} disabled={!canValidate}>
           <CheckCircle className="w-4 h-4" />
           Validar
         </Button>
-        <Button size="sm" variant="outline" onClick={onSave}>
+        <Button size="sm" variant="outline" onClick={onSave} disabled={saveStatus === 'saving'}>
           <Save className="w-4 h-4" />
-          Salvar
+          {saveStatus === 'saving' ? 'Salvando...' : saveStatus === 'saved' ? 'Salvo!' : saveStatus === 'error' ? 'Erro ao salvar' : 'Salvar'}
         </Button>
       </div>
     </div>

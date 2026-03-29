@@ -15,7 +15,6 @@ const elements = [
 const operators: { id: string; label: string; operatorType: OperatorType }[] = [
   { id: 'and', label: 'AND', operatorType: 'AND' },
   { id: 'or', label: 'OR', operatorType: 'OR' },
-  { id: 'not', label: 'NOT', operatorType: 'NOT' },
 ];
 
 export function ElementPalette({ onAddNode, onDelete, hasSelection }: ElementPaletteProps) {

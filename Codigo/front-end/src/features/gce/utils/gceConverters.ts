@@ -1,0 +1,99 @@
+import type { GCEDTO, GCEFlowNode, GCEFlowEdge, GCERestriction, CreateGCERequest } from '../types/gce';
+
+// ──────────────────────────────────────────────────────────────
+// Node positions: stored in localStorage keyed by gceId
+// ──────────────────────────────────────────────────────────────
+
+function positionsKey(gceId: string) {
+  return `gce_positions_${gceId}`;
+}
+
+export function loadPositions(gceId: string): Record<string, { x: number; y: number }> {
+  try {
+    return JSON.parse(localStorage.getItem(positionsKey(gceId)) ?? '{}');
+  } catch {
+    return {};
+  }
+}
+
+export function savePositions(gceId: string, nodes: GCEFlowNode[]) {
+  const positions: Record<string, { x: number; y: number }> = {};
+  nodes.forEach((n) => { positions[n.id] = n.position; });
+  localStorage.setItem(positionsKey(gceId), JSON.stringify(positions));
+}
+
+// ──────────────────────────────────────────────────────────────
+// DTO → Flow (used when loading a GCE)
+// ──────────────────────────────────────────────────────────────
+
+export function dtoToFlowNodes(dto: GCEDTO): GCEFlowNode[] {
+  const saved = loadPositions(dto.id);
+  return dto.nodes.map((node, index) => {
+    const typeMap = { CAUSE: 'cause', EFFECT: 'effect', OPERATOR: 'operator' } as const;
+    return {
+      id: node.code,
+      type: typeMap[node.type],
+      position: saved[node.code] ?? { x: (index % 3) * 260, y: Math.floor(index / 3) * 160 },
+      data: {
+        code: node.code,
+        label: node.label,
+        nodeType: node.type,
+        operatorType: node.operatorType,
+      },
+    };
+  });
+}
+
+export function dtoToFlowEdges(dto: GCEDTO): GCEFlowEdge[] {
+  return dto.edges.map((edge, i) => ({
+    id: `e-${i}`,
+    source: edge.sourceNodeCode,
+    target: edge.targetNodeCode,
+    type: edge.type === 'NEGATED' ? 'negation' : 'default',
+    data: {
+      edgeType: edge.type,
+      backendId: edge.id,
+    },
+  }));
+}
+
+export function dtoToRestrictions(dto: GCEDTO): GCERestriction[] {
+  return dto.restrictions.map((r) => ({
+    id: r.id,
+    type: r.type,
+    nodeCodes: r.nodeCodes,
+  }));
+}
+
+// ──────────────────────────────────────────────────────────────
+// Flow → DTO (used when saving)
+// ──────────────────────────────────────────────────────────────
+
+export function flowToCreateRequest(
+  base: { projectId: string; name: string; description: string; selected: boolean },
+  nodes: GCEFlowNode[],
+  edges: GCEFlowEdge[],
+  restrictions: GCERestriction[],
+): CreateGCERequest {
+  return {
+    projectId: base.projectId,
+    name: base.name,
+    description: base.description,
+    selected: base.selected,
+    nodes: nodes.map((n) => ({
+      code: n.data.code,
+      label: n.data.label,
+      type: n.data.nodeType,
+      operatorType: n.data.operatorType,
+    })),
+    edges: edges.map((e) => ({
+      sourceNodeCode: e.source,
+      targetNodeCode: e.target,
+      type: e.data?.edgeType ?? 'IDENTITY',
+    })),
+    restrictions: restrictions.map((r) => ({
+      type: r.type,
+      nodeCodes: r.nodeCodes,
+    })),
+  };
+}

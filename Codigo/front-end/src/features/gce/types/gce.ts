@@ -1,9 +1,9 @@
 import type { Node, Edge } from '@xyflow/react';
 
 export type GCENodeType = 'CAUSE' | 'EFFECT' | 'OPERATOR';
-export type OperatorType = 'AND' | 'OR' | 'NOT';
-export type GCEEdgeType = 'IDENTITY' | 'NEGATION';
-export type RestrictionType = 'EXCLUSIVE' | 'INCLUSIVE' | 'ONLY_ONE' | 'REQUIRES' | 'MASK';
+export type OperatorType = 'AND' | 'OR';
+export type GCEEdgeType = 'IDENTITY' | 'NEGATED';
+export type RestrictionType = 'EXCLUSIVE' | 'INCLUSIVE' | 'ONE_AND_ONLY_ONE' | 'REQUIRE' | 'MASKS';
 
 export interface GCENodeData extends Record<string, unknown> {
   code: string;
@@ -15,13 +15,14 @@ export interface GCENodeData extends Record<string, unknown> {
 
 export interface GCEEdgeData extends Record<string, unknown> {
   edgeType: GCEEdgeType;
-  label?: string;
+  backendId?: string;
 }
 
 export type GCEFlowNode = Node<GCENodeData, 'cause' | 'effect' | 'operator'>;
 export type GCEFlowEdge = Edge<GCEEdgeData>;
 
 export interface GCERestriction {
+  id?: string;
   type: RestrictionType;
   nodeCodes: string[];
 }
@@ -33,22 +34,31 @@ export interface GCEValidationError {
   message: string;
 }
 
-// Backend DTOs
+// ──────────────────────────────────────────────
+// Backend DTOs (shapes returned/sent to the API)
+// ──────────────────────────────────────────────
 
 export interface GCENodeDTO {
+  id?: string;
   code: string;
   label: string;
   type: GCENodeType;
   operatorType: OperatorType | null;
+  /** Positions are stored client-side only (not in the backend).  */
+  position?: { x: number; y: number };
+  sourceNodeCodes?: string[];
+  targetNodeCodes?: string[];
 }
 
 export interface GCEEdgeDTO {
+  id?: string;
   sourceNodeCode: string;
   targetNodeCode: string;
   type: GCEEdgeType;
 }
 
 export interface GCERestrictionDTO {
+  id?: string;
   type: RestrictionType;
   nodeCodes: string[];
 }
@@ -72,4 +82,19 @@ export interface CreateGCERequest {
   nodes: GCENodeDTO[];
   edges: GCEEdgeDTO[];
   restrictions: GCERestrictionDTO[];
+}
+
+// ──────────────────────────────────────────────
+// Backend validation response
+// ──────────────────────────────────────────────
+
+export interface GCEValidationMessage {
+  code: string;
+  message: string;
+}
+
+export interface GCEValidationResponse {
+  valid: boolean;
+  errors: GCEValidationMessage[];
+  warnings: GCEValidationMessage[];
 }

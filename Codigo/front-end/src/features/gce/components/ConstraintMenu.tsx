@@ -23,9 +23,9 @@ interface ConstraintMenuProps {
 const options: ConstraintOption[] = [
   { id: 'EXCLUSIVE', label: 'Exclusivo (E)', description: 'no maximo 1', symbol: 'E', icon: ShieldAlert, minNodes: 2 },
   { id: 'INCLUSIVE', label: 'Inclusivo (I)', description: 'no minimo 1', symbol: 'I', icon: CheckCircle2, minNodes: 2 },
-  { id: 'ONLY_ONE', label: 'Somente um (O)', description: 'exatamente 1', symbol: 'O', icon: CheckCircle2, minNodes: 2 },
-  { id: 'REQUIRES', label: 'Exige (R)', description: 'c1 -> c2', symbol: 'R', icon: ArrowRight, minNodes: 2, maxNodes: 2 },
-  { id: 'MASK', label: 'Mascara (M)', description: 'e1 -> !e2', symbol: 'M', icon: Ban, minNodes: 2, maxNodes: 2 },
+  { id: 'ONE_AND_ONLY_ONE', label: 'Somente um (O)', description: 'exatamente 1', symbol: 'O', icon: CheckCircle2, minNodes: 2 },
+  { id: 'REQUIRE', label: 'Exige (R)', description: 'c1 -> c2', symbol: 'R', icon: ArrowRight, minNodes: 2, maxNodes: 2 },
+  { id: 'MASKS', label: 'Mascara (M)', description: 'e1 -> !e2', symbol: 'M', icon: Ban, minNodes: 2, maxNodes: 2 },
 ];
 
 export function ConstraintMenu({ position, selectedCount, onSelectConstraint, onClose }: ConstraintMenuProps) {

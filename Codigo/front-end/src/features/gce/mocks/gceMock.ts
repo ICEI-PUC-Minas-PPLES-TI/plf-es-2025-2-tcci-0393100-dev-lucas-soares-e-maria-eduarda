@@ -1,4 +1,4 @@
-import type { GCEDTO, GCEFlowNode, GCEFlowEdge, GCERestriction } from '../types/gce';
+import type { GCEDTO } from '../types/gce';
 
 export const GCE_MOCK: GCEDTO = {
   id: 'gce-001',
@@ -22,40 +22,4 @@ export const GCE_MOCK: GCEDTO = {
   ],
 };
 
-const NODE_POSITIONS: Record<string, { x: number; y: number }> = {
-  C1: { x: 50, y: 50 },
-  C2: { x: 50, y: 200 },
-  O1: { x: 350, y: 125 },
-  E1: { x: 650, y: 125 },
-};
-
-export function dtoToFlowNodes(dto: GCEDTO): GCEFlowNode[] {
-  return dto.nodes.map((node) => {
-    const typeMap = { CAUSE: 'cause', EFFECT: 'effect', OPERATOR: 'operator' } as const;
-    return {
-      id: node.code,
-      type: typeMap[node.type],
-      position: NODE_POSITIONS[node.code] ?? { x: 0, y: 0 },
-      data: {
-        code: node.code,
-        label: node.label,
-        nodeType: node.type,
-        operatorType: node.operatorType,
-      },
-    };
-  });
-}
-
-export function dtoToFlowEdges(dto: GCEDTO): GCEFlowEdge[] {
-  return dto.edges.map((edge, i) => ({
-    id: `e-${i}`,
-    source: edge.sourceNodeCode,
-    target: edge.targetNodeCode,
-    type: edge.type === 'NEGATION' ? 'negation' : 'default',
-    data: { edgeType: edge.type },
-  }));
-}
-
-export function dtoToRestrictions(dto: GCEDTO): GCERestriction[] {
-  return dto.restrictions.map((r) => ({ type: r.type, nodeCodes: r.nodeCodes }));
-}
+export { dtoToFlowNodes, dtoToFlowEdges, dtoToRestrictions } from '../utils/gceConverters';

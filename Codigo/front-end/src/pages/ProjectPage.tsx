@@ -10,6 +10,7 @@ import { QuickActions } from '../features/projects/components/QuickActions';
 import { RecentArtifacts } from '../features/projects/components/RecentArtifacts';
 import { ValidationWarnings } from '../features/projects/components/ValidationWarnings';
 import { ProjectFormModal } from '../features/projects/components/ProjectFormModal';
+import { GCEFormModal } from '../features/gce/components/GCEFormModal';
 import ProjectService from '../services/Project/ProjectService';
 import type { ProjectDTO } from '../services/Project/types/project';
 
@@ -20,6 +21,7 @@ export function ProjectPage() {
   const [project, setProject] = useState<ProjectDTO | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showCreateGCEModal, setShowCreateGCEModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -88,8 +90,8 @@ export function ProjectPage() {
         {activeTab === 'overview' && (
           <div className="container mx-auto px-6 py-6 flex gap-6">
             <div className="flex-1 space-y-6 min-w-0">
-              <QuickActions />
-              <RecentArtifacts />
+              <QuickActions onCreateGCE={() => setShowCreateGCEModal(true)} />
+              <RecentArtifacts projectId={project.id} />
               <ValidationWarnings />
             </div>
             <aside className="w-80 shrink-0 hidden lg:block">
@@ -112,6 +114,13 @@ export function ProjectPage() {
           confirmLoadingLabel="Excluindo..."
           onClose={() => setShowDeleteModal(false)}
           onConfirm={handleDelete}
+        />
+      )}
+
+      {showCreateGCEModal && (
+        <GCEFormModal
+          projectId={project.id}
+          onClose={() => setShowCreateGCEModal(false)}
         />
       )}
 

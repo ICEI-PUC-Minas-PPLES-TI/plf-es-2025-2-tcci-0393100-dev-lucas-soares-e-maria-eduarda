@@ -39,24 +39,6 @@ export const OperatorNode = memo(function OperatorNode({ data, selected }: NodeP
             strokeWidth={2}
           />
         )}
-        {operatorType === 'NOT' && (
-          <>
-            <path
-              d="M 5 5 L 60 30 L 5 55 Z"
-              fill="var(--color-node-operator-bg)"
-              stroke={borderColor}
-              strokeWidth={2}
-            />
-            <circle
-              cx="68"
-              cy="30"
-              r="7"
-              fill="none"
-              stroke={borderColor}
-              strokeWidth={2}
-            />
-          </>
-        )}
       </svg>
 
       <div className="relative z-10 text-center">

@@ -32,6 +32,7 @@ export interface GCECanvasHandle {
   addNode: (type: GCENodeType, operatorType?: OperatorType) => void;
   deleteSelected: () => void;
   hasSelection: boolean;
+  getState: () => { nodes: GCEFlowNode[]; edges: GCEFlowEdge[]; restrictions: GCERestriction[] };
 }
 
 const nodeTypes = { cause: CauseNode, effect: EffectNode, operator: OperatorNode };
@@ -43,7 +44,7 @@ export const GCECanvas = forwardRef<GCECanvasHandle, GCECanvasProps>(
   function GCECanvas({ initialNodes, initialEdges, initialRestrictions, onSelectionChange }, ref) {
     const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-    const [, setRestrictions] = useState<GCERestriction[]>(initialRestrictions);
+    const [restrictions, setRestrictions] = useState<GCERestriction[]>(initialRestrictions);
     const [multiSelected, setMultiSelected] = useState<string[]>([]);
     const [constraintMenuPos, setConstraintMenuPos] = useState<{ x: number; y: number } | null>(null);
     const { flowToScreenPosition } = useReactFlow();
@@ -113,10 +114,15 @@ export const GCECanvas = forwardRef<GCECanvasHandle, GCECanvasProps>(
     );
 
     const deleteSelected = useCallback(() => {
+      const deletedNodeIds = new Set(nodes.filter((n) => n.selected).map((n) => n.id));
       setNodes((nds) => nds.filter((n) => !n.selected));
-      setEdges((eds) => eds.filter((e) => !e.selected));
+      setEdges((eds) =>
+        eds.filter(
+          (e) => !e.selected && !deletedNodeIds.has(e.source) && !deletedNodeIds.has(e.target),
+        ),
+      );
       onSelectionChange(null, null);
-    }, [setNodes, setEdges, onSelectionChange]);
+    }, [nodes, setNodes, setEdges, onSelectionChange]);
 
     const handleConstraint = useCallback(
       (type: RestrictionType) => {
@@ -131,7 +137,12 @@ export const GCECanvas = forwardRef<GCECanvasHandle, GCECanvasProps>(
       return nodes.some((n) => n.selected) || edges.some((e) => e.selected);
     }, [nodes, edges]);
 
-    useImperativeHandle(ref, () => ({ addNode, deleteSelected, hasSelection }), [addNode, deleteSelected, hasSelection]);
+    const getState = useCallback(
+      () => ({ nodes, edges, restrictions }),
+      [nodes, edges, restrictions],
+    );
+
+    useImperativeHandle(ref, () => ({ addNode, deleteSelected, hasSelection, getState }), [addNode, deleteSelected, hasSelection, getState]);
 
     return (
       <div className="flex-1 relative">
