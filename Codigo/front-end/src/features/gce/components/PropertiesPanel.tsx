@@ -1,4 +1,4 @@
-import { useReactFlow } from '@xyflow/react';
+import { useNodes, useEdges, useReactFlow } from '@xyflow/react';
 import type { GCEFlowNode, GCEFlowEdge, GCENodeData, OperatorType } from '../types/gce';
 
 interface PropertiesPanelProps {
@@ -7,10 +7,12 @@ interface PropertiesPanelProps {
 }
 
 export function PropertiesPanel({ selectedNodeId, selectedEdgeId }: PropertiesPanelProps) {
-  const { getNode, getEdge, setNodes, setEdges } = useReactFlow();
+  const { setNodes, setEdges } = useReactFlow();
+  const nodes = useNodes() as GCEFlowNode[];
+  const edges = useEdges() as GCEFlowEdge[];
 
-  const selectedNode = selectedNodeId ? (getNode(selectedNodeId) as GCEFlowNode | undefined) : null;
-  const selectedEdge = selectedEdgeId ? (getEdge(selectedEdgeId) as GCEFlowEdge | undefined) : null;
+  const selectedNode = selectedNodeId ? nodes.find((n) => n.id === selectedNodeId) : null;
+  const selectedEdge = selectedEdgeId ? edges.find((e) => e.id === selectedEdgeId) : null;
 
   const updateNodeData = (id: string, updates: Partial<GCENodeData>) => {
     setNodes((nds) =>

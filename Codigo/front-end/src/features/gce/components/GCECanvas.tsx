@@ -135,6 +135,17 @@ export const GCECanvas = forwardRef<GCECanvasHandle, GCECanvasProps>(
 
     return (
       <div className="flex-1 relative">
+        {multiSelected.length === 0 && (
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
+            <div className="bg-surface-card border border-edge rounded-lg px-4 py-2 shadow-lg">
+              <p className="text-xs text-gray-500 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-primary-light animate-pulse" />
+                Segure <kbd className="px-1.5 py-0.5 bg-surface-hover border border-edge rounded text-gray-200 text-xs">Shift</kbd> ou <kbd className="px-1.5 py-0.5 bg-surface-hover border border-edge rounded text-gray-200 text-xs">Ctrl</kbd> para selecionar multiplos nós
+              </p>
+            </div>
+          </div>
+        )}
+
         <ReactFlow
           nodes={nodes}
           edges={edges}
