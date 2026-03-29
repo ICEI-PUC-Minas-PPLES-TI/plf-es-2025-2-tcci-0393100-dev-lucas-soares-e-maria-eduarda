@@ -38,7 +38,7 @@ export function ProjectSummary() {
         </div>
         <div className="w-full bg-surface rounded-full h-2 overflow-hidden">
           <div
-            className="bg-gradient-to-r from-cyan-500 to-blue-500 h-full rounded-full"
+            className="bg-linear-to-r from-cyan-500 to-blue-500 h-full rounded-full"
             style={{ width: '68%' }}
           />
         </div>
