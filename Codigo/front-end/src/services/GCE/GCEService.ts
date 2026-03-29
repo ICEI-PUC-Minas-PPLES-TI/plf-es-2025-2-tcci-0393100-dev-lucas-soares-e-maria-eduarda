@@ -62,8 +62,8 @@ class GCEService extends BaseService {
     return res.data;
   };
 
+  // TODO: substituir pelo endpoint real quando o backend implementar DELETE
   deletar = async (projectId: string, id: string): Promise<void> => {
-    await this.delete(`${BASE}/${id}`);
     removeFromIndex(projectId, id);
   };
 }
