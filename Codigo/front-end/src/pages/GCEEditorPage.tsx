@@ -15,6 +15,7 @@ import {
   savePositions,
 } from '../features/gce/utils/gceConverters';
 import GCEService from '../services/GCE/GCEService';
+import ProjectService from '../services/Project/ProjectService';
 import type { GCEDTO, GCEValidationResponse, GCERestriction } from '../features/gce/types/gce';
 
 export function GCEEditorPage() {
@@ -47,6 +48,7 @@ export function GCEEditorPage() {
   const [validationResult, setValidationResult] = useState<GCEValidationResponse | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [liveRestrictions, setLiveRestrictions] = useState<GCERestriction[]>([]);
+  const [projectName, setProjectName] = useState<string | null>(null);
   const canvasRef = useRef<GCECanvasHandle>(null);
 
   useEffect(() => {
@@ -56,6 +58,13 @@ export function GCEEditorPage() {
       .catch(() => setLoadError('GCE não encontrado.'))
       .finally(() => setLoading(false));
   }, [isNew, gceId]);
+
+  useEffect(() => {
+    if (!projectId) return;
+    ProjectService.buscarPorId(projectId)
+      .then((p) => setProjectName(p.name))
+      .catch(() => {});
+  }, [projectId]);
 
   const handleSelectionChange = useCallback((nodeId: string | null, edgeId: string | null) => {
     setSelectedNodeId(nodeId);
@@ -132,7 +141,7 @@ export function GCEEditorPage() {
         <Header
           breadcrumb={[
             { label: 'Projetos', href: '/homepage' },
-            { label: 'Projeto', href: `/projeto/${projectId}` },
+            { label: projectName ?? 'Projeto', href: `/projeto/${projectId}` },
             { label: gce.name },
           ]}
         />

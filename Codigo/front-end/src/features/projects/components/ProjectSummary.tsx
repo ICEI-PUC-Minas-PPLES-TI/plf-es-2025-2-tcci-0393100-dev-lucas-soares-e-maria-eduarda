@@ -49,10 +49,6 @@ export function ProjectSummary() {
           <p className="text-xs text-gray-500 mb-1">Última atualização</p>
           <p className="text-sm">2 horas atrás</p>
         </div>
-        <div className="bg-surface border border-edge rounded p-3">
-          <p className="text-xs text-gray-500 mb-1">Colaboradores</p>
-          <p className="text-sm">4 membros</p>
-        </div>
       </div>
     </div>
   );
