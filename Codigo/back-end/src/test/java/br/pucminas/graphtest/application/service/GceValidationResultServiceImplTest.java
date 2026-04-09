@@ -1,13 +1,14 @@
 package br.pucminas.graphtest.application.service;
 
-import br.pucminas.graphtest.application.domain.Gce;
-import br.pucminas.graphtest.application.domain.GceEdge;
-import br.pucminas.graphtest.application.domain.GceNode;
-import br.pucminas.graphtest.application.domain.GceRestriction;
-import br.pucminas.graphtest.application.domain.enums.GceEdgeTypeEnum;
-import br.pucminas.graphtest.application.domain.enums.GceOperatorTypeEnum;
-import br.pucminas.graphtest.application.domain.enums.RestrictionTypeEnum;
+import br.pucminas.graphtest.application.domain.gce.model.Gce;
+import br.pucminas.graphtest.application.domain.gce.model.GceEdge;
+import br.pucminas.graphtest.application.domain.gce.model.GceNode;
+import br.pucminas.graphtest.application.domain.gce.model.GceRestriction;
+import br.pucminas.graphtest.application.domain.gce.enums.GceEdgeTypeEnum;
+import br.pucminas.graphtest.application.domain.gce.enums.GceOperatorTypeEnum;
+import br.pucminas.graphtest.application.domain.gce.enums.RestrictionTypeEnum;
 import br.pucminas.graphtest.application.port.input.gce.records.ValidationGceOutput;
+import br.pucminas.graphtest.application.service.gce.GceValidationResultServiceImpl;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

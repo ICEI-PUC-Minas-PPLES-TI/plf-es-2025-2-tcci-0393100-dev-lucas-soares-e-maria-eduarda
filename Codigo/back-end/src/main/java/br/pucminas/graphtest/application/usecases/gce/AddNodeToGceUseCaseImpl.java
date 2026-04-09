@@ -1,14 +1,14 @@
 package br.pucminas.graphtest.application.usecases.gce;
 
-import br.pucminas.graphtest.application.domain.Gce;
+import br.pucminas.graphtest.application.domain.gce.model.Gce;
 import br.pucminas.graphtest.application.port.input.gce.AddNodeToGceUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.records.AddNodeToGceInput;
 import br.pucminas.graphtest.application.port.input.gce.records.GceNodeInput;
 import br.pucminas.graphtest.application.port.input.gce.records.GceOutput;
 import br.pucminas.graphtest.application.port.output.repositories.GceRepositoryPort;
-import br.pucminas.graphtest.application.service.interfaces.GceMutationService;
-import br.pucminas.graphtest.application.service.interfaces.GceValidationResultService;
-import br.pucminas.graphtest.application.service.interfaces.ProjectAccessService;
+import br.pucminas.graphtest.application.service.gce.interfaces.GceMutationService;
+import br.pucminas.graphtest.application.service.gce.interfaces.GceValidationResultService;
+import br.pucminas.graphtest.application.service.project.interfaces.ProjectAccessService;
 
 /**
  * Caso de uso responsavel por adicionar um no a um GCE existente.

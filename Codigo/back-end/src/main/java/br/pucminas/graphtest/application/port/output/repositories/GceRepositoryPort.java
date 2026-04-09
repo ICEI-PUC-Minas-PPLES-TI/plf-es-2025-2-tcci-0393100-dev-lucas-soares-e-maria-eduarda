@@ -1,6 +1,6 @@
 package br.pucminas.graphtest.application.port.output.repositories;
 
-import br.pucminas.graphtest.application.domain.Gce;
+import br.pucminas.graphtest.application.domain.gce.model.Gce;
 
 import java.util.Optional;
 import java.util.UUID;

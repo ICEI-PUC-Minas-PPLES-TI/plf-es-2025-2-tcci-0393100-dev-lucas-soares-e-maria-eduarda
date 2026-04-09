@@ -1,6 +1,6 @@
 package br.pucminas.graphtest.application.port.input.project.records;
 
-import br.pucminas.graphtest.application.domain.Project;
+import br.pucminas.graphtest.application.domain.project.model.Project;
 
 import java.util.UUID;
 

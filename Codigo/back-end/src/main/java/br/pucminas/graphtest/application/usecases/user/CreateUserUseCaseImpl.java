@@ -1,7 +1,7 @@
 package br.pucminas.graphtest.application.usecases.user;
 
-import br.pucminas.graphtest.application.domain.User;
-import br.pucminas.graphtest.application.domain.enums.UserProfileEnum;
+import br.pucminas.graphtest.application.domain.user.model.User;
+import br.pucminas.graphtest.application.domain.user.enums.UserProfileEnum;
 import br.pucminas.graphtest.application.exception.DuplicateEmailException;
 import br.pucminas.graphtest.application.port.input.user.CreateUserUseCasePort;
 import br.pucminas.graphtest.application.port.input.user.records.CreateUserInput;

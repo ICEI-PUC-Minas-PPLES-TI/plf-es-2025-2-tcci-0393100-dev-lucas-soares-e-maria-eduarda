@@ -1,8 +1,12 @@
 package br.pucminas.graphtest.application.domain;
 
-import br.pucminas.graphtest.application.domain.enums.GceEdgeTypeEnum;
-import br.pucminas.graphtest.application.domain.enums.GceOperatorTypeEnum;
-import br.pucminas.graphtest.application.domain.enums.RestrictionTypeEnum;
+import br.pucminas.graphtest.application.domain.gce.enums.GceEdgeTypeEnum;
+import br.pucminas.graphtest.application.domain.gce.enums.GceOperatorTypeEnum;
+import br.pucminas.graphtest.application.domain.gce.enums.RestrictionTypeEnum;
+import br.pucminas.graphtest.application.domain.gce.model.Gce;
+import br.pucminas.graphtest.application.domain.gce.model.GceEdge;
+import br.pucminas.graphtest.application.domain.gce.model.GceNode;
+import br.pucminas.graphtest.application.domain.gce.model.GceRestriction;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

@@ -1,6 +1,6 @@
 package br.pucminas.graphtest.adapters.inbound.controller.interfaces;
 
-import br.pucminas.graphtest.adapters.inbound.dto.ProjectDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.project.ProjectDTO;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;

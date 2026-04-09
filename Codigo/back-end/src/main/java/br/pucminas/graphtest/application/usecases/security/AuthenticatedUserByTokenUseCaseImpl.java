@@ -1,7 +1,7 @@
 package br.pucminas.graphtest.application.usecases.security;
 
-import br.pucminas.graphtest.application.domain.records.AuthenticatedUser;
-import br.pucminas.graphtest.application.domain.User;
+import br.pucminas.graphtest.application.security.AuthenticatedUser;
+import br.pucminas.graphtest.application.domain.user.model.User;
 import br.pucminas.graphtest.application.port.input.security.AuthenticatedUserByTokenUseCasePort;
 import br.pucminas.graphtest.application.port.output.repositories.UserRepositoryPort;
 import br.pucminas.graphtest.application.port.output.security.TokenServicePort;

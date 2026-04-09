@@ -1,12 +1,12 @@
 package br.pucminas.graphtest.application.usecases.gce;
 
-import br.pucminas.graphtest.application.domain.Gce;
+import br.pucminas.graphtest.application.domain.gce.model.Gce;
 import br.pucminas.graphtest.application.exception.EntityNotFoundException;
 import br.pucminas.graphtest.application.port.input.gce.FindGceByIdUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.records.FindGceByIdInput;
 import br.pucminas.graphtest.application.port.input.gce.records.GceOutput;
 import br.pucminas.graphtest.application.port.output.repositories.GceRepositoryPort;
-import br.pucminas.graphtest.application.service.interfaces.ProjectAccessService;
+import br.pucminas.graphtest.application.service.project.interfaces.ProjectAccessService;
 
 /**
  * Caso de uso responsavel por localizar um GCE por id.

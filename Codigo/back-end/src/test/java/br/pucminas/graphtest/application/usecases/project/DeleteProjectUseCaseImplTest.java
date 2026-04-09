@@ -1,10 +1,10 @@
 package br.pucminas.graphtest.application.usecases.project;
 
-import br.pucminas.graphtest.application.domain.Project;
+import br.pucminas.graphtest.application.domain.project.model.Project;
 import br.pucminas.graphtest.application.port.input.project.records.DeleteProjectInput;
 import br.pucminas.graphtest.application.port.output.repositories.GceRepositoryPort;
 import br.pucminas.graphtest.application.port.output.repositories.ProjectRepositoryPort;
-import br.pucminas.graphtest.application.service.interfaces.ProjectAccessService;
+import br.pucminas.graphtest.application.service.project.interfaces.ProjectAccessService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;

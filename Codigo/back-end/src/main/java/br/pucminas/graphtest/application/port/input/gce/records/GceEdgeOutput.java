@@ -1,7 +1,7 @@
 package br.pucminas.graphtest.application.port.input.gce.records;
 
-import br.pucminas.graphtest.application.domain.GceEdge;
-import br.pucminas.graphtest.application.domain.enums.GceEdgeTypeEnum;
+import br.pucminas.graphtest.application.domain.gce.model.GceEdge;
+import br.pucminas.graphtest.application.domain.gce.enums.GceEdgeTypeEnum;
 
 import java.util.UUID;
 

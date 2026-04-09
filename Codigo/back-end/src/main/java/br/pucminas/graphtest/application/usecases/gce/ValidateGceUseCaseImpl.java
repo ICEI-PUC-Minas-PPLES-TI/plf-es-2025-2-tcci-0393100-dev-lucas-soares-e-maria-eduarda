@@ -1,13 +1,13 @@
 package br.pucminas.graphtest.application.usecases.gce;
 
-import br.pucminas.graphtest.application.domain.Gce;
+import br.pucminas.graphtest.application.domain.gce.model.Gce;
 import br.pucminas.graphtest.application.exception.EntityNotFoundException;
 import br.pucminas.graphtest.application.port.input.gce.ValidateGceUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.records.ValidateGceByIdInput;
 import br.pucminas.graphtest.application.port.input.gce.records.ValidationGceOutput;
 import br.pucminas.graphtest.application.port.output.repositories.GceRepositoryPort;
-import br.pucminas.graphtest.application.service.interfaces.GceValidationResultService;
-import br.pucminas.graphtest.application.service.interfaces.ProjectAccessService;
+import br.pucminas.graphtest.application.service.gce.interfaces.GceValidationResultService;
+import br.pucminas.graphtest.application.service.project.interfaces.ProjectAccessService;
 
 /**
  * Caso de uso responsavel por orquestrar a validacao de um GCE.

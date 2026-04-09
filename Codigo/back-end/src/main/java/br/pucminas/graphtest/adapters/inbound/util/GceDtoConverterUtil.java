@@ -1,10 +1,10 @@
 package br.pucminas.graphtest.adapters.inbound.util;
 
-import br.pucminas.graphtest.adapters.inbound.dto.GceDTO;
-import br.pucminas.graphtest.adapters.inbound.dto.GceInputDTO;
-import br.pucminas.graphtest.adapters.inbound.dto.AddGceNodeDTO;
-import br.pucminas.graphtest.adapters.inbound.dto.UpdateGceNodeDTO;
-import br.pucminas.graphtest.adapters.inbound.dto.ValidationGceDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.gce.GceDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.gce.GceInputDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.gce.AddGceNodeDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.gce.UpdateGceNodeDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.gce.ValidationGceDTO;
 import br.pucminas.graphtest.application.port.input.gce.records.AddNodeToGceInput;
 import br.pucminas.graphtest.application.port.input.gce.records.CreateGceInput;
 import br.pucminas.graphtest.application.port.input.gce.records.GceEdgeInput;
