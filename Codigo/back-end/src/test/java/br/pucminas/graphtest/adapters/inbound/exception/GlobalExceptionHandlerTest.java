@@ -1,5 +1,6 @@
 package br.pucminas.graphtest.adapters.inbound.exception;
 
+import br.pucminas.graphtest.adapters.inbound.error.ErrorResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;

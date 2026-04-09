@@ -1,7 +1,7 @@
 package br.pucminas.graphtest.application.port.input.gce.records;
 
-import br.pucminas.graphtest.application.domain.GceRestriction;
-import br.pucminas.graphtest.application.domain.enums.RestrictionTypeEnum;
+import br.pucminas.graphtest.application.domain.gce.model.GceRestriction;
+import br.pucminas.graphtest.application.domain.gce.enums.RestrictionTypeEnum;
 
 import java.util.List;
 import java.util.UUID;

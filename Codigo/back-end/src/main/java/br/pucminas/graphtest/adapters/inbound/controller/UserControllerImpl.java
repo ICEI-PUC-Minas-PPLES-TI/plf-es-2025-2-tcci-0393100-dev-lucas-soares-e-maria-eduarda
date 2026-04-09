@@ -1,9 +1,9 @@
 package br.pucminas.graphtest.adapters.inbound.controller;
 
 import br.pucminas.graphtest.adapters.inbound.controller.interfaces.UserController;
-import br.pucminas.graphtest.adapters.inbound.dto.PasswordDTO;
-import br.pucminas.graphtest.adapters.inbound.dto.TokenValidationDTO;
-import br.pucminas.graphtest.adapters.inbound.dto.UserDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.user.PasswordDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.security.TokenValidationDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.user.UserDTO;
 import br.pucminas.graphtest.adapters.inbound.util.EntityDtoConverterUtil;
 import br.pucminas.graphtest.application.port.input.security.VerifyTokenUseCasePort;
 import br.pucminas.graphtest.application.port.input.user.CreateUserUseCasePort;

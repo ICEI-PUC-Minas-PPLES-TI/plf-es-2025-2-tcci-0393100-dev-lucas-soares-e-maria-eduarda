@@ -1,13 +1,13 @@
 package br.pucminas.graphtest.application.usecases.user;
 
-import br.pucminas.graphtest.application.domain.User;
-import br.pucminas.graphtest.application.domain.enums.UserProfileEnum;
-import br.pucminas.graphtest.application.domain.records.AuthenticatedUser;
+import br.pucminas.graphtest.application.domain.user.model.User;
+import br.pucminas.graphtest.application.domain.user.enums.UserProfileEnum;
+import br.pucminas.graphtest.application.security.AuthenticatedUser;
 import br.pucminas.graphtest.application.exception.DuplicateEmailException;
 import br.pucminas.graphtest.application.exception.InvalidUserProfileException;
 import br.pucminas.graphtest.application.port.input.user.records.UpdateUserInput;
 import br.pucminas.graphtest.application.port.output.repositories.UserRepositoryPort;
-import br.pucminas.graphtest.application.service.interfaces.UserAuthorizationService;
+import br.pucminas.graphtest.application.service.user.interfaces.UserAuthorizationService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

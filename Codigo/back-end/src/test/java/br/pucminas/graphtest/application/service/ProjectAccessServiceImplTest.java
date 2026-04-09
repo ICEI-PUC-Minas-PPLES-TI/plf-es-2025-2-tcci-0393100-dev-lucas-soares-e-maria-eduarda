@@ -1,11 +1,12 @@
 package br.pucminas.graphtest.application.service;
 
-import br.pucminas.graphtest.application.domain.Project;
-import br.pucminas.graphtest.application.domain.enums.UserProfileEnum;
-import br.pucminas.graphtest.application.domain.records.AuthenticatedUser;
+import br.pucminas.graphtest.application.domain.project.model.Project;
+import br.pucminas.graphtest.application.domain.user.enums.UserProfileEnum;
+import br.pucminas.graphtest.application.security.AuthenticatedUser;
 import br.pucminas.graphtest.application.exception.EntityNotFoundException;
 import br.pucminas.graphtest.application.port.output.repositories.ProjectRepositoryPort;
 import br.pucminas.graphtest.application.port.output.security.CurrentUserPort;
+import br.pucminas.graphtest.application.service.project.ProjectAccessServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

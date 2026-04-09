@@ -1,8 +1,8 @@
 package br.pucminas.graphtest.application.port.input.gce.records;
 
-import br.pucminas.graphtest.application.domain.GceNode;
-import br.pucminas.graphtest.application.domain.enums.GceNodeTypeEnum;
-import br.pucminas.graphtest.application.domain.enums.GceOperatorTypeEnum;
+import br.pucminas.graphtest.application.domain.gce.model.GceNode;
+import br.pucminas.graphtest.application.domain.gce.enums.GceNodeTypeEnum;
+import br.pucminas.graphtest.application.domain.gce.enums.GceOperatorTypeEnum;
 
 import java.util.UUID;
 

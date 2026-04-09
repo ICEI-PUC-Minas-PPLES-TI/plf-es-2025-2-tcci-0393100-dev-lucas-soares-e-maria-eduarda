@@ -1,11 +1,11 @@
 package br.pucminas.graphtest.application.usecases.project;
 
-import br.pucminas.graphtest.application.domain.Project;
+import br.pucminas.graphtest.application.domain.project.model.Project;
 import br.pucminas.graphtest.application.port.input.project.UpdateProjectUseCasePort;
 import br.pucminas.graphtest.application.port.input.project.records.ProjectOutput;
 import br.pucminas.graphtest.application.port.input.project.records.UpdateProjectInput;
 import br.pucminas.graphtest.application.port.output.repositories.ProjectRepositoryPort;
-import br.pucminas.graphtest.application.service.interfaces.ProjectAccessService;
+import br.pucminas.graphtest.application.service.project.interfaces.ProjectAccessService;
 
 import java.util.Objects;
 

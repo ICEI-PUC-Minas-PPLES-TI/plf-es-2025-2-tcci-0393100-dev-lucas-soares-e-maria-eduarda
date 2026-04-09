@@ -5,7 +5,7 @@ import br.pucminas.graphtest.application.port.input.user.FindUserByIdUseCasePort
 import br.pucminas.graphtest.application.port.input.user.records.FindUserByIdInput;
 import br.pucminas.graphtest.application.port.input.user.records.UserOutput;
 import br.pucminas.graphtest.application.port.output.repositories.UserRepositoryPort;
-import br.pucminas.graphtest.application.service.interfaces.UserAuthorizationService;
+import br.pucminas.graphtest.application.service.user.interfaces.UserAuthorizationService;
 
 import static java.lang.String.format;
 
