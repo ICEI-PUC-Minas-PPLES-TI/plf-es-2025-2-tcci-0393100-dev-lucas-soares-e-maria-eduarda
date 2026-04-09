@@ -48,6 +48,7 @@ public class UpdateGceUseCaseImpl implements UpdateGceUseCasePort {
                 gceMutationService.toRestrictions(input.restrictions())
         );
 
+        gceMutationService.refreshOperatorLabels(updatedGraph);
         gceMutationService.validateAndThrow(updatedGraph, gceValidationResultService);
         return GceOutput.from(gceRepository.save(updatedGraph));
     }

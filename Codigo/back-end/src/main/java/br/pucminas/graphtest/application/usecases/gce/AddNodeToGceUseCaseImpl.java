@@ -45,6 +45,7 @@ public class AddNodeToGceUseCaseImpl implements AddNodeToGceUseCasePort {
                 )
         );
 
+        gceMutationService.refreshOperatorLabels(graph);
         gceMutationService.validateAndThrow(graph, gceValidationResultService);
         return GceOutput.from(gceRepository.save(graph));
     }

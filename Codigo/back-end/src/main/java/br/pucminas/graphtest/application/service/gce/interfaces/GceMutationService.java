@@ -30,4 +30,6 @@ public interface GceMutationService {
     Collection<GceRestriction> toRestrictions(List<GceRestrictionInput> restrictions);
 
     void addNodeWithAutomaticEdges(Gce graph, GceNodeInput nodeInput);
+
+    void refreshOperatorLabels(Gce graph);
 }

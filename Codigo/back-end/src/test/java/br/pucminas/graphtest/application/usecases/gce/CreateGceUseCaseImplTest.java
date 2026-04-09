@@ -96,6 +96,7 @@ class CreateGceUseCaseImplTest {
 
         assertEquals(graphId, output.id());
         assertEquals(GceEdgeTypeEnum.NEGATED, output.edges().stream().filter(edge -> edge.sourceNodeCode().equals("C1")).findFirst().orElseThrow().type());
+        assertEquals("NOT (C1)", output.nodes().stream().filter(node -> node.code().equals("O1")).findFirst().orElseThrow().label());
         verify(projectAccessService).findAuthorizedProject(projectId);
         verify(gceRepository).save(any(Gce.class));
     }
@@ -143,6 +144,7 @@ class CreateGceUseCaseImplTest {
 
         assertEquals(3, output.edges().size());
         assertTrue(output.edges().stream().allMatch(edge -> edge.type() == GceEdgeTypeEnum.IDENTITY));
+        assertEquals("(C1 AND C2)", output.nodes().stream().filter(node -> node.code().equals("O1")).findFirst().orElseThrow().label());
     }
 
     @Test

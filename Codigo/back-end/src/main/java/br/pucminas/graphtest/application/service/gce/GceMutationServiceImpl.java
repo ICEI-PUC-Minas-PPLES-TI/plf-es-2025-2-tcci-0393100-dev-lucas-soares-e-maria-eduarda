@@ -18,9 +18,14 @@ import br.pucminas.graphtest.application.service.gce.interfaces.GceValidationRes
 import br.pucminas.graphtest.application.service.project.interfaces.ProjectAccessService;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -103,10 +108,33 @@ public class GceMutationServiceImpl implements GceMutationService {
         }
     }
 
+    @Override
+    public void refreshOperatorLabels(Gce graph) {
+        Map<String, String> expressionByNodeCode = new HashMap<>();
+
+        for (GceNode operatorNode : graph.getOperatorNodes()) {
+            String generatedLabel = buildNodeExpression(graph, operatorNode.getCode(), expressionByNodeCode, new HashSet<>());
+            graph.replaceNode(new GceNode(
+                    operatorNode.getId(),
+                    operatorNode.getCode(),
+                    generatedLabel,
+                    operatorNode.getType(),
+                    operatorNode.getOperatorType()
+            ));
+        }
+    }
+
     private GceNode toNode(GceNodeInput node) {
         Objects.requireNonNull(node, "node e obrigatorio.");
         validateNodeConnectionContract(node);
-        return new GceNode(null, node.code(), node.label(), node.type(), node.operatorType());
+        return new GceNode(null, node.code(), resolveInitialLabel(node), node.type(), node.operatorType());
+    }
+
+    private String resolveInitialLabel(GceNodeInput node) {
+        if (node.type() == GceNodeTypeEnum.OPERATOR) {
+            return node.code();
+        }
+        return node.label();
     }
 
     private List<GceEdge> buildAutomaticEdges(GceNodeInput node) {
@@ -166,5 +194,52 @@ public class GceMutationServiceImpl implements GceMutationService {
                 .map(String::trim)
                 .filter(code -> !code.isBlank())
                 .toList();
+    }
+
+    private String buildNodeExpression(Gce graph,
+                                       String nodeCode,
+                                       Map<String, String> expressionByNodeCode,
+                                       Set<String> visiting) {
+        String cachedExpression = expressionByNodeCode.get(nodeCode);
+        if (cachedExpression != null) {
+            return cachedExpression;
+        }
+
+        if (!visiting.add(nodeCode)) {
+            throw new IllegalArgumentException("Nao foi possivel gerar a expressao do operador devido a ciclo envolvendo o no " + nodeCode);
+        }
+
+        GceNode node = graph.findNode(nodeCode)
+                .orElseThrow(() -> new IllegalArgumentException("No inexistente: " + nodeCode));
+
+        String expression;
+        if (!node.isOperator()) {
+            expression = node.getCode();
+        } else {
+            List<String> operands = graph.incomingEdges(nodeCode).stream()
+                    .sorted(Comparator.comparing(GceEdge::getSourceNodeCode).thenComparing(edge -> edge.getType().name()))
+                    .map(edge -> formatOperandExpression(
+                            buildNodeExpression(graph, edge.getSourceNodeCode(), expressionByNodeCode, visiting),
+                            edge
+                    ))
+                    .toList();
+
+            String connector = node.getOperatorType().name();
+            expression = operands.size() <= 1
+                    ? operands.stream().findFirst().orElse(node.getCode())
+                    : "(" + String.join(" " + connector + " ", operands) + ")";
+        }
+
+        visiting.remove(nodeCode);
+        expressionByNodeCode.put(nodeCode, expression);
+        return expression;
+    }
+
+    private String formatOperandExpression(String operandExpression, GceEdge edge) {
+        if (edge.isNegated()) {
+            return "NOT (" + operandExpression + ")";
+        }
+
+        return operandExpression;
     }
 }

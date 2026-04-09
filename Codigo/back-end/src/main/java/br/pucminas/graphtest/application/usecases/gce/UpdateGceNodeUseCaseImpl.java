@@ -39,7 +39,9 @@ public class UpdateGceNodeUseCaseImpl implements UpdateGceNodeUseCasePort {
         GceNode updatedNode = new GceNode(
                 currentNode.getId(),
                 currentNode.getCode(),
-                input.label() != null && !input.label().isBlank() ? input.label() : currentNode.getLabel(),
+                currentNode.isOperator()
+                        ? currentNode.getCode()
+                        : input.label() != null && !input.label().isBlank() ? input.label() : currentNode.getLabel(),
                 currentNode.getType(),
                 currentNode.isOperator() && input.operatorType() != null
                         ? input.operatorType()
@@ -47,6 +49,7 @@ public class UpdateGceNodeUseCaseImpl implements UpdateGceNodeUseCasePort {
         );
 
         graph.replaceNode(updatedNode);
+        gceMutationService.refreshOperatorLabels(graph);
         gceMutationService.validateAndThrow(graph, gceValidationResultService);
         return GceOutput.from(gceRepository.save(graph));
     }

@@ -5,6 +5,7 @@ import br.pucminas.graphtest.adapters.inbound.dto.gce.GceInputDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gce.AddGceNodeDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gce.UpdateGceNodeDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gce.ValidationGceDTO;
+import br.pucminas.graphtest.application.domain.gce.enums.GceNodeTypeEnum;
 import br.pucminas.graphtest.application.port.input.gce.records.AddNodeToGceInput;
 import br.pucminas.graphtest.application.port.input.gce.records.CreateGceInput;
 import br.pucminas.graphtest.application.port.input.gce.records.GceEdgeInput;
@@ -73,19 +74,37 @@ public class GceDtoConverterUtil {
     }
 
     public static AddNodeToGceInput toAddNodeInput(UUID gceId, @NotNull AddGceNodeDTO node) {
+        if (node instanceof AddGceNodeDTO.AddLabeledGceNodeDTO labeledNode) {
+            return new AddNodeToGceInput(
+                    gceId,
+                    labeledNode.code(),
+                    labeledNode.label(),
+                    labeledNode.type(),
+                    null,
+                    List.of(),
+                    List.of()
+            );
+        }
+
+        AddGceNodeDTO.AddOperatorGceNodeDTO operatorNode = (AddGceNodeDTO.AddOperatorGceNodeDTO) node;
         return new AddNodeToGceInput(
                 gceId,
-                node.code(),
-                node.label(),
-                node.type(),
-                node.operatorType(),
-                node.sourceNodeCodes(),
-                node.targetNodeCodes()
+                operatorNode.code(),
+                null,
+                operatorNode.type(),
+                operatorNode.operatorType(),
+                operatorNode.sourceNodeCodes(),
+                operatorNode.targetNodeCodes()
         );
     }
 
     public static UpdateGceNodeInput toUpdateNodeInput(UUID gceId, String nodeCode, @NotNull UpdateGceNodeDTO node) {
-        return new UpdateGceNodeInput(gceId, nodeCode, node.label(), node.operatorType());
+        if (node instanceof UpdateGceNodeDTO.UpdateGceNodeLabelDTO labelNode) {
+            return new UpdateGceNodeInput(gceId, nodeCode, labelNode.label(), null);
+        }
+
+        UpdateGceNodeDTO.UpdateGceNodeOperatorDTO operatorNode = (UpdateGceNodeDTO.UpdateGceNodeOperatorDTO) node;
+        return new UpdateGceNodeInput(gceId, nodeCode, null, operatorNode.operatorType());
     }
 
     public static ToggleGceEdgeInput toToggleEdgeInput(UUID gceId, UUID edgeId) {
@@ -147,15 +166,42 @@ public class GceDtoConverterUtil {
                         throw new IllegalArgumentException("Payload de nodes nao pode conter itens nulos.");
                     }
                 })
-                .map(node -> new GceNodeInput(
-                        node.code(),
-                        node.label(),
-                        node.type(),
-                        node.operatorType(),
-                        node.sourceNodeCodes(),
-                        node.targetNodeCodes()
-                ))
+                .map(GceDtoConverterUtil::toNodeInput)
                 .toList();
+    }
+
+    private static GceNodeInput toNodeInput(GceInputDTO.GceNodeInputDTO node) {
+        if (node instanceof GceInputDTO.GceLabeledNodeInputDTO labeledNode) {
+            validateNonOperatorNodeType(labeledNode.type());
+            return new GceNodeInput(
+                    labeledNode.code(),
+                    labeledNode.label(),
+                    labeledNode.type(),
+                    null,
+                    List.of(),
+                    List.of()
+            );
+        }
+
+        GceInputDTO.GceOperatorNodeInputDTO operatorNode = (GceInputDTO.GceOperatorNodeInputDTO) node;
+        if (operatorNode.type() != GceNodeTypeEnum.OPERATOR) {
+            throw new IllegalArgumentException("No operador deve informar type OPERATOR.");
+        }
+
+        return new GceNodeInput(
+                operatorNode.code(),
+                null,
+                operatorNode.type(),
+                operatorNode.operatorType(),
+                operatorNode.sourceNodeCodes(),
+                operatorNode.targetNodeCodes()
+        );
+    }
+
+    private static void validateNonOperatorNodeType(GceNodeTypeEnum type) {
+        if (type == GceNodeTypeEnum.OPERATOR) {
+            throw new IllegalArgumentException("No OPERATOR nao deve informar label no payload.");
+        }
     }
 
     private static List<GceEdgeInput> toEdgeInputs(List<GceInputDTO.GceEdgeInputDTO> edges) {

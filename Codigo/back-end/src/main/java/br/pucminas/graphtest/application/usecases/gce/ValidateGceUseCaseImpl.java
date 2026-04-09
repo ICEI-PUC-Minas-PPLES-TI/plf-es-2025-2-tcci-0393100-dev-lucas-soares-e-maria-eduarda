@@ -51,6 +51,7 @@ public class ValidateGceUseCaseImpl implements ValidateGceUseCasePort {
                 gceMutationService.toRestrictions(input.restrictions())
         );
 
+        gceMutationService.refreshOperatorLabels(graph);
         return gceValidationResultService.validate(graph);
     }
 }

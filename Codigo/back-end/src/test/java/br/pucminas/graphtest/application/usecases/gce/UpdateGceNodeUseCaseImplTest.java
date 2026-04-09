@@ -49,7 +49,7 @@ class UpdateGceNodeUseCaseImplTest {
     private UpdateGceNodeUseCaseImpl useCase;
 
     @Test
-    void shouldUpdateOperatorNodeLabelAndOperatorType() {
+    void shouldUpdateOperatorNodeTypeAndRegenerateLabel() {
         UUID graphId = UUID.randomUUID();
         UUID projectId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
@@ -82,7 +82,7 @@ class UpdateGceNodeUseCaseImplTest {
 
         GceOutput output = useCase.execute(new UpdateGceNodeInput(graphId, "O1", "Operador OR", GceOperatorTypeEnum.OR));
 
-        assertEquals("Operador OR", output.nodes().stream().filter(node -> node.code().equals("O1")).findFirst().orElseThrow().label());
+        assertEquals("(C1 OR C2)", output.nodes().stream().filter(node -> node.code().equals("O1")).findFirst().orElseThrow().label());
         assertEquals(GceOperatorTypeEnum.OR, output.nodes().stream().filter(node -> node.code().equals("O1")).findFirst().orElseThrow().operatorType());
         verify(gceRepository).save(any(Gce.class));
     }

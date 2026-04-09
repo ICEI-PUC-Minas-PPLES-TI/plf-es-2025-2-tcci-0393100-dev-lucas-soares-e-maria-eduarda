@@ -4,6 +4,8 @@ import br.pucminas.graphtest.application.domain.gce.enums.GceEdgeTypeEnum;
 import br.pucminas.graphtest.application.domain.gce.enums.GceNodeTypeEnum;
 import br.pucminas.graphtest.application.domain.gce.enums.GceOperatorTypeEnum;
 import br.pucminas.graphtest.application.domain.gce.enums.RestrictionTypeEnum;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Builder;
 
 import java.util.List;
@@ -26,22 +28,37 @@ public record GceInputDTO(
     /**
      * DTO de entrada de no do GCE.
      */
-    public record GceNodeInputDTO(
+    @JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
+    @JsonSubTypes({
+            @JsonSubTypes.Type(GceLabeledNodeInputDTO.class),
+            @JsonSubTypes.Type(GceOperatorNodeInputDTO.class)
+    })
+    public sealed interface GceNodeInputDTO permits GceLabeledNodeInputDTO, GceOperatorNodeInputDTO {
+        String code();
+        GceNodeTypeEnum type();
+    }
+
+    public record GceLabeledNodeInputDTO(
             String code,
             String label,
+            GceNodeTypeEnum type
+    ) implements GceNodeInputDTO {
+    }
+
+    public record GceOperatorNodeInputDTO(
+            String code,
             GceNodeTypeEnum type,
             GceOperatorTypeEnum operatorType,
             List<String> sourceNodeCodes,
             List<String> targetNodeCodes
-    ) {
+    ) implements GceNodeInputDTO {
 
-        public GceNodeInputDTO(
+        public GceOperatorNodeInputDTO(
                 String code,
-                String label,
                 GceNodeTypeEnum type,
                 GceOperatorTypeEnum operatorType
         ) {
-            this(code, label, type, operatorType, List.of(), List.of());
+            this(code, type, operatorType, List.of(), List.of());
         }
     }
 
