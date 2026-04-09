@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,11 +22,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.List;
 import java.util.UUID;
 
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GCE_EDGE_TOGGLE;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GCE_NODE;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GCE_NODES;
+import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GCE_PROJETO;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GCE_VALIDAR;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.ID;
 
@@ -64,6 +67,34 @@ public interface GceController {
             @ApiResponse(responseCode = "403", description = "Usuario sem acesso ao projeto")
     })
     ResponseEntity<GceDTO> findById(@Parameter(description = "Identificador do GCE") @PathVariable UUID id);
+
+    @GetMapping(GCE_PROJETO)
+    @Operation(
+            summary = "Listar GCEs por projeto",
+            description = "Lista todos os GCEs associados a um projeto autorizado."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "GCEs listados com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Projeto nao encontrado"),
+            @ApiResponse(responseCode = "403", description = "Usuario sem acesso ao projeto")
+    })
+    ResponseEntity<List<GceDTO>> listByProject(
+            @Parameter(description = "Identificador do projeto") @PathVariable UUID projectId
+    );
+
+    @DeleteMapping(ID)
+    @Operation(
+            summary = "Excluir GCE",
+            description = "Exclui um GCE do usuario autenticado a partir do id informado na URL."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "GCE excluido com sucesso"),
+            @ApiResponse(responseCode = "404", description = "GCE nao encontrado"),
+            @ApiResponse(responseCode = "403", description = "Usuario sem acesso ao projeto")
+    })
+    ResponseEntity<java.util.Map<String, Object>> delete(
+            @Parameter(description = "Identificador do GCE") @PathVariable UUID id
+    );
 
     @GetMapping(GCE_VALIDAR)
     @Operation(

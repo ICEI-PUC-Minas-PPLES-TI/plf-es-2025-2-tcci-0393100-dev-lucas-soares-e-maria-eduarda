@@ -37,4 +37,6 @@ public class ControllerConstantsUtil {
     public static final String MSG_PROJETO_DELETADO = "projeto deletado com sucesso";
 
     public static final String MSG_GCE_CRIADO = "gce criado com sucesso";
+
+    public static final String MSG_GCE_DELETADO = "gce deletado com sucesso";
 }

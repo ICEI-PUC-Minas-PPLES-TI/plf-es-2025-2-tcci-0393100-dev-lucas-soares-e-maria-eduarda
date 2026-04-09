@@ -21,6 +21,8 @@ public final class ApiRequestPaths {
 
     public static final String GCE_VALIDAR = "/{id}/validar";
 
+    public static final String GCE_PROJETO = "/projeto/{projectId}";
+
     public static final String GCE_NODES = "/{id}/nos";
 
     public static final String GCE_NODE = "/{id}/nos/{nodeCode}";
