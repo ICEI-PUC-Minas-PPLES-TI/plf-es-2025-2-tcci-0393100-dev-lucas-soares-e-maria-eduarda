@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Mapper responsavel por converter GCEs entre dominio e persistencia Neo4j.
@@ -28,8 +29,9 @@ public class GceMapperBase implements BasePersistenceMapper<Gce, Neo4jGceEntity>
             return null;
         }
 
+        UUID graphId = graph.getId() != null ? graph.getId() : UUID.randomUUID();
         Neo4jGceEntity entity = new Neo4jGceEntity();
-        applyId(entity, graph.getId());
+        applyId(entity, graphId);
         entity.setProjectId(graph.getProjectId());
         entity.setName(graph.getName());
         entity.setDescription(graph.getDescription());
@@ -37,7 +39,7 @@ public class GceMapperBase implements BasePersistenceMapper<Gce, Neo4jGceEntity>
 
         Map<String, Neo4jGceNodeEntity> nodeEntities = new LinkedHashMap<>();
         for (GceNode node : graph.getNodes()) {
-            Neo4jGceNodeEntity nodeEntity = toNodeEntity(node);
+            Neo4jGceNodeEntity nodeEntity = toNodeEntity(node, graphId);
             nodeEntity.setOutgoingEdges(new ArrayList<>());
             nodeEntities.put(node.getCode(), nodeEntity);
         }
@@ -131,14 +133,19 @@ public class GceMapperBase implements BasePersistenceMapper<Gce, Neo4jGceEntity>
         return entity;
     }
 
-    private Neo4jGceNodeEntity toNodeEntity(GceNode node) {
+    private Neo4jGceNodeEntity toNodeEntity(GceNode node, UUID graphId) {
         Neo4jGceNodeEntity entity = new Neo4jGceNodeEntity();
         applyId(entity, node.getId());
+        entity.setGraphScopedCode(buildGraphScopedCode(graphId, node.getCode()));
         entity.setCode(node.getCode());
         entity.setLabel(node.getLabel());
         entity.setType(node.getType());
         entity.setOperatorType(node.getOperatorType());
         return entity;
+    }
+
+    private String buildGraphScopedCode(UUID graphId, String nodeCode) {
+        return graphId + ":" + nodeCode;
     }
 
     private void applyId(Neo4jGceEntity entity, java.util.UUID id) {

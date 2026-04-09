@@ -25,6 +25,7 @@ import java.util.List;
 @ToString(exclude = "outgoingEdges")
 public class Neo4jGceNodeEntity extends Neo4jBaseEntity {
 
+    private String graphScopedCode;
     private String code;
     private String label;
     private GceNodeTypeEnum type;

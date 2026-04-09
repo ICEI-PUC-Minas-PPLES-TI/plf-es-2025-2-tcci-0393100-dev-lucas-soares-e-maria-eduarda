@@ -21,7 +21,6 @@ import br.pucminas.graphtest.application.port.input.gce.records.FindGceByIdInput
 import br.pucminas.graphtest.application.port.input.gce.records.GceOutput;
 import br.pucminas.graphtest.application.port.input.gce.records.DeleteGceInput;
 import br.pucminas.graphtest.application.port.input.gce.records.ListGcesByProjectInput;
-import br.pucminas.graphtest.application.port.input.gce.records.ValidateGceByIdInput;
 import br.pucminas.graphtest.application.port.input.gce.records.ValidationGceOutput;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -51,6 +50,7 @@ import static br.pucminas.graphtest.adapters.inbound.util.GceDtoConverterUtil.to
 import static br.pucminas.graphtest.adapters.inbound.util.GceDtoConverterUtil.toToggleEdgeInput;
 import static br.pucminas.graphtest.adapters.inbound.util.GceDtoConverterUtil.toUpdateInput;
 import static br.pucminas.graphtest.adapters.inbound.util.GceDtoConverterUtil.toUpdateNodeInput;
+import static br.pucminas.graphtest.adapters.inbound.util.GceDtoConverterUtil.toValidateInput;
 import static br.pucminas.graphtest.adapters.inbound.util.JsonResponseBuilderUtil.buildJsonResponse;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GCE;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GCE_EDGE_TOGGLE;
@@ -149,11 +149,11 @@ public class GceControllerImpl implements GceController {
     }
 
     @Override
-    @GetMapping(GCE_VALIDAR)
-    public ResponseEntity<ValidationGceDTO> validate(@PathVariable UUID id) {
+    @PostMapping(GCE_VALIDAR)
+    public ResponseEntity<ValidationGceDTO> validate(@RequestBody GceInputDTO graph) {
         log.info(">>> validar: recebendo requisicao para validar GCE");
 
-        ValidationGceOutput validation = validateGceUseCasePort.execute(new ValidateGceByIdInput(id));
+        ValidationGceOutput validation = validateGceUseCasePort.execute(toValidateInput(graph));
         return ResponseEntity.ok(toDto(validation));
     }
 

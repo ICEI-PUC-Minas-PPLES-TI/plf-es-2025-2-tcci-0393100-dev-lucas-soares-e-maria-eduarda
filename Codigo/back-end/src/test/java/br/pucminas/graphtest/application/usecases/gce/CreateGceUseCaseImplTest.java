@@ -25,9 +25,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -141,5 +143,31 @@ class CreateGceUseCaseImplTest {
 
         assertEquals(3, output.edges().size());
         assertTrue(output.edges().stream().allMatch(edge -> edge.type() == GceEdgeTypeEnum.IDENTITY));
+    }
+
+    @Test
+    void shouldRejectDuplicateNodeCodeWithinSameGce() {
+        UUID projectId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        CreateGceInput input = new CreateGceInput(
+                projectId,
+                "GCE",
+                "Descricao",
+                true,
+                List.of(
+                        new GceNodeInput("C1", "Causa 1", GceNodeTypeEnum.CAUSE, null),
+                        new GceNodeInput("C1", "Efeito com codigo duplicado", GceNodeTypeEnum.EFFECT, null)
+                ),
+                List.of(),
+                List.of()
+        );
+
+        when(projectAccessService.findAuthorizedProject(projectId))
+                .thenReturn(new Project(projectId, "Projeto", "Descricao", userId));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> useCase.execute(input));
+
+        assertTrue(exception.getMessage().contains("duplicado"));
+        verify(gceRepository, never()).save(any(Gce.class));
     }
 }

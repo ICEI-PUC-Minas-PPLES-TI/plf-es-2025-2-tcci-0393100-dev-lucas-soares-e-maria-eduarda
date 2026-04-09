@@ -14,6 +14,7 @@ import br.pucminas.graphtest.application.port.input.gce.records.GceRestrictionIn
 import br.pucminas.graphtest.application.port.input.gce.records.ToggleGceEdgeInput;
 import br.pucminas.graphtest.application.port.input.gce.records.UpdateGceInput;
 import br.pucminas.graphtest.application.port.input.gce.records.UpdateGceNodeInput;
+import br.pucminas.graphtest.application.port.input.gce.records.ValidateGceInput;
 import br.pucminas.graphtest.application.port.input.gce.records.ValidationGceMessage;
 import br.pucminas.graphtest.application.port.input.gce.records.ValidationGceOutput;
 import jakarta.validation.constraints.NotNull;
@@ -49,6 +50,18 @@ public class GceDtoConverterUtil {
     public static UpdateGceInput toUpdateInput(UUID id, @NotNull GceInputDTO graph) {
         return new UpdateGceInput(
                 id,
+                graph.projectId(),
+                graph.name(),
+                graph.description(),
+                graph.selected(),
+                toNodeInputs(graph.nodes()),
+                toEdgeInputs(graph.edges()),
+                toRestrictionInputs(graph.restrictions())
+        );
+    }
+
+    public static ValidateGceInput toValidateInput(@NotNull GceInputDTO graph) {
+        return new ValidateGceInput(
                 graph.projectId(),
                 graph.name(),
                 graph.description(),

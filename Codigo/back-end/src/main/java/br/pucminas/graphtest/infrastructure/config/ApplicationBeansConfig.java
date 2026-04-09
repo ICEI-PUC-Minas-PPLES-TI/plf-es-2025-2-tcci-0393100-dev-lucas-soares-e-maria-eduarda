@@ -122,10 +122,10 @@ public class ApplicationBeansConfig {
     }
 
     @Bean
-    public ValidateGceUseCasePort validateGceUseCase(GceRepositoryPort gceRepositoryPort,
-                                                     ProjectAccessService projectAccessService,
-                                                     GceValidationResultService gceValidationResultService) {
-        return new ValidateGceUseCaseImpl(gceRepositoryPort, projectAccessService, gceValidationResultService);
+    public ValidateGceUseCasePort validateGceUseCase(ProjectAccessService projectAccessService,
+                                                     GceValidationResultService gceValidationResultService,
+                                                     GceMutationService gceMutationService) {
+        return new ValidateGceUseCaseImpl(projectAccessService, gceValidationResultService, gceMutationService);
     }
 
     @Bean

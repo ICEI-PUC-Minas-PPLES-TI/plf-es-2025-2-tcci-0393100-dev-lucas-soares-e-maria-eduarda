@@ -26,8 +26,8 @@ public interface GceController extends BaseCRUDController<GceInputDTO, GceDTO, G
     @GetMapping(GCE_PROJETO)
     ResponseEntity<List<GceDTO>> listByProject(@PathVariable UUID projectId);
 
-    @GetMapping(GCE_VALIDAR)
-    ResponseEntity<ValidationGceDTO> validate(@PathVariable UUID id);
+    @PostMapping(GCE_VALIDAR)
+    ResponseEntity<ValidationGceDTO> validate(@RequestBody GceInputDTO graph);
 
     @PostMapping(GCE_NODES)
     ResponseEntity<GceDTO> addNode(@PathVariable UUID id, @RequestBody AddGceNodeDTO node);

@@ -19,7 +19,7 @@ public final class ApiRequestPaths {
 
     public static final String PROJETO_MEUS = "/meus";
 
-    public static final String GCE_VALIDAR = "/{id}/validar";
+    public static final String GCE_VALIDAR = "/validar";
 
     public static final String GCE_PROJETO = "/projeto/{projectId}";
 
