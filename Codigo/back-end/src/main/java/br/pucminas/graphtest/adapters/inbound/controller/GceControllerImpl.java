@@ -60,6 +60,7 @@ import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GCE_VAL
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.ID;
 import static br.pucminas.graphtest.shared.LogTopicsUtil.GCE_CONTROLLER;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
 
@@ -107,6 +108,13 @@ public class GceControllerImpl implements GceController {
     }
 
     @Override
+    @GetMapping
+    public ResponseEntity<List<GceDTO>> listAll() {
+        log.info(">>> listarTodos: listagem geral de GCE ainda nao implementada");
+        return ResponseEntity.ok(emptyList());
+    }
+
+    @Override
     @GetMapping(GCE_PROJETO)
     public ResponseEntity<List<GceDTO>> listByProject(@PathVariable UUID projectId) {
         log.info(">>> listarPorProjeto: recebendo requisicao para listar GCEs por projeto");
@@ -127,7 +135,6 @@ public class GceControllerImpl implements GceController {
                 asList(OK.value(), MSG_GCE_DELETADO, id)
         ));
     }
-
 
 
     @Override
