@@ -9,6 +9,7 @@ import br.pucminas.graphtest.application.port.input.project.UpdateProjectUseCase
 import br.pucminas.graphtest.application.port.input.gce.CreateGceUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.DeleteGceUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.FindGceByIdUseCasePort;
+import br.pucminas.graphtest.application.port.input.gce.ListGcesUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.ListGcesByProjectUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.AddNodeToGceUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.ToggleGceEdgeUseCasePort;
@@ -34,15 +35,18 @@ import br.pucminas.graphtest.application.port.output.security.PasswordEncoderPor
 import br.pucminas.graphtest.application.port.output.security.TokenServicePort;
 import br.pucminas.graphtest.application.service.gce.GceValidationResultServiceImpl;
 import br.pucminas.graphtest.application.service.project.ProjectAccessServiceImpl;
+import br.pucminas.graphtest.application.service.project.ProjectDeletionServiceImpl;
 import br.pucminas.graphtest.application.service.user.UserAuthorizationServiceImpl;
 import br.pucminas.graphtest.application.service.gce.GceMutationServiceImpl;
 import br.pucminas.graphtest.application.service.gce.interfaces.GceMutationService;
 import br.pucminas.graphtest.application.service.gce.interfaces.GceValidationResultService;
 import br.pucminas.graphtest.application.service.project.interfaces.ProjectAccessService;
+import br.pucminas.graphtest.application.service.project.interfaces.ProjectDeletionService;
 import br.pucminas.graphtest.application.service.user.interfaces.UserAuthorizationService;
 import br.pucminas.graphtest.application.usecases.gce.CreateGceUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gce.DeleteGceUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gce.FindGceByIdUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.gce.ListGcesUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gce.ListGcesByProjectUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gce.AddNodeToGceUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gce.ToggleGceEdgeUseCaseImpl;
@@ -95,6 +99,13 @@ public class ApplicationBeansConfig {
     public FindGceByIdUseCasePort findGceByIdUseCase(GceRepositoryPort gceRepositoryPort,
                                                      ProjectAccessService projectAccessService) {
         return new FindGceByIdUseCaseImpl(gceRepositoryPort, projectAccessService);
+    }
+
+    @Bean
+    public ListGcesUseCasePort listGcesUseCase(GceRepositoryPort gceRepositoryPort,
+                                               ProjectRepositoryPort projectRepositoryPort,
+                                               CurrentUserPort currentUserPort) {
+        return new ListGcesUseCaseImpl(gceRepositoryPort, projectRepositoryPort, currentUserPort);
     }
 
     @Bean
@@ -155,6 +166,12 @@ public class ApplicationBeansConfig {
     }
 
     @Bean
+    public ProjectDeletionService projectDeletionService(ProjectRepositoryPort projectRepositoryPort,
+                                                         GceRepositoryPort gceRepositoryPort) {
+        return new ProjectDeletionServiceImpl(projectRepositoryPort, gceRepositoryPort);
+    }
+
+    @Bean
     public UserAuthorizationService userAuthorizationService(CurrentUserPort currentUserPort) {
         return new UserAuthorizationServiceImpl(currentUserPort);
     }
@@ -165,10 +182,9 @@ public class ApplicationBeansConfig {
     }
 
     @Bean
-    public DeleteProjectUseCasePort deleteProjectUseCase(ProjectRepositoryPort projectRepositoryPort,
-                                                         GceRepositoryPort gceRepositoryPort,
-                                                         ProjectAccessService projectAccessService) {
-        return new DeleteProjectUseCaseImpl(projectRepositoryPort, gceRepositoryPort, projectAccessService);
+    public DeleteProjectUseCasePort deleteProjectUseCase(ProjectAccessService projectAccessService,
+                                                         ProjectDeletionService projectDeletionService) {
+        return new DeleteProjectUseCaseImpl(projectAccessService, projectDeletionService);
     }
 
     @Bean
@@ -220,9 +236,8 @@ public class ApplicationBeansConfig {
     @Bean
     public DeleteUserUseCasePort deleteUserUseCase(UserRepositoryPort userRepository,
                                                    UserAuthorizationService userAuthorizationService,
-                                                   ProjectRepositoryPort projectRepositoryPort,
-                                                   GceRepositoryPort gceRepositoryPort) {
-        return new DeleteUserUseCaseImpl(userRepository, userAuthorizationService, projectRepositoryPort, gceRepositoryPort);
+                                                   ProjectDeletionService projectDeletionService) {
+        return new DeleteUserUseCaseImpl(userRepository, userAuthorizationService, projectDeletionService);
     }
 
     @Bean

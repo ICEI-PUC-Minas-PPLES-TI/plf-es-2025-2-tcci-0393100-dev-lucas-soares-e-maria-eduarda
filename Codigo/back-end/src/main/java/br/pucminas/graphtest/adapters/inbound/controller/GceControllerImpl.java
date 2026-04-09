@@ -11,6 +11,7 @@ import br.pucminas.graphtest.application.port.input.gce.AddNodeToGceUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.CreateGceUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.DeleteGceUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.FindGceByIdUseCasePort;
+import br.pucminas.graphtest.application.port.input.gce.ListGcesUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.ListGcesByProjectUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.ToggleGceEdgeUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.UpdateGceNodeUseCasePort;
@@ -60,7 +61,6 @@ import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GCE_VAL
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.ID;
 import static br.pucminas.graphtest.shared.LogTopicsUtil.GCE_CONTROLLER;
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
 
@@ -77,6 +77,7 @@ public class GceControllerImpl implements GceController {
     private final CreateGceUseCasePort createGceUseCasePort;
     private final DeleteGceUseCasePort deleteGceUseCasePort;
     private final FindGceByIdUseCasePort findGceByIdUseCasePort;
+    private final ListGcesUseCasePort listGcesUseCasePort;
     private final ListGcesByProjectUseCasePort listGcesByProjectUseCasePort;
     private final ValidateGceUseCasePort validateGceUseCasePort;
     private final UpdateGceUseCasePort updateGceUseCasePort;
@@ -110,8 +111,10 @@ public class GceControllerImpl implements GceController {
     @Override
     @GetMapping
     public ResponseEntity<List<GceDTO>> listAll() {
-        log.info(">>> listarTodos: listagem geral de GCE ainda nao implementada");
-        return ResponseEntity.ok(emptyList());
+        log.info(">>> listarTodos: recebendo requisicao para listar GCEs do usuario autenticado");
+
+        List<GceOutput> graphs = listGcesUseCasePort.execute();
+        return ResponseEntity.ok(graphs.stream().map(GceDtoConverterUtil::toDto).toList());
     }
 
     @Override
@@ -135,7 +138,6 @@ public class GceControllerImpl implements GceController {
                 asList(OK.value(), MSG_GCE_DELETADO, id)
         ));
     }
-
 
     @Override
     @PutMapping(ID)
