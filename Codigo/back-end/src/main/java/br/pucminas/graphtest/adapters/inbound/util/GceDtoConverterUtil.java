@@ -3,6 +3,7 @@ package br.pucminas.graphtest.adapters.inbound.util;
 import br.pucminas.graphtest.adapters.inbound.dto.gce.GceDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gce.GceInputDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gce.AddGceNodeDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.gce.UpdateGceDetailsDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gce.UpdateGceNodeDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gce.ValidationGceDTO;
 import br.pucminas.graphtest.application.domain.gce.enums.GceNodeTypeEnum;
@@ -13,6 +14,7 @@ import br.pucminas.graphtest.application.port.input.gce.records.GceNodeInput;
 import br.pucminas.graphtest.application.port.input.gce.records.GceOutput;
 import br.pucminas.graphtest.application.port.input.gce.records.GceRestrictionInput;
 import br.pucminas.graphtest.application.port.input.gce.records.ToggleGceEdgeInput;
+import br.pucminas.graphtest.application.port.input.gce.records.UpdateGceDetailsInput;
 import br.pucminas.graphtest.application.port.input.gce.records.UpdateGceInput;
 import br.pucminas.graphtest.application.port.input.gce.records.UpdateGceNodeInput;
 import br.pucminas.graphtest.application.port.input.gce.records.ValidateGceInput;
@@ -59,6 +61,10 @@ public class GceDtoConverterUtil {
                 toEdgeInputs(graph.edges()),
                 toRestrictionInputs(graph.restrictions())
         );
+    }
+
+    public static UpdateGceDetailsInput toUpdateDetailsInput(UUID id, @NotNull UpdateGceDetailsDTO graph) {
+        return new UpdateGceDetailsInput(id, graph.name(), graph.description());
     }
 
     public static ValidateGceInput toValidateInput(@NotNull GceInputDTO graph) {

@@ -11,6 +11,7 @@ import br.pucminas.graphtest.application.port.input.gce.DeleteGceUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.FindGceByIdUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.ListGcesUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.ListGcesByProjectUseCasePort;
+import br.pucminas.graphtest.application.port.input.gce.PatchGceDetailsUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.AddNodeToGceUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.ToggleGceEdgeUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.UpdateGceNodeUseCasePort;
@@ -48,6 +49,7 @@ import br.pucminas.graphtest.application.usecases.gce.DeleteGceUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gce.FindGceByIdUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gce.ListGcesUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gce.ListGcesByProjectUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.gce.PatchGceDetailsUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gce.AddNodeToGceUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gce.ToggleGceEdgeUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gce.UpdateGceNodeUseCaseImpl;
@@ -126,6 +128,13 @@ public class ApplicationBeansConfig {
                                                      GceValidationResultService gceValidationResultService,
                                                      GceMutationService gceMutationService) {
         return new ValidateGceUseCaseImpl(projectAccessService, gceValidationResultService, gceMutationService);
+    }
+
+    @Bean
+    public PatchGceDetailsUseCasePort patchGceDetailsUseCase(GceRepositoryPort gceRepositoryPort,
+                                                             ProjectAccessService projectAccessService,
+                                                             GceMutationService gceMutationService) {
+        return new PatchGceDetailsUseCaseImpl(gceRepositoryPort, projectAccessService, gceMutationService);
     }
 
     @Bean

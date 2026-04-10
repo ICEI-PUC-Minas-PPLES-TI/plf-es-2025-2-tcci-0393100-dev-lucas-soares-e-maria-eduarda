@@ -3,6 +3,7 @@ package br.pucminas.graphtest.adapters.inbound.controller.interfaces;
 import br.pucminas.graphtest.adapters.inbound.dto.gce.AddGceNodeDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gce.GceDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gce.GceInputDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.gce.UpdateGceDetailsDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gce.UpdateGceNodeDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gce.ValidationGceDTO;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +29,9 @@ public interface GceController extends BaseCRUDController<GceInputDTO, GceDTO, G
 
     @PostMapping(GCE_VALIDAR)
     ResponseEntity<ValidationGceDTO> validate(@RequestBody GceInputDTO graph);
+
+    @PatchMapping("/{id}")
+    ResponseEntity<GceDTO> patchDetails(@PathVariable UUID id, @RequestBody UpdateGceDetailsDTO graph);
 
     @PostMapping(GCE_NODES)
     ResponseEntity<GceDTO> addNode(@PathVariable UUID id, @RequestBody AddGceNodeDTO node);

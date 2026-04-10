@@ -4,6 +4,7 @@ import br.pucminas.graphtest.adapters.inbound.controller.interfaces.GceControlle
 import br.pucminas.graphtest.adapters.inbound.dto.gce.AddGceNodeDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gce.GceDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gce.GceInputDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.gce.UpdateGceDetailsDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gce.UpdateGceNodeDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gce.ValidationGceDTO;
 import br.pucminas.graphtest.adapters.inbound.util.GceDtoConverterUtil;
@@ -13,6 +14,7 @@ import br.pucminas.graphtest.application.port.input.gce.DeleteGceUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.FindGceByIdUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.ListGcesUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.ListGcesByProjectUseCasePort;
+import br.pucminas.graphtest.application.port.input.gce.PatchGceDetailsUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.ToggleGceEdgeUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.UpdateGceNodeUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.UpdateGceUseCasePort;
@@ -48,6 +50,7 @@ import static br.pucminas.graphtest.adapters.inbound.util.GceDtoConverterUtil.to
 import static br.pucminas.graphtest.adapters.inbound.util.ControllerConstantsUtil.MSG_GCE_CRIADO;
 import static br.pucminas.graphtest.adapters.inbound.util.GceDtoConverterUtil.toDto;
 import static br.pucminas.graphtest.adapters.inbound.util.GceDtoConverterUtil.toToggleEdgeInput;
+import static br.pucminas.graphtest.adapters.inbound.util.GceDtoConverterUtil.toUpdateDetailsInput;
 import static br.pucminas.graphtest.adapters.inbound.util.GceDtoConverterUtil.toUpdateInput;
 import static br.pucminas.graphtest.adapters.inbound.util.GceDtoConverterUtil.toUpdateNodeInput;
 import static br.pucminas.graphtest.adapters.inbound.util.GceDtoConverterUtil.toValidateInput;
@@ -80,6 +83,7 @@ public class GceControllerImpl implements GceController {
     private final ListGcesUseCasePort listGcesUseCasePort;
     private final ListGcesByProjectUseCasePort listGcesByProjectUseCasePort;
     private final ValidateGceUseCasePort validateGceUseCasePort;
+    private final PatchGceDetailsUseCasePort patchGceDetailsUseCasePort;
     private final UpdateGceUseCasePort updateGceUseCasePort;
     private final AddNodeToGceUseCasePort addNodeToGceUseCasePort;
     private final UpdateGceNodeUseCasePort updateGceNodeUseCasePort;
@@ -155,6 +159,15 @@ public class GceControllerImpl implements GceController {
 
         ValidationGceOutput validation = validateGceUseCasePort.execute(toValidateInput(graph));
         return ResponseEntity.ok(toDto(validation));
+    }
+
+    @Override
+    @PatchMapping(ID)
+    public ResponseEntity<GceDTO> patchDetails(@PathVariable UUID id, @RequestBody UpdateGceDetailsDTO graph) {
+        log.info(">>> atualizarDetalhes: recebendo requisicao para atualizar nome e descricao do GCE");
+
+        GceOutput updatedGraph = patchGceDetailsUseCasePort.execute(toUpdateDetailsInput(id, graph));
+        return ResponseEntity.ok(toDto(updatedGraph));
     }
 
     @Override
