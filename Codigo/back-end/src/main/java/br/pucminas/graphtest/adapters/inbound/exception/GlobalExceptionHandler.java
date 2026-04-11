@@ -4,6 +4,7 @@ import br.pucminas.graphtest.adapters.inbound.error.ErrorResponse;
 import br.pucminas.graphtest.application.exception.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -70,6 +71,26 @@ public class GlobalExceptionHandler implements AuthenticationFailureHandler {
                     fieldError.getDefaultMessage()
             );
         }
+
+        return ResponseEntity
+                .status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(erro);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<Object> handleConstraintViolation(ConstraintViolationException e) {
+
+        ErrorResponse erro = new ErrorResponse(
+                HttpStatus.UNPROCESSABLE_ENTITY.value(),
+                MSG_ERRO_VALIDACAO
+        );
+
+        e.getConstraintViolations().forEach(violation ->
+                erro.addErroValidacao(
+                        violation.getPropertyPath().toString(),
+                        violation.getMessage()
+                )
+        );
 
         return ResponseEntity
                 .status(HttpStatus.UNPROCESSABLE_ENTITY)

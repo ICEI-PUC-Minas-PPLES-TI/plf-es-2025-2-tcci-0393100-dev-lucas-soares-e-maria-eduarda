@@ -63,14 +63,14 @@ public final class GceStructureRules {
             if (sourceNode.isEffect()) {
                 throw new IllegalArgumentException("Efeito nao pode ser origem de aresta: " + sourceNode.getCode());
             }
-            if (sourceNode.isCause() && !targetNode.isOperator()) {
-                throw new IllegalArgumentException("Causa so pode se conectar a operador: " + sourceNode.getCode());
+            if (sourceNode.isCause() && !targetNode.isOperator() && !targetNode.isEffect()) {
+                throw new IllegalArgumentException("Causa so pode se conectar a operador ou efeito: " + sourceNode.getCode());
             }
             if (targetNode.isCause()) {
                 throw new IllegalArgumentException("Causa nao pode ser destino de aresta: " + targetNode.getCode());
             }
-            if (targetNode.isEffect() && !sourceNode.isOperator()) {
-                throw new IllegalArgumentException("Efeito so pode receber aresta de operador: " + targetNode.getCode());
+            if (targetNode.isEffect() && !sourceNode.isOperator() && !sourceNode.isCause()) {
+                throw new IllegalArgumentException("Efeito so pode receber aresta de operador ou causa: " + targetNode.getCode());
             }
         }
     }

@@ -47,6 +47,8 @@ public class UpdateGceUseCaseImpl implements UpdateGceUseCasePort {
                 gceMutationService.toEdges(input.nodes(), input.edges()),
                 gceMutationService.toRestrictions(input.restrictions())
         );
+        updatedGraph.restoreAuditFields(currentGraph.getCreatedAt(), currentGraph.getUpdatedAt());
+        updatedGraph.markUpdatedNow();
 
         gceMutationService.refreshOperatorLabels(updatedGraph);
         gceMutationService.validateAndThrow(updatedGraph, gceValidationResultService);

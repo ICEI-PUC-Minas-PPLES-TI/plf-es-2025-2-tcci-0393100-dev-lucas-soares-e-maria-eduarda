@@ -4,9 +4,6 @@ import br.pucminas.graphtest.application.domain.gce.enums.GceOperatorTypeEnum;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-/**
- * DTO HTTP para atualizar um no existente do GCE.
- */
 @JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
 @JsonSubTypes({
         @JsonSubTypes.Type(UpdateGceNodeDTO.UpdateGceNodeLabelDTO.class),

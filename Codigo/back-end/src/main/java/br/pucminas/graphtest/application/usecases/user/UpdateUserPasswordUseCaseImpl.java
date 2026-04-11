@@ -40,6 +40,7 @@ public class UpdateUserPasswordUseCaseImpl implements UpdateUserPasswordUseCaseP
 
         String encodedNewPassword = passwordEncoder.encode(input.senhaAtualizada());
         user.setPassword(encodedNewPassword);
+        user.markUpdatedNow();
 
         userRepositoryPort.save(user);
     }

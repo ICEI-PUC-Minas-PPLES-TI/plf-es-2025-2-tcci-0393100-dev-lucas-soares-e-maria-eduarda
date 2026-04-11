@@ -12,12 +12,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -55,6 +59,8 @@ class UpdateUserUseCaseImplTest {
     void shouldKeepCurrentProfileWhenAdminDoesNotSendProfileCode() {
         UUID userId = UUID.randomUUID();
         User user = new User(userId, "Usuario Antigo", "antigo@teste.com", "senha", UserProfileEnum.USUARIO);
+        LocalDateTime createdAt = LocalDateTime.now().minusDays(1);
+        user.restoreAuditFields(createdAt, createdAt);
         UpdateUserInput input = new UpdateUserInput(userId, "Usuario Novo", "novo@teste.com", null);
 
         when(userAuthorizationService.authorizeForUser(userId))
@@ -63,9 +69,13 @@ class UpdateUserUseCaseImplTest {
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         useCase.execute(input);
+        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
 
         assertEquals(UserProfileEnum.USUARIO, user.getProfile());
-        verify(userRepository).save(user);
+        verify(userRepository).save(userCaptor.capture());
+        assertEquals(createdAt, userCaptor.getValue().getCreatedAt());
+        assertNotNull(userCaptor.getValue().getUpdatedAt());
+        assertTrue(!userCaptor.getValue().getUpdatedAt().isBefore(createdAt));
     }
 
     @Test

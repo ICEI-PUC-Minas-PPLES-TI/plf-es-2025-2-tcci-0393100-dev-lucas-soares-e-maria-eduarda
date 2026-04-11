@@ -29,6 +29,7 @@ public class UpdateUserUseCaseImpl implements UpdateUserUseCasePort {
 
         validateEmailUniqueness(input);
         updateUserData(input, currentUser, user);
+        user.markUpdatedNow();
 
         return UserOutput.from(userRepository.save(user));
     }

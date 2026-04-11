@@ -57,6 +57,7 @@ public class UpdateProjectUseCaseImpl implements UpdateProjectUseCasePort {
 
         if (!changed) return ProjectOutput.from(project);
 
+        project.markUpdatedNow();
         return ProjectOutput.from(projectRepository.save(project));
     }
 

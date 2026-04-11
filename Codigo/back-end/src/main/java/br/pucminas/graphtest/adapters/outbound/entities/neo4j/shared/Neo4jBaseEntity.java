@@ -4,6 +4,7 @@ import lombok.Data;
 import org.springframework.data.neo4j.core.schema.GeneratedValue;
 import org.springframework.data.neo4j.core.schema.Id;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
@@ -18,4 +19,8 @@ public abstract class Neo4jBaseEntity {
     @Id
     @GeneratedValue
     protected UUID id;
+
+    protected LocalDateTime createdAt;
+
+    protected LocalDateTime updatedAt;
 }

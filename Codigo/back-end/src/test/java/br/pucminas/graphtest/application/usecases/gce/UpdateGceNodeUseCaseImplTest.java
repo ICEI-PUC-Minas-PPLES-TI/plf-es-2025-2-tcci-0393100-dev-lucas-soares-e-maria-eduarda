@@ -19,13 +19,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
+import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -72,6 +75,10 @@ class UpdateGceNodeUseCaseImplTest {
                 ),
                 List.of()
         );
+        LocalDateTime createdAt = LocalDateTime.now().minusDays(1);
+        graph.restoreAuditFields(createdAt, createdAt);
+        graph.getNodes().forEach(node -> node.restoreAuditFields(createdAt, createdAt));
+        graph.getEdges().forEach(edge -> edge.restoreAuditFields(createdAt, createdAt));
 
         when(gceRepository.findById(graphId)).thenReturn(Optional.of(graph));
         when(projectAccessService.findAuthorizedProject(projectId))
@@ -81,9 +88,13 @@ class UpdateGceNodeUseCaseImplTest {
         when(gceRepository.save(any(Gce.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         GceOutput output = useCase.execute(new UpdateGceNodeInput(graphId, "O1", "Operador OR", GceOperatorTypeEnum.OR));
+        ArgumentCaptor<Gce> graphCaptor = ArgumentCaptor.forClass(Gce.class);
 
         assertEquals("(C1 OR C2)", output.nodes().stream().filter(node -> node.code().equals("O1")).findFirst().orElseThrow().label());
         assertEquals(GceOperatorTypeEnum.OR, output.nodes().stream().filter(node -> node.code().equals("O1")).findFirst().orElseThrow().operatorType());
-        verify(gceRepository).save(any(Gce.class));
+        verify(gceRepository).save(graphCaptor.capture());
+        assertEquals(createdAt, graphCaptor.getValue().getCreatedAt());
+        assertTrue(!graphCaptor.getValue().getUpdatedAt().isBefore(createdAt));
+        assertTrue(graphCaptor.getValue().findNode("O1").orElseThrow().getUpdatedAt().isAfter(createdAt));
     }
 }

@@ -11,9 +11,6 @@ import lombok.Builder;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * DTO de entrada do GCE para criacao e validacao.
- */
 @Builder
 public record GceInputDTO(
         UUID projectId,
@@ -25,9 +22,6 @@ public record GceInputDTO(
         List<GceRestrictionInputDTO> restrictions
 ) {
 
-    /**
-     * DTO de entrada de no do GCE.
-     */
     @JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
     @JsonSubTypes({
             @JsonSubTypes.Type(GceLabeledNodeInputDTO.class),
@@ -62,9 +56,6 @@ public record GceInputDTO(
         }
     }
 
-    /**
-     * DTO de entrada de aresta do GCE referenciando nos por codigo.
-     */
     public record GceEdgeInputDTO(
             String sourceNodeCode,
             String targetNodeCode,
@@ -72,9 +63,6 @@ public record GceInputDTO(
     ) {
     }
 
-    /**
-     * DTO de entrada de restricao do GCE referenciando nos por codigo.
-     */
     public record GceRestrictionInputDTO(
             RestrictionTypeEnum type,
             List<String> nodeCodes

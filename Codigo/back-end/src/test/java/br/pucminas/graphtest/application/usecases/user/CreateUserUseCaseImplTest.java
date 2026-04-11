@@ -11,11 +11,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -49,18 +52,25 @@ class CreateUserUseCaseImplTest {
     void shouldCreateUserWhenEmailIsAvailable() {
         CreateUserInput input = new CreateUserInput("Usuario Teste", "usuario@teste.com", "senha123");
         UUID userId = UUID.randomUUID();
+        LocalDateTime createdAt = LocalDateTime.now();
 
         when(userRepository.existsByEmail(input.email())).thenReturn(false);
         when(passwordEncoder.encode(input.password())).thenReturn("senha-criptografada");
-        when(userRepository.save(any(User.class))).thenReturn(
-                new User(userId, input.name(), input.email(), "senha-criptografada", UserProfileEnum.USUARIO)
-        );
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
+            User savedUser = invocation.getArgument(0);
+            User persistedUser = new User(userId, input.name(), input.email(), "senha-criptografada", UserProfileEnum.USUARIO);
+            persistedUser.restoreAuditFields(createdAt, createdAt);
+            return persistedUser;
+        });
 
         UserOutput output = useCase.execute(input);
+        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
 
         assertEquals(userId, output.id());
         assertEquals(input.email(), output.email());
         verify(userRepository).existsByEmail(input.email());
-        verify(userRepository).save(any(User.class));
+        verify(userRepository).save(userCaptor.capture());
+        assertNotNull(userCaptor.getValue().getCreatedAt());
+        assertEquals(userCaptor.getValue().getCreatedAt(), userCaptor.getValue().getUpdatedAt());
     }
 }

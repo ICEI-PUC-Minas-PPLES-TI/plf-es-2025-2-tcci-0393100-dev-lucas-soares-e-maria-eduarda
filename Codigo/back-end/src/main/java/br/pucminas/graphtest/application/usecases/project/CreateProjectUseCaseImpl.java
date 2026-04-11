@@ -45,6 +45,7 @@ public class CreateProjectUseCaseImpl implements CreateProjectUseCasePort {
                 input.description(),
                 currentUser.id()
         );
+        project.markCreatedNow();
 
         return ProjectOutput.from(projectRepository.save(project));
     }

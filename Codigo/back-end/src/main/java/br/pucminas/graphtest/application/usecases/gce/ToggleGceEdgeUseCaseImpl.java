@@ -41,14 +41,19 @@ public class ToggleGceEdgeUseCaseImpl implements ToggleGceEdgeUseCasePort {
                 ? GceEdgeTypeEnum.NEGATED
                 : GceEdgeTypeEnum.IDENTITY;
 
-        graph.replaceEdge(new GceEdge(
+        GceEdge updatedEdge = new GceEdge(
                 currentEdge.getId(),
                 currentEdge.getSourceNodeCode(),
                 currentEdge.getTargetNodeCode(),
                 toggledType
-        ));
+        );
+        updatedEdge.restoreAuditFields(currentEdge.getCreatedAt(), currentEdge.getUpdatedAt());
+        updatedEdge.markUpdatedNow();
+
+        graph.replaceEdge(updatedEdge);
 
         gceMutationService.validateAndThrow(graph, gceValidationResultService);
+        graph.markUpdatedNow();
         return GceOutput.from(gceRepository.save(graph));
     }
 }

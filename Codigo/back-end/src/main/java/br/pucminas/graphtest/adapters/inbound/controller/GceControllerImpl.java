@@ -67,9 +67,6 @@ import static java.util.Arrays.asList;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
 
-/**
- * Controller HTTP responsavel pelos endpoints iniciais de GCE.
- */
 @Slf4j(topic = GCE_CONTROLLER)
 @RestController
 @Validated
@@ -153,6 +150,16 @@ public class GceControllerImpl implements GceController {
     }
 
     @Override
+    @PatchMapping(ID)
+    public ResponseEntity<GceDTO> patchDetails(@PathVariable UUID id, @RequestBody UpdateGceDetailsDTO graph) {
+        log.info(">>> atualizarDetalhes: recebendo requisicao para atualizar nome e descricao do GCE");
+
+        GceOutput updatedGraph = patchGceDetailsUseCasePort.execute(toUpdateDetailsInput(id, graph));
+        return ResponseEntity.ok(toDto(updatedGraph));
+    }
+
+
+    @Override
     @PostMapping(GCE_VALIDAR)
     public ResponseEntity<ValidationGceDTO> validate(@RequestBody GceInputDTO graph) {
         log.info(">>> validar: recebendo requisicao para validar GCE");
@@ -161,14 +168,6 @@ public class GceControllerImpl implements GceController {
         return ResponseEntity.ok(toDto(validation));
     }
 
-    @Override
-    @PatchMapping(ID)
-    public ResponseEntity<GceDTO> patchDetails(@PathVariable UUID id, @RequestBody UpdateGceDetailsDTO graph) {
-        log.info(">>> atualizarDetalhes: recebendo requisicao para atualizar nome e descricao do GCE");
-
-        GceOutput updatedGraph = patchGceDetailsUseCasePort.execute(toUpdateDetailsInput(id, graph));
-        return ResponseEntity.ok(toDto(updatedGraph));
-    }
 
     @Override
     @PostMapping(GCE_NODES)

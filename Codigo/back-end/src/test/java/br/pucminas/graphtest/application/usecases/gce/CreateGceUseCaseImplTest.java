@@ -20,6 +20,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
+import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -50,6 +52,53 @@ class CreateGceUseCaseImplTest {
 
     @InjectMocks
     private CreateGceUseCaseImpl useCase;
+
+    @Test
+    void shouldCreateSimpleDeterministicGceWithDirectCauseToEffectConnection() {
+        UUID projectId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        UUID graphId = UUID.randomUUID();
+        CreateGceInput input = new CreateGceInput(
+                projectId,
+                "GCE simples",
+                "Descricao",
+                true,
+                List.of(
+                        new GceNodeInput("C1", "Causa", GceNodeTypeEnum.CAUSE, null),
+                        new GceNodeInput("E1", "Efeito", GceNodeTypeEnum.EFFECT, null, List.of("C1"), List.of())
+                ),
+                List.of(),
+                List.of()
+        );
+
+        when(projectAccessService.findAuthorizedProject(projectId))
+                .thenReturn(new Project(projectId, "Projeto", "Descricao", userId));
+        when(gceValidationResultService.validate(any(Gce.class)))
+                .thenReturn(new ValidationGceOutput(List.of(), List.of()));
+        when(gceRepository.save(any(Gce.class)))
+                .thenAnswer(invocation -> {
+                    Gce graph = invocation.getArgument(0);
+                    return new Gce(
+                            graphId,
+                            graph.getProjectId(),
+                            graph.getName(),
+                            graph.getDescription(),
+                            graph.isSelected(),
+                            graph.getNodes(),
+                            graph.getEdges(),
+                            graph.getRestrictions()
+                    );
+                });
+
+        GceOutput output = useCase.execute(input);
+
+        assertEquals(graphId, output.id());
+        assertEquals(2, output.nodes().size());
+        assertEquals(1, output.edges().size());
+        assertEquals("C1", output.edges().getFirst().sourceNodeCode());
+        assertEquals("E1", output.edges().getFirst().targetNodeCode());
+        assertEquals(GceEdgeTypeEnum.IDENTITY, output.edges().getFirst().type());
+    }
 
     @Test
     void shouldAuthorizeProjectBeforePersistingGce() {
@@ -93,12 +142,23 @@ class CreateGceUseCaseImplTest {
                 });
 
         GceOutput output = useCase.execute(input);
+        ArgumentCaptor<Gce> graphCaptor = ArgumentCaptor.forClass(Gce.class);
 
         assertEquals(graphId, output.id());
         assertEquals(GceEdgeTypeEnum.NEGATED, output.edges().stream().filter(edge -> edge.sourceNodeCode().equals("C1")).findFirst().orElseThrow().type());
         assertEquals("NOT (C1)", output.nodes().stream().filter(node -> node.code().equals("O1")).findFirst().orElseThrow().label());
         verify(projectAccessService).findAuthorizedProject(projectId);
-        verify(gceRepository).save(any(Gce.class));
+        verify(gceRepository).save(graphCaptor.capture());
+        assertNotNull(graphCaptor.getValue().getCreatedAt());
+        assertEquals(graphCaptor.getValue().getCreatedAt(), graphCaptor.getValue().getUpdatedAt());
+        assertTrue(graphCaptor.getValue().getNodes().stream().allMatch(node ->
+                node.getCreatedAt() != null
+                        && node.getUpdatedAt() != null
+                        && !node.getUpdatedAt().isBefore(node.getCreatedAt())));
+        assertTrue(graphCaptor.getValue().getEdges().stream().allMatch(edge ->
+                edge.getCreatedAt() != null
+                        && edge.getUpdatedAt() != null
+                        && !edge.getUpdatedAt().isBefore(edge.getCreatedAt())));
     }
 
     @Test

@@ -32,6 +32,7 @@ public class CreateUserUseCaseImpl implements CreateUserUseCasePort {
                 passwordEncoder.encode(input.password()),
                 UserProfileEnum.USUARIO
         );
+        user.markCreatedNow();
 
         return UserOutput.from(userRepository.save(user));
     }

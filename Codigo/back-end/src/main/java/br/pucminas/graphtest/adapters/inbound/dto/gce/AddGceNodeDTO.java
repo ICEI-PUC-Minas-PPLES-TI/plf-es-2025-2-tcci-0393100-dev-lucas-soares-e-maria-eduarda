@@ -7,9 +7,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import java.util.List;
 
-/**
- * DTO HTTP para adicionar um novo no a um GCE existente.
- */
 @JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
 @JsonSubTypes({
         @JsonSubTypes.Type(AddGceNodeDTO.AddLabeledGceNodeDTO.class),

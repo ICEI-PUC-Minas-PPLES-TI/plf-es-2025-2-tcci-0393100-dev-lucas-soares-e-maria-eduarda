@@ -73,12 +73,12 @@ public class GceMutationServiceImpl implements GceMutationService {
 
         if (explicitEdges != null) {
             explicitEdges.stream()
-                    .map(edge -> new GceEdge(
+                    .map(edge -> markAsCreated(new GceEdge(
                             UUID.randomUUID(),
                             edge.sourceNodeCode(),
                             edge.targetNodeCode(),
                             edge.type()
-                    ))
+                    )))
                     .forEach(edges::add);
         }
 
@@ -92,11 +92,11 @@ public class GceMutationServiceImpl implements GceMutationService {
         }
 
         return restrictions.stream()
-                .map(restriction -> new GceRestriction(
+                .map(restriction -> markAsCreated(new GceRestriction(
                         null,
                         restriction.type(),
                         restriction.nodeCodes()
-                ))
+                )))
                 .toList();
     }
 
@@ -114,20 +114,25 @@ public class GceMutationServiceImpl implements GceMutationService {
 
         for (GceNode operatorNode : graph.getOperatorNodes()) {
             String generatedLabel = buildNodeExpression(graph, operatorNode.getCode(), expressionByNodeCode, new HashSet<>());
-            graph.replaceNode(new GceNode(
+            GceNode updatedOperatorNode = new GceNode(
                     operatorNode.getId(),
                     operatorNode.getCode(),
                     generatedLabel,
                     operatorNode.getType(),
                     operatorNode.getOperatorType()
-            ));
+            );
+            updatedOperatorNode.restoreAuditFields(operatorNode.getCreatedAt(), operatorNode.getUpdatedAt());
+            if (!generatedLabel.equals(operatorNode.getLabel())) {
+                updatedOperatorNode.markUpdatedNow();
+            }
+            graph.replaceNode(updatedOperatorNode);
         }
     }
 
     private GceNode toNode(GceNodeInput node) {
         Objects.requireNonNull(node, "node e obrigatorio.");
         validateNodeConnectionContract(node);
-        return new GceNode(null, node.code(), resolveInitialLabel(node), node.type(), node.operatorType());
+        return markAsCreated(new GceNode(null, node.code(), resolveInitialLabel(node), node.type(), node.operatorType()));
     }
 
     private String resolveInitialLabel(GceNodeInput node) {
@@ -142,12 +147,17 @@ public class GceMutationServiceImpl implements GceMutationService {
 
         List<GceEdge> edges = new ArrayList<>();
         for (String sourceNodeCode : normalizeNodeCodes(node.sourceNodeCodes())) {
-            edges.add(new GceEdge(UUID.randomUUID(), sourceNodeCode, node.code(), GceEdgeTypeEnum.IDENTITY));
+            edges.add(markAsCreated(new GceEdge(UUID.randomUUID(), sourceNodeCode, node.code(), GceEdgeTypeEnum.IDENTITY)));
         }
         for (String targetNodeCode : normalizeNodeCodes(node.targetNodeCodes())) {
-            edges.add(new GceEdge(UUID.randomUUID(), node.code(), targetNodeCode, GceEdgeTypeEnum.IDENTITY));
+            edges.add(markAsCreated(new GceEdge(UUID.randomUUID(), node.code(), targetNodeCode, GceEdgeTypeEnum.IDENTITY)));
         }
         return edges;
+    }
+
+    private <T extends br.pucminas.graphtest.application.domain.shared.model.BaseEntity> T markAsCreated(T entity) {
+        entity.markCreatedNow();
+        return entity;
     }
 
     private void validateNodeConnectionContract(GceNodeInput node) {

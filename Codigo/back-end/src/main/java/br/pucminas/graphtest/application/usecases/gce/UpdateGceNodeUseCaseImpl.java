@@ -47,10 +47,13 @@ public class UpdateGceNodeUseCaseImpl implements UpdateGceNodeUseCasePort {
                         ? input.operatorType()
                         : currentNode.getOperatorType()
         );
+        updatedNode.restoreAuditFields(currentNode.getCreatedAt(), currentNode.getUpdatedAt());
+        updatedNode.markUpdatedNow();
 
         graph.replaceNode(updatedNode);
         gceMutationService.refreshOperatorLabels(graph);
         gceMutationService.validateAndThrow(graph, gceValidationResultService);
+        graph.markUpdatedNow();
         return GceOutput.from(gceRepository.save(graph));
     }
 }

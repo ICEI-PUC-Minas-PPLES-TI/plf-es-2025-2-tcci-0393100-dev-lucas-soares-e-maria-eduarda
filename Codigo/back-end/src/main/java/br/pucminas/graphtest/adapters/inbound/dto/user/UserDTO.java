@@ -12,18 +12,6 @@ import java.util.UUID;
 import static br.pucminas.graphtest.adapters.inbound.util.ValidatorErrorConstantsUtil.MSG_ERRO_EMAIL;
 import static br.pucminas.graphtest.adapters.inbound.util.ValidatorErrorConstantsUtil.MSG_ERRO_SENHA;
 
-/**
- * DTO utilizado para transportar os dados de usuario recebidos e devolvidos pela camada de entrada.
- * <p>
- * Este objeto representa os campos expostos pela API para operacoes de cadastro, atualizacao
- * e consulta de usuarios, alem de concentrar as regras de validacao aplicadas em cada contexto.
- *
- * @param id identificador unico do usuario, usado principalmente em respostas e operacoes que referenciam um registro existente
- * @param profileUser codigo do perfil do usuario no sistema, serializado como {@code perfil_usuario} no JSON
- * @param name nome do usuario utilizado para identificacao e exibicao na aplicacao
- * @param email endereco de email do usuario, usado como dado de contato e identificacao logica
- * @param password senha informada nas requisicoes de criacao, recebida apenas na entrada e nunca retornada na resposta
- */
 @Builder
 @JsonPropertyOrder({"id", "profileUser", "name", "email", "password"})
 public record UserDTO(
@@ -51,15 +39,9 @@ public record UserDTO(
 
 ) {
 
-    /**
-     * Grupo de validacao aplicado quando o DTO e usado na criacao de um novo usuario.
-     */
     public interface Create {
     }
 
-    /**
-     * Grupo de validacao aplicado quando o DTO e usado na atualizacao de um usuario existente.
-     */
     public interface Update {
     }
 }

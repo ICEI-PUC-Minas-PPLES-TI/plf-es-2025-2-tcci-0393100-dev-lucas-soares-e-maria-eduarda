@@ -10,6 +10,7 @@ import org.springframework.data.neo4j.core.schema.RelationshipId;
 import org.springframework.data.neo4j.core.schema.RelationshipProperties;
 import org.springframework.data.neo4j.core.schema.TargetNode;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
@@ -33,6 +34,10 @@ public class Neo4jGceEdgeRelationship {
     private UUID edgeId;
 
     private GceEdgeTypeEnum type;
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 
     @TargetNode
     private Neo4jGceNodeEntity targetNode;

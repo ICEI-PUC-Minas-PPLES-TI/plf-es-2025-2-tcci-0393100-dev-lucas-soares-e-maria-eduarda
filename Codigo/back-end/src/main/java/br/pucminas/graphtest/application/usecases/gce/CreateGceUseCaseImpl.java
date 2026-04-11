@@ -57,6 +57,7 @@ public class CreateGceUseCaseImpl implements CreateGceUseCasePort {
                 gceMutationService.toEdges(input.nodes(), input.edges()),
                 gceMutationService.toRestrictions(input.restrictions())
         );
+        graph.markCreatedNow();
 
         gceMutationService.refreshOperatorLabels(graph);
         gceMutationService.validateAndThrow(graph, gceValidationResultService);

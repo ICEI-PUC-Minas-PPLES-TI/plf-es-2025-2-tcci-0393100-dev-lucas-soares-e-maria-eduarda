@@ -150,30 +150,47 @@ class GceTest {
     }
 
     @Test
-    void shouldRejectDirectConnectionFromCauseToEffect() {
+    void shouldAllowDirectConnectionFromCauseToEffectWhenThereIsSingleDeterministicCause() {
         GceNode cause = GceNode.cause(UUID.randomUUID(), "C1", "Causa 1");
         GceNode effect = GceNode.effect(UUID.randomUUID(), "E1", "Efeito 1");
 
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> new Gce(
-                        UUID.randomUUID(),
-                        UUID.randomUUID(),
-                        "GCE 1",
-                        null,
-                        false,
-                        List.of(cause, effect),
-                        List.of(new GceEdge(UUID.randomUUID(), cause.getCode(), effect.getCode(), GceEdgeTypeEnum.IDENTITY)),
-                        List.of()
-                )
+        Gce gce = new Gce(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                "GCE 1",
+                null,
+                false,
+                List.of(cause, effect),
+                List.of(new GceEdge(UUID.randomUUID(), cause.getCode(), effect.getCode(), GceEdgeTypeEnum.IDENTITY)),
+                List.of()
         );
 
-        assertTrue(exception.getMessage().contains("Causa so pode se conectar a operador"));
+        assertEquals(1, gce.getEdges().size());
     }
 
     @Test
-    void shouldRejectEffectIncomingEdgeWhenSourceIsNotOperator() {
+    void shouldAllowNegatedDirectConnectionFromCauseToEffect() {
         GceNode cause = GceNode.cause(UUID.randomUUID(), "C1", "Causa 1");
+        GceNode effect = GceNode.effect(UUID.randomUUID(), "E1", "Efeito 1");
+
+        Gce gce = new Gce(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                "GCE 1",
+                null,
+                false,
+                List.of(cause, effect),
+                List.of(new GceEdge(UUID.randomUUID(), cause.getCode(), effect.getCode(), GceEdgeTypeEnum.NEGATED)),
+                List.of()
+        );
+
+        assertEquals(GceEdgeTypeEnum.NEGATED, gce.getEdges().stream().findFirst().orElseThrow().getType());
+    }
+
+    @Test
+    void shouldRejectEffectWithMultipleDirectCauseInputs() {
+        GceNode causeOne = GceNode.cause(UUID.randomUUID(), "C1", "Causa 1");
+        GceNode causeTwo = GceNode.cause(UUID.randomUUID(), "C2", "Causa 2");
         GceNode effect = GceNode.effect(UUID.randomUUID(), "E1", "Efeito 1");
 
         IllegalArgumentException exception = assertThrows(
@@ -184,13 +201,16 @@ class GceTest {
                         "GCE 1",
                         null,
                         false,
-                        List.of(cause, effect),
-                        List.of(new GceEdge(UUID.randomUUID(), cause.getCode(), effect.getCode(), GceEdgeTypeEnum.NEGATED)),
+                        List.of(causeOne, causeTwo, effect),
+                        List.of(
+                                new GceEdge(UUID.randomUUID(), causeOne.getCode(), effect.getCode(), GceEdgeTypeEnum.IDENTITY),
+                                new GceEdge(UUID.randomUUID(), causeTwo.getCode(), effect.getCode(), GceEdgeTypeEnum.NEGATED)
+                        ),
                         List.of()
                 )
         );
 
-        assertTrue(exception.getMessage().contains("Causa so pode se conectar a operador"));
+        assertTrue(exception.getMessage().contains("no maximo uma aresta de entrada direta"));
     }
 
     @Test

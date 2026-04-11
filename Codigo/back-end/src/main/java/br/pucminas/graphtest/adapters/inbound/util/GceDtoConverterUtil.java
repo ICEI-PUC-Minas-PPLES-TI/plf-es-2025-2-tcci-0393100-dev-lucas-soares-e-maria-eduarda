@@ -29,10 +29,6 @@ import java.util.UUID;
 import static br.pucminas.graphtest.shared.LogTopicsUtil.CONVERSOR_ENTIDADE_DTO_UTIL;
 import static java.lang.String.format;
 
-/**
- * Utilitario responsavel por converter DTOs e records do GCE entre as camadas
- * HTTP, aplicacao e dominio.
- */
 @UtilityClass
 @Slf4j(topic = CONVERSOR_ENTIDADE_DTO_UTIL)
 public class GceDtoConverterUtil {

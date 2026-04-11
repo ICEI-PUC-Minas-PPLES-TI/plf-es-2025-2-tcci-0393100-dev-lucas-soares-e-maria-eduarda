@@ -10,7 +10,7 @@ import br.pucminas.graphtest.application.domain.gce.model.GceEdge;
 import br.pucminas.graphtest.application.domain.gce.model.GceNode;
 import br.pucminas.graphtest.application.domain.gce.model.GceRestriction;
 import org.springframework.stereotype.Component;
-
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -28,10 +28,12 @@ public class GceMapperBase implements BasePersistenceMapper<Gce, Neo4jGceEntity>
         if (graph == null) {
             return null;
         }
+        Neo4jGceEntity entity = new Neo4jGceEntity();
 
         UUID graphId = graph.getId() != null ? graph.getId() : UUID.randomUUID();
-        Neo4jGceEntity entity = new Neo4jGceEntity();
+
         applyId(entity, graphId);
+        applyAuditFields(entity, graph.getCreatedAt(), graph.getUpdatedAt());
         entity.setProjectId(graph.getProjectId());
         entity.setName(graph.getName());
         entity.setDescription(graph.getDescription());
@@ -54,6 +56,8 @@ public class GceMapperBase implements BasePersistenceMapper<Gce, Neo4jGceEntity>
             Neo4jGceEdgeRelationship relationship = new Neo4jGceEdgeRelationship();
             relationship.setEdgeId(edge.getId());
             relationship.setType(edge.getType());
+            relationship.setCreatedAt(edge.getCreatedAt());
+            relationship.setUpdatedAt(edge.getUpdatedAt());
             relationship.setTargetNode(targetNode);
             sourceNode.getOutgoingEdges().add(relationship);
         }
@@ -91,12 +95,14 @@ public class GceMapperBase implements BasePersistenceMapper<Gce, Neo4jGceEntity>
                         continue;
                     }
 
-                    edges.add(new GceEdge(
+                    GceEdge edge = new GceEdge(
                             edgeRelationship.getEdgeId(),
                             sourceNode.getCode(),
                             edgeRelationship.getTargetNode().getCode(),
                             edgeRelationship.getType()
-                    ));
+                    );
+                    edge.restoreAuditFields(edgeRelationship.getCreatedAt(), edgeRelationship.getUpdatedAt());
+                    edges.add(edge);
                 }
             }
         }
@@ -107,7 +113,7 @@ public class GceMapperBase implements BasePersistenceMapper<Gce, Neo4jGceEntity>
                 .map(this::toDomainRestriction)
                 .toList();
 
-        return new Gce(
+        Gce graph = new Gce(
                 entity.getId(),
                 entity.getProjectId(),
                 entity.getName(),
@@ -117,6 +123,8 @@ public class GceMapperBase implements BasePersistenceMapper<Gce, Neo4jGceEntity>
                 edges,
                 restrictions
         );
+        graph.restoreAuditFields(entity.getCreatedAt(), entity.getUpdatedAt());
+        return graph;
     }
 
     private Neo4jGceRestrictionEntity toRestrictionEntity(
@@ -125,6 +133,7 @@ public class GceMapperBase implements BasePersistenceMapper<Gce, Neo4jGceEntity>
     ) {
         Neo4jGceRestrictionEntity entity = new Neo4jGceRestrictionEntity();
         applyId(entity, restriction.getId());
+        applyAuditFields(entity, restriction.getCreatedAt(), restriction.getUpdatedAt());
         entity.setType(restriction.getType());
         entity.setAppliesTo(restriction.getNodeCodes().stream()
                 .map(nodeEntities::get)
@@ -136,6 +145,7 @@ public class GceMapperBase implements BasePersistenceMapper<Gce, Neo4jGceEntity>
     private Neo4jGceNodeEntity toNodeEntity(GceNode node, UUID graphId) {
         Neo4jGceNodeEntity entity = new Neo4jGceNodeEntity();
         applyId(entity, node.getId());
+        applyAuditFields(entity, node.getCreatedAt(), node.getUpdatedAt());
         entity.setGraphScopedCode(buildGraphScopedCode(graphId, node.getCode()));
         entity.setCode(node.getCode());
         entity.setLabel(node.getLabel());
@@ -148,36 +158,53 @@ public class GceMapperBase implements BasePersistenceMapper<Gce, Neo4jGceEntity>
         return graphId + ":" + nodeCode;
     }
 
-    private void applyId(Neo4jGceEntity entity, java.util.UUID id) {
+    private void applyId(Neo4jGceEntity entity, UUID id) {
         if (id != null) {
             entity.setId(id);
         }
     }
 
-    private void applyId(Neo4jGceNodeEntity entity, java.util.UUID id) {
+    private void applyAuditFields(Neo4jGceEntity entity, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        entity.setCreatedAt(createdAt);
+        entity.setUpdatedAt(updatedAt);
+    }
+
+    private void applyId(Neo4jGceNodeEntity entity, UUID id) {
         if (id != null) {
             entity.setId(id);
         }
     }
 
-    private void applyId(Neo4jGceRestrictionEntity entity, java.util.UUID id) {
+    private void applyAuditFields(Neo4jGceNodeEntity entity, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        entity.setCreatedAt(createdAt);
+        entity.setUpdatedAt(updatedAt);
+    }
+
+    private void applyId(Neo4jGceRestrictionEntity entity, UUID id) {
         if (id != null) {
             entity.setId(id);
         }
+    }
+
+    private void applyAuditFields(Neo4jGceRestrictionEntity entity, LocalDateTime createdAt, java.time.LocalDateTime updatedAt) {
+        entity.setCreatedAt(createdAt);
+        entity.setUpdatedAt(updatedAt);
     }
 
     private GceNode toDomainNode(Neo4jGceNodeEntity entity) {
-        return new GceNode(
+        GceNode node = new GceNode(
                 entity.getId(),
                 entity.getCode(),
                 entity.getLabel(),
                 entity.getType(),
                 entity.getOperatorType()
         );
+        node.restoreAuditFields(entity.getCreatedAt(), entity.getUpdatedAt());
+        return node;
     }
 
     private GceRestriction toDomainRestriction(Neo4jGceRestrictionEntity entity) {
-        return new GceRestriction(
+        GceRestriction restriction = new GceRestriction(
                 entity.getId(),
                 entity.getType(),
                 entity.getAppliesTo() == null
@@ -186,6 +213,12 @@ public class GceMapperBase implements BasePersistenceMapper<Gce, Neo4jGceEntity>
                         .map(Neo4jGceNodeEntity::getCode)
                         .toList()
         );
+        restriction.restoreAuditFields(entity.getCreatedAt(), entity.getUpdatedAt());
+        return restriction;
     }
+
+
+
+
 
 }

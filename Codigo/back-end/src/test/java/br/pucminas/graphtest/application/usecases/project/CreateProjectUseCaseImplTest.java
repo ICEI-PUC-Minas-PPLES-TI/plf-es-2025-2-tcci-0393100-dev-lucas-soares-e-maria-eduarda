@@ -11,11 +11,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -45,8 +47,12 @@ class CreateProjectUseCaseImplTest {
                 .thenReturn(new Project(projectId, "Projeto Manual", "Descricao", userId));
 
         ProjectOutput output = useCase.execute(input);
+        ArgumentCaptor<Project> projectCaptor = ArgumentCaptor.forClass(Project.class);
 
         assertEquals("Projeto Manual", output.name());
+        verify(projectRepository).save(projectCaptor.capture());
+        assertNotNull(projectCaptor.getValue().getCreatedAt());
+        assertEquals(projectCaptor.getValue().getCreatedAt(), projectCaptor.getValue().getUpdatedAt());
         verify(projectRepository, never()).countByUserId(userId);
     }
 

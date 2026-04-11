@@ -26,6 +26,7 @@ public class PatchGceDetailsUseCaseImpl implements PatchGceDetailsUseCasePort {
     public GceOutput execute(UpdateGceDetailsInput input) {
         Gce graph = gceMutationService.loadAuthorizedGraph(input.id(), gceRepository, projectAccessService);
         graph.updateDetails(input.name(), input.description());
+        graph.markUpdatedNow();
         return GceOutput.from(gceRepository.save(graph));
     }
 }
