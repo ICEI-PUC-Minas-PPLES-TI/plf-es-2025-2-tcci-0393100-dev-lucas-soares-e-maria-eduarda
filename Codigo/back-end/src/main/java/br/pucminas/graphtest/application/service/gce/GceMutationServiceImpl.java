@@ -30,9 +30,35 @@ import java.util.UUID;
 
 /**
  * Implementacao concreta do servico de apoio para mutacoes do GCE.
+ *
+ * <p>Este servico concentra operacoes reutilizaveis que aparecem em varios
+ * casos de uso do agregado {@link Gce}. Entre suas responsabilidades estao:</p>
+ *
+ * <ul>
+ *     <li>carregar um grafo e validar o acesso ao projeto associado;</li>
+ *     <li>converter payloads de entrada em entidades de dominio;</li>
+ *     <li>gerar arestas automaticas a partir do contrato de conexoes dos nos;</li>
+ *     <li>recalcular o {@code label} dos nos operadores;</li>
+ *     <li>executar a validacao completa do modelo e interromper o fluxo quando
+ *     o grafo estiver invalido.</li>
+ * </ul>
+ *
+ * <p>Na pratica, a classe funciona como uma camada de orquestracao entre os
+ * casos de uso e o dominio, evitando duplicacao da logica de montagem e
+ * revalidacao do GCE.</p>
  */
 public class GceMutationServiceImpl implements GceMutationService {
 
+    /**
+     * Carrega um GCE persistido e garante que o usuario atual tenha acesso ao
+     * projeto ao qual esse grafo pertence.
+     *
+     * @param id identificador do GCE
+     * @param gceRepository repositorio usado para recuperar o agregado
+     * @param projectAccessService servico usado para validar acesso ao projeto
+     * @return grafo encontrado e autorizado
+     * @throws EntityNotFoundException quando o GCE nao existe
+     */
     @Override
     public Gce loadAuthorizedGraph(UUID id,
                                    GceRepositoryPort gceRepository,
@@ -43,6 +69,14 @@ public class GceMutationServiceImpl implements GceMutationService {
         return graph;
     }
 
+    /**
+     * Executa a validacao completa do grafo informado e lanca excecao quando o
+     * resultado for invalido.
+     *
+     * @param graph agregado a ser validado
+     * @param validationService servico responsavel pela validacao do modelo
+     * @throws InvalidGceModelException quando o grafo possuir erros de validacao
+     */
     @Override
     public void validateAndThrow(Gce graph, GceValidationResultService validationService) {
         ValidationGceOutput validation = validationService.validate(graph);
@@ -51,6 +85,15 @@ public class GceMutationServiceImpl implements GceMutationService {
         }
     }
 
+    /**
+     * Converte os nos de entrada para entidades de dominio.
+     *
+     * <p>Cada no convertido recebe audit fields de criacao e ja passa pela
+     * validacao do contrato de conexoes automaticas.</p>
+     *
+     * @param nodes lista de nos de entrada
+     * @return colecao convertida para dominio; lista vazia quando a entrada for nula
+     */
     @Override
     public Collection<GceNode> toNodes(List<GceNodeInput> nodes) {
         if (nodes == null) {
@@ -62,6 +105,21 @@ public class GceMutationServiceImpl implements GceMutationService {
                 .toList();
     }
 
+    /**
+     * Converte as arestas do payload em arestas de dominio.
+     *
+     * <p>O metodo combina duas fontes:</p>
+     *
+     * <ul>
+     *     <li>arestas automaticas derivadas de {@code sourceNodeCodes} e
+     *     {@code targetNodeCodes} definidos nos nos de entrada;</li>
+     *     <li>arestas explicitas enviadas diretamente no payload.</li>
+     * </ul>
+     *
+     * @param nodes nos do payload, usados para derivar conexoes automaticas
+     * @param explicitEdges arestas explicitamente enviadas
+     * @return colecao consolidada de arestas de dominio
+     */
     @Override
     public Collection<GceEdge> toEdges(List<GceNodeInput> nodes, List<GceEdgeInput> explicitEdges) {
         List<GceEdge> edges = new ArrayList<>();
@@ -85,6 +143,12 @@ public class GceMutationServiceImpl implements GceMutationService {
         return edges;
     }
 
+    /**
+     * Converte as restricoes do payload em entidades de dominio.
+     *
+     * @param restrictions lista de restricoes de entrada
+     * @return colecao convertida para dominio; lista vazia quando a entrada for nula
+     */
     @Override
     public Collection<GceRestriction> toRestrictions(List<GceRestrictionInput> restrictions) {
         if (restrictions == null) {
@@ -100,6 +164,13 @@ public class GceMutationServiceImpl implements GceMutationService {
                 .toList();
     }
 
+    /**
+     * Adiciona um novo no ao grafo e, quando o payload define conexoes
+     * automaticas, cria tambem as arestas correspondentes.
+     *
+     * @param graph agregado que sera mutado
+     * @param nodeInput definicao do no a ser inserido
+     */
     @Override
     public void addNodeWithAutomaticEdges(Gce graph, GceNodeInput nodeInput) {
         graph.addNode(toNode(nodeInput));
@@ -108,6 +179,21 @@ public class GceMutationServiceImpl implements GceMutationService {
         }
     }
 
+    /**
+     * Recalcula o {@code label} de todos os operadores do grafo a partir da
+     * expressao logica formada por suas entradas.
+     *
+     * <p>Nos nao operadores nao tem o label recalculado. Para operadores, o
+     * texto final considera:</p>
+     *
+     * <ul>
+     *     <li>os codigos dos nos de entrada;</li>
+     *     <li>o tipo do operador ({@code AND} ou {@code OR});</li>
+     *     <li>a negacao das arestas de entrada, quando existir.</li>
+     * </ul>
+     *
+     * @param graph agregado cujo conjunto de operadores sera atualizado
+     */
     @Override
     public void refreshOperatorLabels(Gce graph) {
         Map<String, String> expressionByNodeCode = new HashMap<>();
@@ -129,12 +215,28 @@ public class GceMutationServiceImpl implements GceMutationService {
         }
     }
 
+    /**
+     * Converte um no de entrada para a entidade de dominio correspondente.
+     *
+     * @param node definicao do no recebida pelo caso de uso
+     * @return no de dominio com audit fields de criacao preenchidos
+     */
     private GceNode toNode(GceNodeInput node) {
         Objects.requireNonNull(node, "node e obrigatorio.");
         validateNodeConnectionContract(node);
         return markAsCreated(new GceNode(null, node.code(), resolveInitialLabel(node), node.type(), node.operatorType()));
     }
 
+    /**
+     * Resolve o label inicial do no no momento da conversao.
+     *
+     * <p>Para operadores, o label inicial e o proprio {@code code}, pois o
+     * valor final sera recalculado depois. Para causa e efeito, o label vem do
+     * payload.</p>
+     *
+     * @param node definicao do no recebida no payload
+     * @return label inicial do no
+     */
     private String resolveInitialLabel(GceNodeInput node) {
         if (node.type() == GceNodeTypeEnum.OPERATOR) {
             return node.code();
@@ -142,6 +244,21 @@ public class GceMutationServiceImpl implements GceMutationService {
         return node.label();
     }
 
+    /**
+     * Gera automaticamente as arestas implícitas descritas no payload do no.
+     *
+     * <p>O metodo transforma:</p>
+     *
+     * <ul>
+     *     <li>{@code sourceNodeCodes} em arestas {@code origem -> node.code()}</li>
+     *     <li>{@code targetNodeCodes} em arestas {@code node.code() -> destino}</li>
+     * </ul>
+     *
+     * <p>Todas as arestas geradas aqui sao do tipo {@link GceEdgeTypeEnum#IDENTITY}.</p>
+     *
+     * @param node definicao do no recebido no payload
+     * @return lista de arestas automaticas derivadas do contrato de conexao
+     */
     private List<GceEdge> buildAutomaticEdges(GceNodeInput node) {
         validateNodeConnectionContract(node);
 
@@ -155,11 +272,36 @@ public class GceMutationServiceImpl implements GceMutationService {
         return edges;
     }
 
+    /**
+     * Marca uma entidade de dominio como criada no instante atual.
+     *
+     * @param entity entidade a ser anotada com audit fields de criacao
+     * @param <T> tipo concreto da entidade
+     * @return a propria entidade recebida
+     */
     private <T extends br.pucminas.graphtest.application.domain.shared.model.BaseEntity> T markAsCreated(T entity) {
         entity.markCreatedNow();
         return entity;
     }
 
+    /**
+     * Valida o contrato de conexoes automaticas aceito para cada tipo de no.
+     *
+     * <p>As regras atuais sao:</p>
+     *
+     * <ul>
+     *     <li>{@code CAUSE}: nao pode informar {@code sourceNodeCodes};</li>
+     *     <li>{@code EFFECT}: deve informar exatamente um {@code sourceNodeCode}
+     *     e nao pode informar {@code targetNodeCodes};</li>
+     *     <li>{@code OPERATOR}: deve informar exatamente dois
+     *     {@code sourceNodeCodes} e exatamente um {@code targetNodeCode}.</li>
+     * </ul>
+     *
+     * <p>Quando nenhum codigo de conexao e informado, o contrato automatico nao
+     * e aplicado.</p>
+     *
+     * @param node definicao do no recebida no payload
+     */
     private void validateNodeConnectionContract(GceNodeInput node) {
         List<String> sourceNodeCodes = normalizeNodeCodes(node.sourceNodeCodes());
         List<String> targetNodeCodes = normalizeNodeCodes(node.targetNodeCodes());
@@ -194,6 +336,21 @@ public class GceMutationServiceImpl implements GceMutationService {
         }
     }
 
+    /**
+     * Normaliza listas de codigos de no vindas do payload.
+     *
+     * <p>O processo remove:</p>
+     *
+     * <ul>
+     *     <li>listas nulas, convertendo-as para lista vazia;</li>
+     *     <li>valores nulos;</li>
+     *     <li>espacos excedentes no inicio e no fim;</li>
+     *     <li>strings vazias ou em branco.</li>
+     * </ul>
+     *
+     * @param nodeCodes lista recebida no payload
+     * @return lista normalizada de codigos
+     */
     private List<String> normalizeNodeCodes(List<String> nodeCodes) {
         if (nodeCodes == null) {
             return List.of();
@@ -206,6 +363,19 @@ public class GceMutationServiceImpl implements GceMutationService {
                 .toList();
     }
 
+    /**
+     * Monta recursivamente a expressao textual de um no do grafo.
+     *
+     * <p>Para nos comuns, a expressao e o proprio {@code code}. Para
+     * operadores, a expressao e composta a partir das entradas ordenadas e do
+     * tipo do operador.</p>
+     *
+     * @param graph agregado em analise
+     * @param nodeCode codigo do no cuja expressao sera montada
+     * @param expressionByNodeCode cache de expressoes ja calculadas
+     * @param visiting conjunto usado para detectar ciclos na recursao
+     * @return expressao textual calculada para o no
+     */
     private String buildNodeExpression(Gce graph,
                                        String nodeCode,
                                        Map<String, String> expressionByNodeCode,
@@ -245,6 +415,13 @@ public class GceMutationServiceImpl implements GceMutationService {
         return expression;
     }
 
+    /**
+     * Ajusta a expressao textual de um operando conforme o tipo da aresta.
+     *
+     * @param operandExpression expressao base do operando
+     * @param edge aresta que conecta o operando ao operador atual
+     * @return expressao final do operando, com negacao quando necessario
+     */
     private String formatOperandExpression(String operandExpression, GceEdge edge) {
         if (edge.isNegated()) {
             return "NOT (" + operandExpression + ")";

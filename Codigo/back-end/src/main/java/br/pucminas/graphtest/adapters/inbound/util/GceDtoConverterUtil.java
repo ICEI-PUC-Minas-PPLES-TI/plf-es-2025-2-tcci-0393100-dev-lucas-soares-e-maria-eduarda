@@ -76,37 +76,19 @@ public class GceDtoConverterUtil {
     }
 
     public static AddNodeToGceInput toAddNodeInput(UUID gceId, @NotNull AddGceNodeDTO node) {
-        if (node instanceof AddGceNodeDTO.AddLabeledGceNodeDTO labeledNode) {
-            return new AddNodeToGceInput(
-                    gceId,
-                    labeledNode.code(),
-                    labeledNode.label(),
-                    labeledNode.type(),
-                    null,
-                    List.of(),
-                    List.of()
-            );
-        }
-
-        AddGceNodeDTO.AddOperatorGceNodeDTO operatorNode = (AddGceNodeDTO.AddOperatorGceNodeDTO) node;
         return new AddNodeToGceInput(
                 gceId,
-                operatorNode.code(),
-                null,
-                operatorNode.type(),
-                operatorNode.operatorType(),
-                operatorNode.sourceNodeCodes(),
-                operatorNode.targetNodeCodes()
+                node.code(),
+                node.label(),
+                node.type(),
+                node.operatorType(),
+                node.sourceNodeCodes() == null ? List.of() : node.sourceNodeCodes(),
+                node.targetNodeCodes() == null ? List.of() : node.targetNodeCodes()
         );
     }
 
     public static UpdateGceNodeInput toUpdateNodeInput(UUID gceId, String nodeCode, @NotNull UpdateGceNodeDTO node) {
-        if (node instanceof UpdateGceNodeDTO.UpdateGceNodeLabelDTO labelNode) {
-            return new UpdateGceNodeInput(gceId, nodeCode, labelNode.label(), null);
-        }
-
-        UpdateGceNodeDTO.UpdateGceNodeOperatorDTO operatorNode = (UpdateGceNodeDTO.UpdateGceNodeOperatorDTO) node;
-        return new UpdateGceNodeInput(gceId, nodeCode, null, operatorNode.operatorType());
+        return new UpdateGceNodeInput(gceId, nodeCode, node.label(), node.operatorType());
     }
 
     public static ToggleGceEdgeInput toToggleEdgeInput(UUID gceId, UUID edgeId) {
