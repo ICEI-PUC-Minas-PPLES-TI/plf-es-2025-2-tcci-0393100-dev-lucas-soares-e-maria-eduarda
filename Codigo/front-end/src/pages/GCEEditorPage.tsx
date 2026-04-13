@@ -47,6 +47,7 @@ export function GCEEditorPage() {
   const [showValidation, setShowValidation] = useState(false);
   const [validationResult, setValidationResult] = useState<GCEValidationResponse | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [isValidated, setIsValidated] = useState(false);
   const [liveRestrictions, setLiveRestrictions] = useState<GCERestriction[]>([]);
   const [projectName, setProjectName] = useState<string | null>(null);
   const canvasRef = useRef<GCECanvasHandle>(null);
@@ -70,6 +71,8 @@ export function GCEEditorPage() {
     setSelectedNodeId(nodeId);
     setSelectedEdgeId(edgeId);
   }, []);
+
+  const handleGraphChange = useCallback(() => setIsValidated(false), []);
 
   const handleSave = useCallback(async () => {
     if (!gce || !projectId) return;
@@ -138,6 +141,7 @@ export function GCEEditorPage() {
       const request = flowToCreateRequest(gce, state.nodes, state.edges, state.restrictions);
       const result = await GCEService.validar(request);
       setValidationResult(result);
+      setIsValidated(result.valid);
     } catch {
       setValidationResult({
         valid: false,
@@ -182,6 +186,7 @@ export function GCEEditorPage() {
           onNameChange={handleNameChange}
           saveStatus={saveStatus}
           canValidate={gce.id !== 'new'}
+          canSave={isValidated}
         />
 
         <div className="flex-1 flex overflow-hidden">
@@ -199,6 +204,7 @@ export function GCEEditorPage() {
               initialRestrictions={dtoToRestrictions(gce)}
               onSelectionChange={handleSelectionChange}
               onRestrictionsChange={setLiveRestrictions}
+              onChange={handleGraphChange}
             />
 
             {showValidation && (

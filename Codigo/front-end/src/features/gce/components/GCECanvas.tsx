@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, forwardRef, useImperativeHandle, useEffect } from 'react';
+import { useCallback, useMemo, useState, forwardRef, useImperativeHandle, useEffect, useRef } from 'react';
 import {
   ReactFlow,
   Background,
@@ -27,6 +27,7 @@ interface GCECanvasProps {
   initialRestrictions: GCERestriction[];
   onSelectionChange: (nodeId: string | null, edgeId: string | null) => void;
   onRestrictionsChange?: (restrictions: GCERestriction[]) => void;
+  onChange?: () => void;
 }
 
 export interface GCECanvasHandle {
@@ -42,7 +43,7 @@ const edgeTypes = { negation: NegationEdge };
 let nodeCounter = 100;
 
 export const GCECanvas = forwardRef<GCECanvasHandle, GCECanvasProps>(
-  function GCECanvas({ initialNodes, initialEdges, initialRestrictions, onSelectionChange, onRestrictionsChange }, ref) {
+  function GCECanvas({ initialNodes, initialEdges, initialRestrictions, onSelectionChange, onRestrictionsChange, onChange }, ref) {
     const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
     const [restrictions, setRestrictions] = useState<GCERestriction[]>(initialRestrictions);
@@ -148,6 +149,12 @@ export const GCECanvas = forwardRef<GCECanvasHandle, GCECanvasProps>(
     useEffect(() => {
       onRestrictionsChange?.(restrictions);
     }, [restrictions, onRestrictionsChange]);
+
+    const isFirstRender = useRef(true);
+    useEffect(() => {
+      if (isFirstRender.current) { isFirstRender.current = false; return; }
+      onChange?.();
+    }, [nodes, edges, restrictions, onChange]);
 
     return (
       <div className="flex-1 relative">
