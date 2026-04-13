@@ -34,7 +34,15 @@ const quickActions = [
   },
 ];
 
-export function QuickActionsSection() {
+interface QuickActionsSectionProps {
+  onCreateGCE?: () => void;
+}
+
+export function QuickActionsSection({ onCreateGCE }: QuickActionsSectionProps) {
+  const handleClick = (id: number) => {
+    if (id === 2) onCreateGCE?.();
+  };
+
   return (
     <section className="container mx-auto px-6 py-16 border-t border-edge">
       <h3 className="text-gray-100 text-xl font-semibold mb-8">Ações Rápidas</h3>
@@ -43,6 +51,7 @@ export function QuickActionsSection() {
         {quickActions.map((action, index) => (
           <motion.button
             key={action.id}
+            onClick={() => handleClick(action.id)}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: index * 0.1 }}

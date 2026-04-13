@@ -14,6 +14,10 @@ export abstract class BaseService {
     return http.put<TRes>(url, body, config);
   }
 
+  protected patch<TRes, TBody = undefined>(url: string, body?: TBody, config?: AxiosRequestConfig) {
+    return http.patch<TRes>(url, body, config);
+  }
+
   protected delete<TRes>(url: string, config?: AxiosRequestConfig) {
     return http.delete<TRes>(url, config);
   }

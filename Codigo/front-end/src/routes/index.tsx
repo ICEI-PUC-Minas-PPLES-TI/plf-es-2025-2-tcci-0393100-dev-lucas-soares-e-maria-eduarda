@@ -3,6 +3,7 @@ import { LoginPage } from '../pages/LoginPage';
 import { SignUpPage } from '../pages/SignUpPage';
 import { HomePage } from '../pages/HomePage';
 import { ProjectPage } from '../pages/ProjectPage';
+import { GCEEditorPage } from '../pages/GCEEditorPage';
 import { useAuth } from '../context/AuthContext';
 import type { ReactNode } from 'react';
 
@@ -19,6 +20,7 @@ export function AppRouter() {
         <Route path="/cadastro" element={<SignUpPage />} />
         <Route path="/homepage" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
         <Route path="/projeto/:id" element={<ProtectedRoute><ProjectPage /></ProtectedRoute>} />
+        <Route path="/projeto/:projectId/gce/:gceId" element={<ProtectedRoute><GCEEditorPage /></ProtectedRoute>} />
         <Route path="/" element={<Navigate to="/homepage" replace />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
