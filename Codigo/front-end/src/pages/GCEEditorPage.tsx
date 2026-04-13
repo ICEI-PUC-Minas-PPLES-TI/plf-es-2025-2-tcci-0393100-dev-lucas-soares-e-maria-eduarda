@@ -129,11 +129,14 @@ export function GCEEditorPage() {
   }, [gce, projectId]);
 
   const handleValidate = useCallback(async () => {
-    if (!gce || gce.id === 'new') return;
+    if (!gce || !projectId) return;
+    const state = canvasRef.current?.getState();
+    if (!state) return;
     setValidationResult(null);
     setShowValidation(true);
     try {
-      const result = await GCEService.validar(gce.id);
+      const request = flowToCreateRequest(gce, state.nodes, state.edges, state.restrictions);
+      const result = await GCEService.validar(request);
       setValidationResult(result);
     } catch {
       setValidationResult({
@@ -142,7 +145,7 @@ export function GCEEditorPage() {
         warnings: [],
       });
     }
-  }, [gce]);
+  }, [gce, projectId]);
 
   if (loading) {
     return (

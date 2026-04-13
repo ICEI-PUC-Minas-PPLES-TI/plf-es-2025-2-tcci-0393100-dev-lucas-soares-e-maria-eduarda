@@ -82,7 +82,7 @@ export function flowToCreateRequest(
     selected: base.selected,
     nodes: nodes.map((n) => ({
       code: n.data.code,
-      label: n.data.label,
+      ...(n.data.nodeType !== 'OPERATOR' && { label: n.data.label }),
       type: n.data.nodeType,
       operatorType: n.data.operatorType,
     })),
