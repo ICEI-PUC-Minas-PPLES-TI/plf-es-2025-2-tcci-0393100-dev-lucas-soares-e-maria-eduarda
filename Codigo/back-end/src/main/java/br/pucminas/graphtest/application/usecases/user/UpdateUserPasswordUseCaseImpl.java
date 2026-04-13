@@ -1,13 +1,13 @@
 package br.pucminas.graphtest.application.usecases.user;
 
-import br.pucminas.graphtest.application.domain.User;
+import br.pucminas.graphtest.application.domain.user.model.User;
 import br.pucminas.graphtest.application.exception.UpdatePasswordException;
 import br.pucminas.graphtest.application.exception.EntityNotFoundException;
 import br.pucminas.graphtest.application.port.input.user.UpdateUserPasswordUseCasePort;
 import br.pucminas.graphtest.application.port.input.user.records.UpdateUserPasswordInput;
 import br.pucminas.graphtest.application.port.output.repositories.UserRepositoryPort;
 import br.pucminas.graphtest.application.port.output.security.PasswordEncoderPort;
-import br.pucminas.graphtest.application.service.interfaces.UserAuthorizationService;
+import br.pucminas.graphtest.application.service.user.interfaces.UserAuthorizationService;
 
 public class UpdateUserPasswordUseCaseImpl implements UpdateUserPasswordUseCasePort {
 

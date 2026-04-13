@@ -1,6 +1,6 @@
 package br.pucminas.graphtest.adapters.inbound.security;
 
-import br.pucminas.graphtest.adapters.inbound.dto.LoginRequestDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.user.LoginRequestDTO;
 import br.pucminas.graphtest.application.port.input.security.GenerateTokenUseCasePort;
 import br.pucminas.graphtest.application.port.input.security.records.GenerateTokenInput;
 import com.fasterxml.jackson.databind.ObjectMapper;

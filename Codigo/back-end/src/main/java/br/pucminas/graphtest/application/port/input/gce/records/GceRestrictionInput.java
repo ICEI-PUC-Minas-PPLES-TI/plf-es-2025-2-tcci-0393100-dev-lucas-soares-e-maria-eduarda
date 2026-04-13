@@ -1,6 +1,6 @@
 package br.pucminas.graphtest.application.port.input.gce.records;
 
-import br.pucminas.graphtest.application.domain.enums.RestrictionTypeEnum;
+import br.pucminas.graphtest.application.domain.gce.enums.RestrictionTypeEnum;
 
 import java.util.List;
 

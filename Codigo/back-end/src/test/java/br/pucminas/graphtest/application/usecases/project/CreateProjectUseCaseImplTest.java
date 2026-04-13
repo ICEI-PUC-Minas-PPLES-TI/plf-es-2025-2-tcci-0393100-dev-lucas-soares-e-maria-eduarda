@@ -1,8 +1,8 @@
 package br.pucminas.graphtest.application.usecases.project;
 
-import br.pucminas.graphtest.application.domain.Project;
-import br.pucminas.graphtest.application.domain.enums.UserProfileEnum;
-import br.pucminas.graphtest.application.domain.records.AuthenticatedUser;
+import br.pucminas.graphtest.application.domain.project.model.Project;
+import br.pucminas.graphtest.application.domain.user.enums.UserProfileEnum;
+import br.pucminas.graphtest.application.security.AuthenticatedUser;
 import br.pucminas.graphtest.application.port.input.project.records.CreateProjectInput;
 import br.pucminas.graphtest.application.port.input.project.records.ProjectOutput;
 import br.pucminas.graphtest.application.port.output.repositories.ProjectRepositoryPort;

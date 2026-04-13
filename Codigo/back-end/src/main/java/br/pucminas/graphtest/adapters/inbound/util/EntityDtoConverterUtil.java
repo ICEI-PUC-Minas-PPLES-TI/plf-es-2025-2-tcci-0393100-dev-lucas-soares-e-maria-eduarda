@@ -1,7 +1,7 @@
 package br.pucminas.graphtest.adapters.inbound.util;
 
-import br.pucminas.graphtest.adapters.inbound.dto.UserDTO;
-import br.pucminas.graphtest.adapters.inbound.dto.ProjectDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.user.UserDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.project.ProjectDTO;
 import br.pucminas.graphtest.application.port.input.project.records.ProjectOutput;
 import br.pucminas.graphtest.application.port.input.user.records.UserOutput;
 import jakarta.validation.constraints.NotNull;

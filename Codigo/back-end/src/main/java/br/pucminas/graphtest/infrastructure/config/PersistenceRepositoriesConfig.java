@@ -25,11 +25,11 @@ import org.springframework.transaction.PlatformTransactionManager;
  */
 @Configuration
 @EnableJpaRepositories(
-        basePackages = "br.pucminas.graphtest.adapters.outbound.repositories.interfaces.jpa",
+        basePackages = "br.pucminas.graphtest.adapters.outbound.repositories.jpa.interfaces",
         transactionManagerRef = "transactionManager"
 )
 @EnableNeo4jRepositories(
-        basePackages = "br.pucminas.graphtest.adapters.outbound.repositories.interfaces.neo4j",
+        basePackages = "br.pucminas.graphtest.adapters.outbound.repositories.neo4j.interfaces",
         transactionManagerRef = "neo4jTransactionManager",
         neo4jTemplateRef = "neo4jTemplate"
 )

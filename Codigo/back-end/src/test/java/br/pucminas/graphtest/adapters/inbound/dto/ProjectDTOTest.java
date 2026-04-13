@@ -1,5 +1,6 @@
 package br.pucminas.graphtest.adapters.inbound.dto;
 
+import br.pucminas.graphtest.adapters.inbound.dto.project.ProjectDTO;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;

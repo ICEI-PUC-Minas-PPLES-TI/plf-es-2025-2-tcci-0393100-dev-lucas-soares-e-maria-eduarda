@@ -1,10 +1,10 @@
 package br.pucminas.graphtest.application.usecases.project;
 
-import br.pucminas.graphtest.application.domain.Project;
+import br.pucminas.graphtest.application.domain.project.model.Project;
 import br.pucminas.graphtest.application.port.input.project.FindProjectByIdUseCasePort;
 import br.pucminas.graphtest.application.port.input.project.records.FindProjectByIdInput;
 import br.pucminas.graphtest.application.port.input.project.records.ProjectOutput;
-import br.pucminas.graphtest.application.service.interfaces.ProjectAccessService;
+import br.pucminas.graphtest.application.service.project.interfaces.ProjectAccessService;
 
 /**
  * Caso de uso responsavel por localizar um projeto pelo identificador,

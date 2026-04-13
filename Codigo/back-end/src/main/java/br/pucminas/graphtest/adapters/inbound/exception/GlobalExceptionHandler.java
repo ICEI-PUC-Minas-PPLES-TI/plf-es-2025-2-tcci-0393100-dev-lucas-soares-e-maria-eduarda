@@ -1,5 +1,6 @@
 package br.pucminas.graphtest.adapters.inbound.exception;
 
+import br.pucminas.graphtest.adapters.inbound.error.ErrorResponse;
 import br.pucminas.graphtest.application.exception.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

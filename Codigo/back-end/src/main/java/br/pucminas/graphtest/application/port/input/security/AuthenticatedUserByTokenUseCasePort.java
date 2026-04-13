@@ -1,6 +1,6 @@
 package br.pucminas.graphtest.application.port.input.security;
 
-import br.pucminas.graphtest.application.domain.records.AuthenticatedUser;
+import br.pucminas.graphtest.application.security.AuthenticatedUser;
 
 public interface AuthenticatedUserByTokenUseCasePort {
 

@@ -3,7 +3,7 @@ package br.pucminas.graphtest.application.usecases.user;
 import br.pucminas.graphtest.application.port.input.user.ListUsersUseCasePort;
 import br.pucminas.graphtest.application.port.input.user.records.UserOutput;
 import br.pucminas.graphtest.application.port.output.repositories.UserRepositoryPort;
-import br.pucminas.graphtest.application.service.interfaces.UserAuthorizationService;
+import br.pucminas.graphtest.application.service.user.interfaces.UserAuthorizationService;
 
 import java.util.List;
 

@@ -1,16 +1,16 @@
 package br.pucminas.graphtest.application.usecases.gce;
 
-import br.pucminas.graphtest.application.domain.Gce;
-import br.pucminas.graphtest.application.domain.GceEdge;
-import br.pucminas.graphtest.application.domain.GceNode;
-import br.pucminas.graphtest.application.domain.Project;
-import br.pucminas.graphtest.application.domain.enums.GceEdgeTypeEnum;
-import br.pucminas.graphtest.application.domain.enums.GceOperatorTypeEnum;
+import br.pucminas.graphtest.application.domain.gce.model.Gce;
+import br.pucminas.graphtest.application.domain.gce.model.GceEdge;
+import br.pucminas.graphtest.application.domain.gce.model.GceNode;
+import br.pucminas.graphtest.application.domain.project.model.Project;
+import br.pucminas.graphtest.application.domain.gce.enums.GceEdgeTypeEnum;
+import br.pucminas.graphtest.application.domain.gce.enums.GceOperatorTypeEnum;
 import br.pucminas.graphtest.application.port.input.gce.records.ValidateGceByIdInput;
 import br.pucminas.graphtest.application.port.input.gce.records.ValidationGceOutput;
 import br.pucminas.graphtest.application.port.output.repositories.GceRepositoryPort;
-import br.pucminas.graphtest.application.service.interfaces.GceValidationResultService;
-import br.pucminas.graphtest.application.service.interfaces.ProjectAccessService;
+import br.pucminas.graphtest.application.service.gce.interfaces.GceValidationResultService;
+import br.pucminas.graphtest.application.service.project.interfaces.ProjectAccessService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
