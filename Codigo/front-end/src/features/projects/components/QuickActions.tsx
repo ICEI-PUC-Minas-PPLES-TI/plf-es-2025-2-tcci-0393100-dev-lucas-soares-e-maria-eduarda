@@ -1,6 +1,10 @@
 import { GitBranch, Upload, Network, Table } from 'lucide-react';
 import { SectionHeader } from '../../../components/SectionHeader';
 
+interface QuickActionsProps {
+  onCreateGCE?: () => void;
+}
+
 const actions = [
   {
     id: 'gfc',
@@ -36,7 +40,11 @@ const actions = [
   },
 ];
 
-export function QuickActions() {
+export function QuickActions({ onCreateGCE }: QuickActionsProps) {
+  const handleClick = (id: string) => {
+    if (id === 'gce') onCreateGCE?.();
+  };
+
   return (
     <div className="bg-surface-card border border-edge rounded-lg p-5">
       <SectionHeader title="Ações Rápidas" />
@@ -47,6 +55,7 @@ export function QuickActions() {
           return (
             <button
               key={action.id}
+              onClick={() => handleClick(action.id)}
               className={`
                 relative overflow-hidden rounded-lg p-4 text-left
                 bg-gradient-to-br ${action.color} ${action.hoverColor}

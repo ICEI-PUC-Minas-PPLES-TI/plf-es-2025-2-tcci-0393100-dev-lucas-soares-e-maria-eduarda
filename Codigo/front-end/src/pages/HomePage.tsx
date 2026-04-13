@@ -7,10 +7,12 @@ import { ProjectsSection } from '../features/home/components/ProjectsSection';
 import { QuickActionsSection } from '../features/home/components/QuickActionsSection';
 import { RecentArtifactsSection } from '../features/home/components/RecentArtifactsSection';
 import { ProjectFormModal } from '../features/projects/components/ProjectFormModal';
+import { GCEFormModal } from '../features/gce/components/GCEFormModal';
 
 export function HomePage() {
   const navigate = useNavigate();
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showCreateGCEModal, setShowCreateGCEModal] = useState(false);
 
   return (
     <div className="min-h-screen bg-surface flex flex-col">
@@ -19,7 +21,7 @@ export function HomePage() {
       <main className="flex-1">
         <HeroSection onCreateProject={() => setShowCreateModal(true)} />
         <ProjectsSection />
-        <QuickActionsSection />
+        <QuickActionsSection onCreateGCE={() => setShowCreateGCEModal(true)} />
         <RecentArtifactsSection />
       </main>
 
@@ -32,6 +34,12 @@ export function HomePage() {
             setShowCreateModal(false);
             navigate(`/projeto/${created.id}`);
           }}
+        />
+      )}
+
+      {showCreateGCEModal && (
+        <GCEFormModal
+          onClose={() => setShowCreateGCEModal(false)}
         />
       )}
     </div>

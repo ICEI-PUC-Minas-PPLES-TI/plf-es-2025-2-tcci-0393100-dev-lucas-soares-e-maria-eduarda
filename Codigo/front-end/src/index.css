@@ -11,6 +11,16 @@
   --color-surface-hover: #21262d;
   --color-edge: #30363d;
   --color-edge-hover: #8b949e;
+
+  --color-node-cause: #3fb950;
+  --color-node-cause-bg: #238636;
+  --color-node-effect: #58a6ff;
+  --color-node-effect-bg: #1f6feb;
+  --color-node-operator: #f0883e;
+  --color-node-operator-bg: #d97706;
+  --color-node-selected: #58a6ff;
+  --color-node-error: #f85149;
+  --color-edge-negation: #f85149;
 }
 
 :root {

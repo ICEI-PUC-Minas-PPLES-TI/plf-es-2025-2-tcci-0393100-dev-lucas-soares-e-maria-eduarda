@@ -38,7 +38,7 @@ export function ProjectSummary() {
         </div>
         <div className="w-full bg-surface rounded-full h-2 overflow-hidden">
           <div
-            className="bg-gradient-to-r from-cyan-500 to-blue-500 h-full rounded-full"
+            className="bg-linear-to-r from-cyan-500 to-blue-500 h-full rounded-full"
             style={{ width: '68%' }}
           />
         </div>
@@ -48,10 +48,6 @@ export function ProjectSummary() {
         <div className="bg-surface border border-edge rounded p-3">
           <p className="text-xs text-gray-500 mb-1">Última atualização</p>
           <p className="text-sm">2 horas atrás</p>
-        </div>
-        <div className="bg-surface border border-edge rounded p-3">
-          <p className="text-xs text-gray-500 mb-1">Colaboradores</p>
-          <p className="text-sm">4 membros</p>
         </div>
       </div>
     </div>
