@@ -23,7 +23,9 @@ export const EffectNode = memo(function EffectNode({ id, data, selected }: NodeP
         boxShadow: selected ? '0 0 12px rgba(88, 166, 255, 0.3)' : 'none',
       }}
     >
-      <Handle type="target" position={Position.Left} className="w-2! h-2! bg-node-effect!" />
+      <Handle id="left" type="target" position={Position.Left} className="w-2! h-2! bg-node-effect!" />
+      <Handle id="top" type="source" position={Position.Top} className="w-2! h-2! bg-node-effect!" />
+      <Handle id="bottom" type="source" position={Position.Bottom} className="w-2! h-2! bg-node-effect!" />
 
       <div className="flex items-center gap-2">
         <Square className="w-4 h-4 shrink-0" style={{ color: 'var(--color-node-effect)' }} />
@@ -50,7 +52,7 @@ export const EffectNode = memo(function EffectNode({ id, data, selected }: NodeP
         </div>
       </div>
 
-      <Handle type="source" position={Position.Right} className="w-2! h-2! bg-node-effect!" />
+      <Handle id="right" type="source" position={Position.Right} className="w-2! h-2! bg-node-effect!" />
     </div>
   );
 });

@@ -8,6 +8,7 @@ import {
   useNodesState,
   useEdgesState,
   useReactFlow,
+  ConnectionMode,
   type OnConnect,
   type OnSelectionChangeFunc,
   BackgroundVariant,
@@ -53,12 +54,13 @@ export const GCECanvas = forwardRef<GCECanvasHandle, GCECanvasProps>(
 
     const onConnect: OnConnect = useCallback(
       (params) => {
-        setEdges((eds) =>
-          addEdge(
-            { ...params, type: 'default', data: { edgeType: 'IDENTITY' } },
-            eds,
-          ),
-        );
+        setEdges((eds) => {
+          const duplicate = eds.some(
+            (e) => e.source === params.source && e.target === params.target,
+          );
+          if (duplicate) return eds;
+          return addEdge({ ...params, type: 'default', data: { edgeType: 'IDENTITY' } }, eds);
+        });
       },
       [setEdges],
     );
@@ -182,6 +184,7 @@ export const GCECanvas = forwardRef<GCECanvasHandle, GCECanvasProps>(
           selectionOnDrag
           panOnScroll
           multiSelectionKeyCode="Shift"
+          connectionMode={ConnectionMode.Loose}
           selectNodesOnDrag={false}
           defaultEdgeOptions={{
             style: { stroke: 'var(--color-edge-hover)', strokeWidth: 2 },

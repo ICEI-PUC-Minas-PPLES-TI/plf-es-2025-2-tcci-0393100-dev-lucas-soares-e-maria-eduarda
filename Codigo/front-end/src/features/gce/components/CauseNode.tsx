@@ -23,7 +23,9 @@ export const CauseNode = memo(function CauseNode({ id, data, selected }: NodePro
         boxShadow: selected ? '0 0 12px rgba(63, 185, 80, 0.3)' : 'none',
       }}
     >
-      <Handle type="target" position={Position.Left} className="w-2! h-2! bg-node-cause!" />
+      <Handle id="left" type="target" position={Position.Left} className="w-2! h-2! bg-node-cause!" />
+      <Handle id="top" type="source" position={Position.Top} className="w-2! h-2! bg-node-cause!" />
+      <Handle id="bottom" type="source" position={Position.Bottom} className="w-2! h-2! bg-node-cause!" />
 
       <div className="flex items-center gap-2">
         <Circle className="w-4 h-4 shrink-0" style={{ color: 'var(--color-node-cause)' }} />
@@ -50,7 +52,7 @@ export const CauseNode = memo(function CauseNode({ id, data, selected }: NodePro
         </div>
       </div>
 
-      <Handle type="source" position={Position.Right} className="w-2! h-2! bg-node-cause!" />
+      <Handle id="right" type="source" position={Position.Right} className="w-2! h-2! bg-node-cause!" />
     </div>
   );
 });
