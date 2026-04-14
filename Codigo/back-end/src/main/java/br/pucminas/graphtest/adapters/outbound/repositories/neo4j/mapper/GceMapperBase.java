@@ -99,9 +99,10 @@ public class GceMapperBase implements BasePersistenceMapper<Gce, Neo4jGceEntity>
                             edgeRelationship.getEdgeId(),
                             sourceNode.getCode(),
                             edgeRelationship.getTargetNode().getCode(),
-                            edgeRelationship.getType()
+                            edgeRelationship.getType(),
+                            edgeRelationship.getCreatedAt(),
+                            edgeRelationship.getUpdatedAt()
                     );
-                    edge.restoreAuditFields(edgeRelationship.getCreatedAt(), edgeRelationship.getUpdatedAt());
                     edges.add(edge);
                 }
             }
@@ -121,9 +122,10 @@ public class GceMapperBase implements BasePersistenceMapper<Gce, Neo4jGceEntity>
                 Boolean.TRUE.equals(entity.getSelected()),
                 nodes,
                 edges,
-                restrictions
+                restrictions,
+                entity.getCreatedAt(),
+                entity.getUpdatedAt()
         );
-        graph.restoreAuditFields(entity.getCreatedAt(), entity.getUpdatedAt());
         return graph;
     }
 
@@ -197,9 +199,10 @@ public class GceMapperBase implements BasePersistenceMapper<Gce, Neo4jGceEntity>
                 entity.getCode(),
                 entity.getLabel(),
                 entity.getType(),
-                entity.getOperatorType()
+                entity.getOperatorType(),
+                entity.getCreatedAt(),
+                entity.getUpdatedAt()
         );
-        node.restoreAuditFields(entity.getCreatedAt(), entity.getUpdatedAt());
         return node;
     }
 
@@ -211,9 +214,10 @@ public class GceMapperBase implements BasePersistenceMapper<Gce, Neo4jGceEntity>
                         ? List.of()
                         : entity.getAppliesTo().stream()
                         .map(Neo4jGceNodeEntity::getCode)
-                        .toList()
+                        .toList(),
+                entity.getCreatedAt(),
+                entity.getUpdatedAt()
         );
-        restriction.restoreAuditFields(entity.getCreatedAt(), entity.getUpdatedAt());
         return restriction;
     }
 

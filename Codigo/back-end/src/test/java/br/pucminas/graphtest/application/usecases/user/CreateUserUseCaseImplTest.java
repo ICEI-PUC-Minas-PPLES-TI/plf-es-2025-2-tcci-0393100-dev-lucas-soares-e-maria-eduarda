@@ -7,6 +7,7 @@ import br.pucminas.graphtest.application.port.input.user.records.CreateUserInput
 import br.pucminas.graphtest.application.port.input.user.records.UserOutput;
 import br.pucminas.graphtest.application.port.output.repositories.UserRepositoryPort;
 import br.pucminas.graphtest.application.port.output.security.PasswordEncoderPort;
+import br.pucminas.graphtest.application.service.user.interfaces.UserEmailUniquenessService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -19,6 +20,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -34,17 +36,21 @@ class CreateUserUseCaseImplTest {
     @Mock
     private PasswordEncoderPort passwordEncoder;
 
+    @Mock
+    private UserEmailUniquenessService userEmailUniquenessService;
+
     @InjectMocks
     private CreateUserUseCaseImpl useCase;
 
     @Test
     void shouldRejectDuplicateEmailBeforePersisting() {
         CreateUserInput input = new CreateUserInput("Usuario Teste", "duplicado@teste.com", "senha123");
-        when(userRepository.existsByEmail(input.email())).thenReturn(true);
+        org.mockito.Mockito.doThrow(new DuplicateEmailException("Ja existe um usuario cadastrado com o email informado"))
+                .when(userEmailUniquenessService).ensureEmailAvailable(input.email());
 
         assertThrows(DuplicateEmailException.class, () -> useCase.execute(input));
 
-        verify(userRepository).existsByEmail(input.email());
+        verify(userEmailUniquenessService).ensureEmailAvailable(input.email());
         verify(userRepository, never()).save(any(User.class));
     }
 
@@ -54,12 +60,12 @@ class CreateUserUseCaseImplTest {
         UUID userId = UUID.randomUUID();
         LocalDateTime createdAt = LocalDateTime.now();
 
-        when(userRepository.existsByEmail(input.email())).thenReturn(false);
         when(passwordEncoder.encode(input.password())).thenReturn("senha-criptografada");
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
             User savedUser = invocation.getArgument(0);
             User persistedUser = new User(userId, input.name(), input.email(), "senha-criptografada", UserProfileEnum.USUARIO);
-            persistedUser.restoreAuditFields(createdAt, createdAt);
+            persistedUser.setCreatedAt(createdAt);
+            persistedUser.setUpdatedAt(createdAt);
             return persistedUser;
         });
 
@@ -68,9 +74,10 @@ class CreateUserUseCaseImplTest {
 
         assertEquals(userId, output.id());
         assertEquals(input.email(), output.email());
-        verify(userRepository).existsByEmail(input.email());
+        verify(userEmailUniquenessService).ensureEmailAvailable(input.email());
         verify(userRepository).save(userCaptor.capture());
         assertNotNull(userCaptor.getValue().getCreatedAt());
-        assertEquals(userCaptor.getValue().getCreatedAt(), userCaptor.getValue().getUpdatedAt());
+        assertNull(userCaptor.getValue().getUpdatedAt());
+        assertNull(output.updatedAt());
     }
 }

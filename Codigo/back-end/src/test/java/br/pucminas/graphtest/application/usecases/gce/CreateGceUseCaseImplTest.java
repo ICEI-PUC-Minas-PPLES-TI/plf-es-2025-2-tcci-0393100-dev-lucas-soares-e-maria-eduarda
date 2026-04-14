@@ -29,6 +29,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -150,15 +151,14 @@ class CreateGceUseCaseImplTest {
         verify(projectAccessService).findAuthorizedProject(projectId);
         verify(gceRepository).save(graphCaptor.capture());
         assertNotNull(graphCaptor.getValue().getCreatedAt());
-        assertEquals(graphCaptor.getValue().getCreatedAt(), graphCaptor.getValue().getUpdatedAt());
+        assertNull(graphCaptor.getValue().getUpdatedAt());
+        assertNull(output.updatedAt());
         assertTrue(graphCaptor.getValue().getNodes().stream().allMatch(node ->
                 node.getCreatedAt() != null
-                        && node.getUpdatedAt() != null
-                        && !node.getUpdatedAt().isBefore(node.getCreatedAt())));
+                        && node.getUpdatedAt() == null));
         assertTrue(graphCaptor.getValue().getEdges().stream().allMatch(edge ->
                 edge.getCreatedAt() != null
-                        && edge.getUpdatedAt() != null
-                        && !edge.getUpdatedAt().isBefore(edge.getCreatedAt())));
+                        && edge.getUpdatedAt() == null));
     }
 
     @Test

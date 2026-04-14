@@ -25,9 +25,15 @@ public interface GceMutationService {
 
     Collection<GceNode> toNodes(List<GceNodeInput> nodes);
 
+    Collection<GceNode> toNodesForUpdate(Gce currentGraph, List<GceNodeInput> nodes);
+
     Collection<GceEdge> toEdges(List<GceNodeInput> nodes, List<GceEdgeInput> explicitEdges);
 
+    Collection<GceEdge> toEdgesForUpdate(Gce currentGraph, List<GceNodeInput> nodes, List<GceEdgeInput> explicitEdges);
+
     Collection<GceRestriction> toRestrictions(List<GceRestrictionInput> restrictions);
+
+    Collection<GceRestriction> toRestrictionsForUpdate(Gce currentGraph, List<GceRestrictionInput> restrictions);
 
     void addNodeWithAutomaticEdges(Gce graph, GceNodeInput nodeInput);
 

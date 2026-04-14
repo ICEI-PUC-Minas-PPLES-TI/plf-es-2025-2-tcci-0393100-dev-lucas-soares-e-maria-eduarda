@@ -38,12 +38,14 @@ import br.pucminas.graphtest.application.service.gce.GceValidationResultServiceI
 import br.pucminas.graphtest.application.service.project.ProjectAccessServiceImpl;
 import br.pucminas.graphtest.application.service.project.ProjectDeletionServiceImpl;
 import br.pucminas.graphtest.application.service.user.UserAuthorizationServiceImpl;
+import br.pucminas.graphtest.application.service.user.UserEmailUniquenessServiceImpl;
 import br.pucminas.graphtest.application.service.gce.GceMutationServiceImpl;
 import br.pucminas.graphtest.application.service.gce.interfaces.GceMutationService;
 import br.pucminas.graphtest.application.service.gce.interfaces.GceValidationResultService;
 import br.pucminas.graphtest.application.service.project.interfaces.ProjectAccessService;
 import br.pucminas.graphtest.application.service.project.interfaces.ProjectDeletionService;
 import br.pucminas.graphtest.application.service.user.interfaces.UserAuthorizationService;
+import br.pucminas.graphtest.application.service.user.interfaces.UserEmailUniquenessService;
 import br.pucminas.graphtest.application.usecases.gce.CreateGceUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gce.DeleteGceUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gce.FindGceByIdUseCaseImpl;
@@ -186,6 +188,11 @@ public class ApplicationBeansConfig {
     }
 
     @Bean
+    public UserEmailUniquenessService userEmailUniquenessService(UserRepositoryPort userRepository) {
+        return new UserEmailUniquenessServiceImpl(userRepository);
+    }
+
+    @Bean
     public CreateProjectUseCasePort createProjectUseCase(ProjectRepositoryPort projectRepository, CurrentUserPort currentUserPort) {
         return new CreateProjectUseCaseImpl(projectRepository, currentUserPort);
     }
@@ -238,8 +245,10 @@ public class ApplicationBeansConfig {
     }
 
     @Bean
-    public CreateUserUseCasePort createUserUseCase(UserRepositoryPort userRepository, PasswordEncoderPort passwordEncoderPort) {
-        return new CreateUserUseCaseImpl(userRepository, passwordEncoderPort);
+    public CreateUserUseCasePort createUserUseCase(UserRepositoryPort userRepository,
+                                                   PasswordEncoderPort passwordEncoderPort,
+                                                   UserEmailUniquenessService userEmailUniquenessService) {
+        return new CreateUserUseCaseImpl(userRepository, passwordEncoderPort, userEmailUniquenessService);
     }
 
     @Bean
@@ -275,7 +284,8 @@ public class ApplicationBeansConfig {
 
     @Bean
     public UpdateUserUseCasePort updateUserUseCase(UserRepositoryPort userRepository,
-                                                   UserAuthorizationService userAuthorizationService) {
-        return new UpdateUserUseCaseImpl(userRepository, userAuthorizationService);
+                                                   UserAuthorizationService userAuthorizationService,
+                                                   UserEmailUniquenessService userEmailUniquenessService) {
+        return new UpdateUserUseCaseImpl(userRepository, userAuthorizationService, userEmailUniquenessService);
     }
 }

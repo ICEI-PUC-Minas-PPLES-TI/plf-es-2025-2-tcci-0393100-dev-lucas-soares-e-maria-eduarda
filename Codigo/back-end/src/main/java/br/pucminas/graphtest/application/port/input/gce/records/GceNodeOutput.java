@@ -4,6 +4,7 @@ import br.pucminas.graphtest.application.domain.gce.model.GceNode;
 import br.pucminas.graphtest.application.domain.gce.enums.GceNodeTypeEnum;
 import br.pucminas.graphtest.application.domain.gce.enums.GceOperatorTypeEnum;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
@@ -14,7 +15,9 @@ public record GceNodeOutput(
         String code,
         String label,
         GceNodeTypeEnum type,
-        GceOperatorTypeEnum operatorType
+        GceOperatorTypeEnum operatorType,
+        LocalDateTime createdAt,
+        LocalDateTime updatedAt
 ) {
 
     /**
@@ -29,7 +32,13 @@ public record GceNodeOutput(
                 node.getCode(),
                 node.getLabel(),
                 node.getType(),
-                node.getOperatorType()
+                node.getOperatorType(),
+                node.getCreatedAt(),
+                normalizeUpdatedAt(node.getCreatedAt(), node.getUpdatedAt())
         );
+    }
+
+    private static LocalDateTime normalizeUpdatedAt(LocalDateTime createdAt, LocalDateTime updatedAt) {
+        return updatedAt != null && updatedAt.equals(createdAt) ? null : updatedAt;
     }
 }

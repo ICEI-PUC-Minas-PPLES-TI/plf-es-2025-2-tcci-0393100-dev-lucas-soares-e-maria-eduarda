@@ -8,6 +8,7 @@ import br.pucminas.graphtest.application.exception.InvalidUserProfileException;
 import br.pucminas.graphtest.application.port.input.user.records.UpdateUserInput;
 import br.pucminas.graphtest.application.port.output.repositories.UserRepositoryPort;
 import br.pucminas.graphtest.application.service.user.interfaces.UserAuthorizationService;
+import br.pucminas.graphtest.application.service.user.interfaces.UserEmailUniquenessService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -37,6 +38,9 @@ class UpdateUserUseCaseImplTest {
     @Mock
     private UserAuthorizationService userAuthorizationService;
 
+    @Mock
+    private UserEmailUniquenessService userEmailUniquenessService;
+
     @InjectMocks
     private UpdateUserUseCaseImpl useCase;
 
@@ -60,7 +64,8 @@ class UpdateUserUseCaseImplTest {
         UUID userId = UUID.randomUUID();
         User user = new User(userId, "Usuario Antigo", "antigo@teste.com", "senha", UserProfileEnum.USUARIO);
         LocalDateTime createdAt = LocalDateTime.now().minusDays(1);
-        user.restoreAuditFields(createdAt, createdAt);
+        user.setCreatedAt(createdAt);
+        user.setUpdatedAt(createdAt);
         UpdateUserInput input = new UpdateUserInput(userId, "Usuario Novo", "novo@teste.com", null);
 
         when(userAuthorizationService.authorizeForUser(userId))
@@ -89,7 +94,8 @@ class UpdateUserUseCaseImplTest {
         when(userAuthorizationService.authorizeForUser(userId))
                 .thenReturn(new AuthenticatedUser(userId, "usuario@teste.com", UserProfileEnum.USUARIO));
         when(userRepository.findById(userId)).thenReturn(Optional.of(currentUser));
-        when(userRepository.findByEmail(input.email())).thenReturn(Optional.of(otherUser));
+        org.mockito.Mockito.doThrow(new DuplicateEmailException("Ja existe um usuario cadastrado com o email informado"))
+                .when(userEmailUniquenessService).ensureEmailAvailableForUpdate(userId, input.email());
 
         assertThrows(DuplicateEmailException.class, () -> useCase.execute(input));
 

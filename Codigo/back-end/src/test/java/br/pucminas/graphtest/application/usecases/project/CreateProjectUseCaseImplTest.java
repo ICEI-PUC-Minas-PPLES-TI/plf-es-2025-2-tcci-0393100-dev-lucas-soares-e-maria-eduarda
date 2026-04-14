@@ -18,6 +18,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -52,7 +53,8 @@ class CreateProjectUseCaseImplTest {
         assertEquals("Projeto Manual", output.name());
         verify(projectRepository).save(projectCaptor.capture());
         assertNotNull(projectCaptor.getValue().getCreatedAt());
-        assertEquals(projectCaptor.getValue().getCreatedAt(), projectCaptor.getValue().getUpdatedAt());
+        assertNull(projectCaptor.getValue().getUpdatedAt());
+        assertNull(output.updatedAt());
         verify(projectRepository, never()).countByUserId(userId);
     }
 

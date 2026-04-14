@@ -9,6 +9,8 @@ import br.pucminas.graphtest.application.service.gce.interfaces.GceMutationServi
 import br.pucminas.graphtest.application.service.gce.interfaces.GceValidationResultService;
 import br.pucminas.graphtest.application.service.project.interfaces.ProjectAccessService;
 
+import java.time.LocalDateTime;
+
 /**
  * Caso de uso responsavel por criar um novo GCE.
  */
@@ -55,9 +57,10 @@ public class CreateGceUseCaseImpl implements CreateGceUseCasePort {
                 Boolean.TRUE.equals(input.selected()),
                 gceMutationService.toNodes(input.nodes()),
                 gceMutationService.toEdges(input.nodes(), input.edges()),
-                gceMutationService.toRestrictions(input.restrictions())
+                gceMutationService.toRestrictions(input.restrictions()),
+                LocalDateTime.now(),
+                null
         );
-        graph.markCreatedNow();
 
         gceMutationService.refreshOperatorLabels(graph);
         gceMutationService.validateAndThrow(graph, gceValidationResultService);

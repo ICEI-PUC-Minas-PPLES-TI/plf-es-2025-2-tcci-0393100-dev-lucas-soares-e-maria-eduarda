@@ -9,6 +9,8 @@ import br.pucminas.graphtest.application.port.output.repositories.UserRepository
 import br.pucminas.graphtest.application.port.output.security.PasswordEncoderPort;
 import br.pucminas.graphtest.application.service.user.interfaces.UserAuthorizationService;
 
+import java.time.LocalDateTime;
+
 public class UpdateUserPasswordUseCaseImpl implements UpdateUserPasswordUseCasePort {
 
     private final UserRepositoryPort userRepositoryPort;
@@ -40,7 +42,7 @@ public class UpdateUserPasswordUseCaseImpl implements UpdateUserPasswordUseCaseP
 
         String encodedNewPassword = passwordEncoder.encode(input.senhaAtualizada());
         user.setPassword(encodedNewPassword);
-        user.markUpdatedNow();
+        user.setUpdatedAt(LocalDateTime.now());
 
         userRepositoryPort.save(user);
     }

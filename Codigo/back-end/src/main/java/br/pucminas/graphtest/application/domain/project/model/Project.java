@@ -2,6 +2,7 @@ package br.pucminas.graphtest.application.domain.project.model;
 
 import br.pucminas.graphtest.application.domain.shared.model.BaseEntity;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 public class Project extends BaseEntity {
@@ -14,17 +15,22 @@ public class Project extends BaseEntity {
     }
 
     public Project(UUID id, String name, String description, UUID userId) {
+        this(id, name, description, userId, null, null);
+    }
+
+    public Project(UUID id,
+                   String name,
+                   String description,
+                   UUID userId,
+                   LocalDateTime createdAt,
+                   LocalDateTime updatedAt) {
         this.id = id;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
         this.name = name;
         this.description = description;
         this.userId = userId;
     }
-
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
     public String getName() {
         return name;
     }

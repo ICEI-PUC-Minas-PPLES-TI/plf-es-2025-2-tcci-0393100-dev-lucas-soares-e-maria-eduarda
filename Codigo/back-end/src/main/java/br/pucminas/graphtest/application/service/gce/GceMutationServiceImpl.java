@@ -17,6 +17,7 @@ import br.pucminas.graphtest.application.service.gce.interfaces.GceMutationServi
 import br.pucminas.graphtest.application.service.gce.interfaces.GceValidationResultService;
 import br.pucminas.graphtest.application.service.project.interfaces.ProjectAccessService;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Collection;
@@ -105,6 +106,21 @@ public class GceMutationServiceImpl implements GceMutationService {
                 .toList();
     }
 
+    @Override
+    public Collection<GceNode> toNodesForUpdate(Gce currentGraph, List<GceNodeInput> nodes) {
+        if (nodes == null) {
+            return List.of();
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        Map<String, GceNode> existingNodesByCode = currentGraph.getNodes().stream()
+                .collect(java.util.stream.Collectors.toMap(GceNode::getCode, node -> node));
+
+        return nodes.stream()
+                .map(node -> toNodeForUpdate(node, existingNodesByCode.get(node.code()), now))
+                .toList();
+    }
+
     /**
      * Converte as arestas do payload em arestas de dominio.
      *
@@ -131,16 +147,43 @@ public class GceMutationServiceImpl implements GceMutationService {
 
         if (explicitEdges != null) {
             explicitEdges.stream()
-                    .map(edge -> markAsCreated(new GceEdge(
+                    .map(edge -> new GceEdge(
                             UUID.randomUUID(),
                             edge.sourceNodeCode(),
                             edge.targetNodeCode(),
-                            edge.type()
-                    )))
+                            edge.type(),
+                            LocalDateTime.now(),
+                            null
+                    ))
                     .forEach(edges::add);
         }
 
         return edges;
+    }
+
+    @Override
+    public Collection<GceEdge> toEdgesForUpdate(Gce currentGraph, List<GceNodeInput> nodes, List<GceEdgeInput> explicitEdges) {
+        LocalDateTime now = LocalDateTime.now();
+        List<GceEdgeInput> requestedEdges = new ArrayList<>();
+
+        if (nodes != null) {
+            for (GceNodeInput node : nodes) {
+                requestedEdges.addAll(buildAutomaticEdgeInputs(node));
+            }
+        }
+
+        if (explicitEdges != null) {
+            requestedEdges.addAll(explicitEdges);
+        }
+
+        List<GceEdge> currentEdges = new ArrayList<>(currentGraph.getEdges());
+        List<GceEdge> updatedEdges = new ArrayList<>();
+        for (GceEdgeInput edgeInput : requestedEdges) {
+            GceEdge existingEdge = findMatchingEdge(currentEdges, edgeInput);
+            updatedEdges.add(toEdgeForUpdate(edgeInput, existingEdge, now));
+        }
+
+        return updatedEdges;
     }
 
     /**
@@ -156,11 +199,29 @@ public class GceMutationServiceImpl implements GceMutationService {
         }
 
         return restrictions.stream()
-                .map(restriction -> markAsCreated(new GceRestriction(
+                .map(restriction -> new GceRestriction(
                         null,
                         restriction.type(),
-                        restriction.nodeCodes()
-                )))
+                        restriction.nodeCodes(),
+                        LocalDateTime.now(),
+                        null
+                ))
+                .toList();
+    }
+
+    @Override
+    public Collection<GceRestriction> toRestrictionsForUpdate(Gce currentGraph, List<GceRestrictionInput> restrictions) {
+        if (restrictions == null) {
+            return List.of();
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        List<GceRestriction> currentRestrictions = new ArrayList<>(currentGraph.getRestrictions());
+        return restrictions.stream()
+                .map(restriction -> {
+                    GceRestriction existingRestriction = findMatchingRestriction(currentRestrictions, restriction);
+                    return toRestrictionForUpdate(restriction, existingRestriction, now);
+                })
                 .toList();
     }
 
@@ -205,12 +266,12 @@ public class GceMutationServiceImpl implements GceMutationService {
                     operatorNode.getCode(),
                     generatedLabel,
                     operatorNode.getType(),
-                    operatorNode.getOperatorType()
+                    operatorNode.getOperatorType(),
+                    operatorNode.getCreatedAt(),
+                    !generatedLabel.equals(operatorNode.getLabel()) && operatorNode.getId() != null
+                            ? LocalDateTime.now()
+                            : operatorNode.getUpdatedAt()
             );
-            updatedOperatorNode.restoreAuditFields(operatorNode.getCreatedAt(), operatorNode.getUpdatedAt());
-            if (!generatedLabel.equals(operatorNode.getLabel())) {
-                updatedOperatorNode.markUpdatedNow();
-            }
             graph.replaceNode(updatedOperatorNode);
         }
     }
@@ -224,7 +285,47 @@ public class GceMutationServiceImpl implements GceMutationService {
     private GceNode toNode(GceNodeInput node) {
         Objects.requireNonNull(node, "node e obrigatorio.");
         validateNodeConnectionContract(node);
-        return markAsCreated(new GceNode(null, node.code(), resolveInitialLabel(node), node.type(), node.operatorType()));
+        return new GceNode(
+                null,
+                node.code(),
+                resolveInitialLabel(node),
+                node.type(),
+                node.operatorType(),
+                LocalDateTime.now(),
+                null
+        );
+    }
+
+    private GceNode toNodeForUpdate(GceNodeInput node, GceNode currentNode, LocalDateTime now) {
+        Objects.requireNonNull(node, "node e obrigatorio.");
+        validateNodeConnectionContract(node);
+
+        String label = resolveInitialLabel(node);
+        if (currentNode == null) {
+            return new GceNode(
+                    null,
+                    node.code(),
+                    label,
+                    node.type(),
+                    node.operatorType(),
+                    now,
+                    null
+            );
+        }
+
+        boolean changed = !Objects.equals(currentNode.getLabel(), label)
+                || currentNode.getType() != node.type()
+                || !Objects.equals(currentNode.getOperatorType(), node.operatorType());
+
+        return new GceNode(
+                currentNode.getId(),
+                node.code(),
+                label,
+                node.type(),
+                node.operatorType(),
+                currentNode.getCreatedAt(),
+                changed ? now : currentNode.getUpdatedAt()
+        );
     }
 
     /**
@@ -264,24 +365,113 @@ public class GceMutationServiceImpl implements GceMutationService {
 
         List<GceEdge> edges = new ArrayList<>();
         for (String sourceNodeCode : normalizeNodeCodes(node.sourceNodeCodes())) {
-            edges.add(markAsCreated(new GceEdge(UUID.randomUUID(), sourceNodeCode, node.code(), GceEdgeTypeEnum.IDENTITY)));
+            edges.add(new GceEdge(
+                    UUID.randomUUID(),
+                    sourceNodeCode,
+                    node.code(),
+                    GceEdgeTypeEnum.IDENTITY,
+                    LocalDateTime.now(),
+                    null
+            ));
         }
         for (String targetNodeCode : normalizeNodeCodes(node.targetNodeCodes())) {
-            edges.add(markAsCreated(new GceEdge(UUID.randomUUID(), node.code(), targetNodeCode, GceEdgeTypeEnum.IDENTITY)));
+            edges.add(new GceEdge(
+                    UUID.randomUUID(),
+                    node.code(),
+                    targetNodeCode,
+                    GceEdgeTypeEnum.IDENTITY,
+                    LocalDateTime.now(),
+                    null
+            ));
         }
         return edges;
     }
 
-    /**
-     * Marca uma entidade de dominio como criada no instante atual.
-     *
-     * @param entity entidade a ser anotada com audit fields de criacao
-     * @param <T> tipo concreto da entidade
-     * @return a propria entidade recebida
-     */
-    private <T extends br.pucminas.graphtest.application.domain.shared.model.BaseEntity> T markAsCreated(T entity) {
-        entity.markCreatedNow();
-        return entity;
+    private List<GceEdgeInput> buildAutomaticEdgeInputs(GceNodeInput node) {
+        validateNodeConnectionContract(node);
+
+        List<GceEdgeInput> edges = new ArrayList<>();
+        for (String sourceNodeCode : normalizeNodeCodes(node.sourceNodeCodes())) {
+            edges.add(new GceEdgeInput(sourceNodeCode, node.code(), GceEdgeTypeEnum.IDENTITY));
+        }
+        for (String targetNodeCode : normalizeNodeCodes(node.targetNodeCodes())) {
+            edges.add(new GceEdgeInput(node.code(), targetNodeCode, GceEdgeTypeEnum.IDENTITY));
+        }
+        return edges;
+    }
+
+    private GceEdge findMatchingEdge(List<GceEdge> currentEdges, GceEdgeInput edgeInput) {
+        for (GceEdge currentEdge : currentEdges) {
+            if (currentEdge.getSourceNodeCode().equals(edgeInput.sourceNodeCode())
+                    && currentEdge.getTargetNodeCode().equals(edgeInput.targetNodeCode())
+                    && currentEdge.getType() == edgeInput.type()) {
+                return currentEdge;
+            }
+        }
+
+        for (GceEdge currentEdge : currentEdges) {
+            if (currentEdge.getSourceNodeCode().equals(edgeInput.sourceNodeCode())
+                    && currentEdge.getTargetNodeCode().equals(edgeInput.targetNodeCode())) {
+                return currentEdge;
+            }
+        }
+
+        return null;
+    }
+
+    private GceEdge toEdgeForUpdate(GceEdgeInput edgeInput, GceEdge currentEdge, LocalDateTime now) {
+        if (currentEdge == null) {
+            return new GceEdge(
+                    UUID.randomUUID(),
+                    edgeInput.sourceNodeCode(),
+                    edgeInput.targetNodeCode(),
+                    edgeInput.type(),
+                    now,
+                    null
+            );
+        }
+
+        boolean changed = currentEdge.getType() != edgeInput.type();
+        return new GceEdge(
+                currentEdge.getId(),
+                edgeInput.sourceNodeCode(),
+                edgeInput.targetNodeCode(),
+                edgeInput.type(),
+                currentEdge.getCreatedAt(),
+                changed ? now : currentEdge.getUpdatedAt()
+        );
+    }
+
+    private GceRestriction findMatchingRestriction(List<GceRestriction> currentRestrictions, GceRestrictionInput restrictionInput) {
+        for (GceRestriction currentRestriction : currentRestrictions) {
+            if (currentRestriction.getType() == restrictionInput.type()
+                    && currentRestriction.getNodeCodes().equals(restrictionInput.nodeCodes())) {
+                return currentRestriction;
+            }
+        }
+        return null;
+    }
+
+    private GceRestriction toRestrictionForUpdate(GceRestrictionInput restrictionInput,
+                                                  GceRestriction currentRestriction,
+                                                  LocalDateTime now) {
+        if (currentRestriction == null) {
+            return new GceRestriction(
+                    null,
+                    restrictionInput.type(),
+                    restrictionInput.nodeCodes(),
+                    now,
+                    null
+            );
+        }
+
+        return new GceRestriction(
+                currentRestriction.getId(),
+                restrictionInput.type(),
+                restrictionInput.nodeCodes(),
+                currentRestriction.getCreatedAt(),
+                currentRestriction.getUpdatedAt()
+        );
     }
 
     /**

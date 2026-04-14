@@ -7,13 +7,14 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static br.pucminas.graphtest.adapters.inbound.util.ValidatorErrorConstantsUtil.MSG_ERRO_EMAIL;
 import static br.pucminas.graphtest.adapters.inbound.util.ValidatorErrorConstantsUtil.MSG_ERRO_SENHA;
 
 @Builder
-@JsonPropertyOrder({"id", "profileUser", "name", "email", "password"})
+@JsonPropertyOrder({"id", "perfil_usuario", "name", "email", "createdAt", "updatedAt", "password"})
 public record UserDTO(
 
         UUID id,
@@ -35,7 +36,11 @@ public record UserDTO(
         @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
         @NotBlank(groups = Create.class, message = "A senha e obrigatoria")
         @Size(groups = Create.class, min = 8, max = 100, message = MSG_ERRO_SENHA)
-        String password
+        String password,
+
+        LocalDateTime createdAt,
+
+        LocalDateTime updatedAt
 
 ) {
 
