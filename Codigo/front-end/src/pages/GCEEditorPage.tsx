@@ -189,7 +189,7 @@ export function GCEEditorPage() {
           onGenerateTable={() => {}}
           onNameChange={handleNameChange}
           saveStatus={saveStatus}
-          canValidate={gce.id !== 'new'}
+          canValidate
           canSave={isValidated}
         />
 
