@@ -89,6 +89,7 @@ class AddNodeToGceUseCaseImplTest {
         assertEquals(4, output.nodes().size());
         assertEquals(3, output.edges().size());
         assertTrue(output.edges().stream().allMatch(edge -> edge.type() == GceEdgeTypeEnum.IDENTITY));
+        assertEquals("(C1 AND C2)", output.nodes().stream().filter(node -> node.code().equals("O1")).findFirst().orElseThrow().label());
         verify(gceRepository).save(any(Gce.class));
     }
 }

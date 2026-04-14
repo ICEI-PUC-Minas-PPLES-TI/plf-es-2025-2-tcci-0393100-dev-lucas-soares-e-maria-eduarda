@@ -10,6 +10,8 @@ import br.pucminas.graphtest.application.service.gce.interfaces.GceMutationServi
 import br.pucminas.graphtest.application.service.gce.interfaces.GceValidationResultService;
 import br.pucminas.graphtest.application.service.project.interfaces.ProjectAccessService;
 
+import java.time.LocalDateTime;
+
 /**
  * Caso de uso responsavel por atualizar um no existente do GCE.
  */
@@ -39,15 +41,21 @@ public class UpdateGceNodeUseCaseImpl implements UpdateGceNodeUseCasePort {
         GceNode updatedNode = new GceNode(
                 currentNode.getId(),
                 currentNode.getCode(),
-                input.label() != null && !input.label().isBlank() ? input.label() : currentNode.getLabel(),
+                currentNode.isOperator()
+                        ? currentNode.getCode()
+                        : input.label() != null && !input.label().isBlank() ? input.label() : currentNode.getLabel(),
                 currentNode.getType(),
                 currentNode.isOperator() && input.operatorType() != null
                         ? input.operatorType()
-                        : currentNode.getOperatorType()
+                        : currentNode.getOperatorType(),
+                currentNode.getCreatedAt(),
+                LocalDateTime.now()
         );
 
         graph.replaceNode(updatedNode);
+        gceMutationService.refreshOperatorLabels(graph);
         gceMutationService.validateAndThrow(graph, gceValidationResultService);
+        graph.setUpdatedAt(LocalDateTime.now());
         return GceOutput.from(gceRepository.save(graph));
     }
 }

@@ -5,20 +5,13 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static br.pucminas.graphtest.adapters.inbound.util.ValidatorErrorConstantsUtil.MSG_ERRO_CAMPO_EM_BRANCO;
 
-/**
- * DTO utilizado para transportar os dados de projeto recebidos e devolvidos
- * pela camada de entrada.
- *
- * @param id identificador unico do projeto
- * @param name nome do projeto
- * @param description descricao do projeto
- */
 @Builder
-@JsonPropertyOrder({"id", "name", "description"})
+@JsonPropertyOrder({"id", "name", "description", "createdAt", "updatedAt"})
 public record ProjectDTO(
 
         UUID id,
@@ -37,21 +30,17 @@ public record ProjectDTO(
                 message = MSG_ERRO_CAMPO_EM_BRANCO
         )
         @Size(groups = {Create.class, Update.class}, max = 200)
-        String description
+        String description,
+
+        LocalDateTime createdAt,
+
+        LocalDateTime updatedAt
 
 ) {
 
-    /**
-     * Grupo de validacao aplicado quando o DTO e usado na criacao de um novo
-     * projeto.
-     */
     public interface Create {
     }
 
-    /**
-     * Grupo de validacao aplicado quando o DTO e usado na atualizacao de um
-     * projeto existente.
-     */
     public interface Update {
     }
 }

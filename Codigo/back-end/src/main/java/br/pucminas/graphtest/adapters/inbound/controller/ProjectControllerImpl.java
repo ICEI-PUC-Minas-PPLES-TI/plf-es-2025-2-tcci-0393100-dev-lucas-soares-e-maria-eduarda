@@ -10,7 +10,6 @@ import br.pucminas.graphtest.application.port.input.project.ListProjectsByUserUs
 import br.pucminas.graphtest.application.port.input.project.ListProjectsUseCasePort;
 import br.pucminas.graphtest.application.port.input.project.UpdateProjectUseCasePort;
 import br.pucminas.graphtest.application.port.input.project.records.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -114,7 +113,7 @@ public class ProjectControllerImpl implements ProjectController {
     @PutMapping(ID)
     public ResponseEntity<Map<String, Object>> update(
             @PathVariable UUID id,
-            @Validated(ProjectDTO.Update.class) @RequestBody @NotNull ProjectDTO projeto
+            @Validated(ProjectDTO.Update.class) @RequestBody ProjectDTO projeto
     ) {
         log.info(">>> atualizar: recebendo requisicao para atualizar projeto");
 

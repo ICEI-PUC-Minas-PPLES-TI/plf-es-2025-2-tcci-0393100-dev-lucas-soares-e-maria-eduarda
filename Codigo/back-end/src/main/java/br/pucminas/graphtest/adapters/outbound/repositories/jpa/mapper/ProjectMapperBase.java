@@ -29,6 +29,8 @@ public class ProjectMapperBase implements BasePersistenceMapper<Project, JpaProj
 
         JpaProjectEntity entity = new JpaProjectEntity();
         entity.setId(project.getId());
+        entity.setCreatedAt(project.getCreatedAt());
+        entity.setUpdatedAt(project.getUpdatedAt());
         entity.setName(project.getName());
         entity.setDescription(project.getDescription());
         entity.setUser(toUserEntity(project.getUserId()));
@@ -47,12 +49,15 @@ public class ProjectMapperBase implements BasePersistenceMapper<Project, JpaProj
             return null;
         }
 
-        return new Project(
+        Project project = new Project(
                 entity.getId(),
                 entity.getName(),
                 entity.getDescription(),
-                toUserId(entity.getUser())
+                toUserId(entity.getUser()),
+                entity.getCreatedAt(),
+                entity.getUpdatedAt()
         );
+        return project;
     }
 
     /**

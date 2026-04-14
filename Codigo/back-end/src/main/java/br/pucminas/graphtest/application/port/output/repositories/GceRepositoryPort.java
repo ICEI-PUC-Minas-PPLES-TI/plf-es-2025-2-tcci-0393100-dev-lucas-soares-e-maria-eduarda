@@ -2,6 +2,7 @@ package br.pucminas.graphtest.application.port.output.repositories;
 
 import br.pucminas.graphtest.application.domain.gce.model.Gce;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -25,6 +26,21 @@ public interface GceRepositoryPort {
      * @return agregado encontrado, quando existir
      */
     Optional<Gce> findById(UUID id);
+
+    /**
+     * Lista todos os GCEs associados ao projeto informado.
+     *
+     * @param projectId identificador do projeto dono dos grafos
+     * @return lista de grafos do projeto
+     */
+    List<Gce> findAllByProjectId(UUID projectId);
+
+    /**
+     * Remove um GCE pelo identificador, incluindo seu agregado persistido.
+     *
+     * @param id identificador do grafo
+     */
+    void deleteById(UUID id);
 
     /**
      * Remove todos os GCEs associados ao projeto informado.

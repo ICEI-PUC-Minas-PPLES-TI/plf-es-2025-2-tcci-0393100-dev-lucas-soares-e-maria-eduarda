@@ -8,6 +8,7 @@ import br.pucminas.graphtest.application.port.output.repositories.GceRepositoryP
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -31,6 +32,18 @@ public class GceRepositoryAdapter implements GceRepositoryPort {
     public Optional<Gce> findById(UUID id) {
         return neo4jGceRepository.findById(id)
                 .map(mapper::toDomain);
+    }
+
+    @Override
+    public List<Gce> findAllByProjectId(UUID projectId) {
+        return neo4jGceRepository.findAllByProjectId(projectId).stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public void deleteById(UUID id) {
+        neo4jGceRepository.deleteGraphById(id);
     }
 
     @Override

@@ -18,7 +18,7 @@ class ProjectDTOTest {
 
     @Test
     void shouldRejectBlankNameOnUpdate() {
-        ProjectDTO dto = new ProjectDTO(UUID.randomUUID(), "   ", "Descricao valida");
+        ProjectDTO dto = new ProjectDTO(UUID.randomUUID(), "   ", "Descricao valida", null, null);
 
         Set<ConstraintViolation<ProjectDTO>> violations = validator.validate(dto, ProjectDTO.Update.class);
 
@@ -28,7 +28,7 @@ class ProjectDTOTest {
 
     @Test
     void shouldRejectBlankDescriptionOnUpdate() {
-        ProjectDTO dto = new ProjectDTO(UUID.randomUUID(), "Nome valido", "   ");
+        ProjectDTO dto = new ProjectDTO(UUID.randomUUID(), "Nome valido", "   ", null, null);
 
         Set<ConstraintViolation<ProjectDTO>> violations = validator.validate(dto, ProjectDTO.Update.class);
 

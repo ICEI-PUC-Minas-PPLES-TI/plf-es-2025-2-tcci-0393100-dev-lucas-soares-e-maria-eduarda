@@ -6,6 +6,7 @@ import br.pucminas.graphtest.application.domain.gce.enums.GceOperatorTypeEnum;
 import br.pucminas.graphtest.application.domain.gce.enums.RestrictionTypeEnum;
 import lombok.Builder;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,6 +20,8 @@ public record GceDTO(
         String name,
         String description,
         Boolean selected,
+        LocalDateTime createdAt,
+        LocalDateTime updatedAt,
         List<GceNodeDTO> nodes,
         List<GceEdgeDTO> edges,
         List<GceRestrictionDTO> restrictions
@@ -32,7 +35,9 @@ public record GceDTO(
             String code,
             String label,
             GceNodeTypeEnum type,
-            GceOperatorTypeEnum operatorType
+            GceOperatorTypeEnum operatorType,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt
     ) {
     }
 
@@ -43,7 +48,9 @@ public record GceDTO(
             UUID id,
             String sourceNodeCode,
             String targetNodeCode,
-            GceEdgeTypeEnum type
+            GceEdgeTypeEnum type,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt
     ) {
     }
 
@@ -53,7 +60,9 @@ public record GceDTO(
     public record GceRestrictionDTO(
             UUID id,
             RestrictionTypeEnum type,
-            List<String> nodeCodes
+            List<String> nodeCodes,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt
     ) {
     }
 }

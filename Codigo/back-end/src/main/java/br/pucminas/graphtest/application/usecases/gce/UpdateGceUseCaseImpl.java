@@ -9,6 +9,8 @@ import br.pucminas.graphtest.application.service.gce.interfaces.GceMutationServi
 import br.pucminas.graphtest.application.service.gce.interfaces.GceValidationResultService;
 import br.pucminas.graphtest.application.service.project.interfaces.ProjectAccessService;
 
+import java.time.LocalDateTime;
+
 /**
  * Caso de uso responsavel por atualizar a representacao completa de um GCE.
  */
@@ -43,11 +45,14 @@ public class UpdateGceUseCaseImpl implements UpdateGceUseCasePort {
                 input.name(),
                 input.description(),
                 Boolean.TRUE.equals(input.selected()),
-                gceMutationService.toNodes(input.nodes()),
-                gceMutationService.toEdges(input.nodes(), input.edges()),
-                gceMutationService.toRestrictions(input.restrictions())
+                gceMutationService.toNodesForUpdate(currentGraph, input.nodes()),
+                gceMutationService.toEdgesForUpdate(currentGraph, input.nodes(), input.edges()),
+                gceMutationService.toRestrictionsForUpdate(currentGraph, input.restrictions()),
+                currentGraph.getCreatedAt(),
+                LocalDateTime.now()
         );
 
+        gceMutationService.refreshOperatorLabels(updatedGraph);
         gceMutationService.validateAndThrow(updatedGraph, gceValidationResultService);
         return GceOutput.from(gceRepository.save(updatedGraph));
     }

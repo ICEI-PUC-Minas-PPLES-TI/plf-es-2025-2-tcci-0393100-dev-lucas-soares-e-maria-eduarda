@@ -8,16 +8,21 @@ import br.pucminas.graphtest.application.exception.InvalidUserProfileException;
 import br.pucminas.graphtest.application.port.input.user.records.UpdateUserInput;
 import br.pucminas.graphtest.application.port.output.repositories.UserRepositoryPort;
 import br.pucminas.graphtest.application.service.user.interfaces.UserAuthorizationService;
+import br.pucminas.graphtest.application.service.user.interfaces.UserEmailUniquenessService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -32,6 +37,9 @@ class UpdateUserUseCaseImplTest {
 
     @Mock
     private UserAuthorizationService userAuthorizationService;
+
+    @Mock
+    private UserEmailUniquenessService userEmailUniquenessService;
 
     @InjectMocks
     private UpdateUserUseCaseImpl useCase;
@@ -55,6 +63,9 @@ class UpdateUserUseCaseImplTest {
     void shouldKeepCurrentProfileWhenAdminDoesNotSendProfileCode() {
         UUID userId = UUID.randomUUID();
         User user = new User(userId, "Usuario Antigo", "antigo@teste.com", "senha", UserProfileEnum.USUARIO);
+        LocalDateTime createdAt = LocalDateTime.now().minusDays(1);
+        user.setCreatedAt(createdAt);
+        user.setUpdatedAt(createdAt);
         UpdateUserInput input = new UpdateUserInput(userId, "Usuario Novo", "novo@teste.com", null);
 
         when(userAuthorizationService.authorizeForUser(userId))
@@ -63,9 +74,13 @@ class UpdateUserUseCaseImplTest {
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         useCase.execute(input);
+        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
 
         assertEquals(UserProfileEnum.USUARIO, user.getProfile());
-        verify(userRepository).save(user);
+        verify(userRepository).save(userCaptor.capture());
+        assertEquals(createdAt, userCaptor.getValue().getCreatedAt());
+        assertNotNull(userCaptor.getValue().getUpdatedAt());
+        assertTrue(!userCaptor.getValue().getUpdatedAt().isBefore(createdAt));
     }
 
     @Test
@@ -79,7 +94,8 @@ class UpdateUserUseCaseImplTest {
         when(userAuthorizationService.authorizeForUser(userId))
                 .thenReturn(new AuthenticatedUser(userId, "usuario@teste.com", UserProfileEnum.USUARIO));
         when(userRepository.findById(userId)).thenReturn(Optional.of(currentUser));
-        when(userRepository.findByEmail(input.email())).thenReturn(Optional.of(otherUser));
+        org.mockito.Mockito.doThrow(new DuplicateEmailException("Ja existe um usuario cadastrado com o email informado"))
+                .when(userEmailUniquenessService).ensureEmailAvailableForUpdate(userId, input.email());
 
         assertThrows(DuplicateEmailException.class, () -> useCase.execute(input));
 

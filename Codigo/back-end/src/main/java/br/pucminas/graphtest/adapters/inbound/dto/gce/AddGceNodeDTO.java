@@ -5,9 +5,6 @@ import br.pucminas.graphtest.application.domain.gce.enums.GceOperatorTypeEnum;
 
 import java.util.List;
 
-/**
- * DTO HTTP para adicionar um novo no a um GCE existente.
- */
 public record AddGceNodeDTO(
         String code,
         String label,

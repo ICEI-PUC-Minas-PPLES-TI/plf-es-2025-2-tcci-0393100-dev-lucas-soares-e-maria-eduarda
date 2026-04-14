@@ -22,6 +22,28 @@ class GceValidationResultServiceImplTest {
     private final GceValidationResultServiceImpl service = new GceValidationResultServiceImpl();
 
     @Test
+    void shouldValidateSimpleDeterministicGraphWithDirectCauseToEffectConnection() {
+        Gce graph = new Gce(
+                null,
+                UUID.randomUUID(),
+                "GCE",
+                "Descricao",
+                false,
+                List.of(
+                        GceNode.cause(UUID.randomUUID(), "C1", "Causa"),
+                        GceNode.effect(UUID.randomUUID(), "E1", "Efeito")
+                ),
+                List.of(new GceEdge(UUID.randomUUID(), "C1", "E1", GceEdgeTypeEnum.NEGATED)),
+                List.of()
+        );
+
+        ValidationGceOutput output = service.validate(graph);
+
+        assertTrue(output.valid());
+        assertTrue(output.errors().isEmpty());
+    }
+
+    @Test
     void shouldInvalidateGraphWhenMaskRestrictionCanBeViolated() {
         Gce graph = new Gce(
                 null,

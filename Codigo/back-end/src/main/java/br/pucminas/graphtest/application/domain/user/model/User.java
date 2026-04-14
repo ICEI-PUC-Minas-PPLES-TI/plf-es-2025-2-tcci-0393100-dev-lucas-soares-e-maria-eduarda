@@ -3,6 +3,7 @@ package br.pucminas.graphtest.application.domain.user.model;
 import br.pucminas.graphtest.application.domain.shared.model.BaseEntity;
 import br.pucminas.graphtest.application.domain.user.enums.UserProfileEnum;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
@@ -22,7 +23,19 @@ public class User extends BaseEntity {
     private UserProfileEnum profile;
 
     public User(UUID id, String name, String email, String password, UserProfileEnum profile) {
+        this(id, name, email, password, profile, null, null);
+    }
+
+    public User(UUID id,
+                String name,
+                String email,
+                String password,
+                UserProfileEnum profile,
+                LocalDateTime createdAt,
+                LocalDateTime updatedAt) {
         this.id = id;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
         this.name = name;
         this.email = email;
         this.password = password;
@@ -31,12 +44,6 @@ public class User extends BaseEntity {
 
     public User() {
     }
-
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
     public String getName() {
         return name;
     }

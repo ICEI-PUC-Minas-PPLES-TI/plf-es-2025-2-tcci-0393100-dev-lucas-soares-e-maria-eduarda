@@ -21,13 +21,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
+import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -55,6 +58,12 @@ class UpdateGceUseCaseImplTest {
         UUID graphId = UUID.randomUUID();
         UUID projectId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
+        UUID causeOneId = UUID.randomUUID();
+        UUID operatorId = UUID.randomUUID();
+        UUID effectId = UUID.randomUUID();
+        UUID causeToOperatorEdgeId = UUID.randomUUID();
+        UUID operatorToEffectEdgeId = UUID.randomUUID();
+        LocalDateTime createdAt = LocalDateTime.now().minusDays(1);
         Gce graph = new Gce(
                 graphId,
                 projectId,
@@ -62,15 +71,17 @@ class UpdateGceUseCaseImplTest {
                 "Descricao antiga",
                 false,
                 List.of(
-                        GceNode.cause(UUID.randomUUID(), "C1", "Causa"),
-                        GceNode.operator(UUID.randomUUID(), "O1", "Operador", GceOperatorTypeEnum.AND),
-                        GceNode.effect(UUID.randomUUID(), "E1", "Efeito")
+                        GceNode.cause(causeOneId, "C1", "Causa", createdAt, null),
+                        GceNode.operator(operatorId, "O1", "Operador", GceOperatorTypeEnum.AND, createdAt, null),
+                        GceNode.effect(effectId, "E1", "Efeito", createdAt, null)
                 ),
                 List.of(
-                        new GceEdge(UUID.randomUUID(), "C1", "O1", GceEdgeTypeEnum.IDENTITY),
-                        new GceEdge(UUID.randomUUID(), "O1", "E1", GceEdgeTypeEnum.IDENTITY)
+                        new GceEdge(causeToOperatorEdgeId, "C1", "O1", GceEdgeTypeEnum.IDENTITY, createdAt, null),
+                        new GceEdge(operatorToEffectEdgeId, "O1", "E1", GceEdgeTypeEnum.IDENTITY, createdAt, null)
                 ),
-                List.of()
+                List.of(),
+                createdAt,
+                null
         );
 
         when(gceRepository.findById(graphId)).thenReturn(Optional.of(graph));
@@ -105,6 +116,22 @@ class UpdateGceUseCaseImplTest {
         assertEquals(true, output.selected());
         assertEquals(4, output.nodes().size());
         assertEquals(GceEdgeTypeEnum.NEGATED, output.edges().stream().filter(edge -> edge.sourceNodeCode().equals("C1")).findFirst().orElseThrow().type());
-        verify(gceRepository).save(any(Gce.class));
+
+        ArgumentCaptor<Gce> graphCaptor = ArgumentCaptor.forClass(Gce.class);
+        verify(gceRepository).save(graphCaptor.capture());
+
+        Gce savedGraph = graphCaptor.getValue();
+        GceNode persistedCause = savedGraph.findNode("C1").orElseThrow();
+        assertEquals(causeOneId, persistedCause.getId());
+        assertEquals(createdAt, persistedCause.getCreatedAt());
+        assertNotNull(persistedCause.getUpdatedAt());
+
+        GceEdge persistedChangedEdge = savedGraph.getEdges().stream()
+                .filter(edge -> edge.getSourceNodeCode().equals("C1") && edge.getTargetNodeCode().equals("O1"))
+                .findFirst()
+                .orElseThrow();
+        assertEquals(causeToOperatorEdgeId, persistedChangedEdge.getId());
+        assertEquals(createdAt, persistedChangedEdge.getCreatedAt());
+        assertNotNull(persistedChangedEdge.getUpdatedAt());
     }
 }

@@ -1,7 +1,5 @@
 package br.pucminas.graphtest.application.domain.gce.enums;
 
-import br.pucminas.graphtest.application.exception.InvalidRestrictionTypeException;
-
 public enum RestrictionTypeEnum {
 
     EXCLUSIVE("E", "AT_MOST_ONE_IS_TRUE"),
@@ -24,27 +22,5 @@ public enum RestrictionTypeEnum {
 
     public String getDescricao() {
         return descricao;
-    }
-
-    public static RestrictionTypeEnum getRestrictionType(String codigo) {
-        if (codigo == null) {
-            return null;
-        }
-
-        for (RestrictionTypeEnum restrictionTypeEnum : RestrictionTypeEnum.values()) {
-            if (restrictionTypeEnum.codigo.equals(codigo)) {
-                return restrictionTypeEnum;
-            }
-        }
-
-        return null;
-    }
-
-    public static RestrictionTypeEnum getRestrictionTypeOrThrow(String codigo) {
-        RestrictionTypeEnum restrictionTypeEnum = getRestrictionType(codigo);
-        if (restrictionTypeEnum == null) {
-            throw new InvalidRestrictionTypeException("Tipo de restricao inválido: " + codigo);
-        }
-        return restrictionTypeEnum;
     }
 }

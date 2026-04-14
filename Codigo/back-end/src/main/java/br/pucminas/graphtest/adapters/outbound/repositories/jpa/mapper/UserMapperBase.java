@@ -27,6 +27,8 @@ public class UserMapperBase implements BasePersistenceMapper<User, JpaUserEntity
 
         JpaUserEntity entity = new JpaUserEntity();
         entity.setId(user.getId());
+        entity.setCreatedAt(user.getCreatedAt());
+        entity.setUpdatedAt(user.getUpdatedAt());
         entity.setName(user.getName());
         entity.setEmail(user.getEmail());
         entity.setPassword(user.getPassword());
@@ -46,13 +48,16 @@ public class UserMapperBase implements BasePersistenceMapper<User, JpaUserEntity
             return null;
         }
 
-        return new User(
+        User user = new User(
                 entity.getId(),
                 entity.getName(),
                 entity.getEmail(),
                 entity.getPassword(),
-                toProfile(entity.getPerfilUsuario())
+                toProfile(entity.getPerfilUsuario()),
+                entity.getCreatedAt(),
+                entity.getUpdatedAt()
         );
+        return user;
     }
 
     /**

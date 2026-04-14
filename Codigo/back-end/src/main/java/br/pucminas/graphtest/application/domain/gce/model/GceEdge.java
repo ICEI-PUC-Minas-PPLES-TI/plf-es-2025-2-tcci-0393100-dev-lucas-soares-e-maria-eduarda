@@ -3,6 +3,7 @@ package br.pucminas.graphtest.application.domain.gce.model;
 import br.pucminas.graphtest.application.domain.shared.model.BaseEntity;
 import br.pucminas.graphtest.application.domain.gce.enums.GceEdgeTypeEnum;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -24,7 +25,18 @@ public class GceEdge extends BaseEntity {
      * @param type comportamento logico da propagacao
      */
     public GceEdge(UUID id, String sourceNodeCode, String targetNodeCode, GceEdgeTypeEnum type) {
+        this(id, sourceNodeCode, targetNodeCode, type, null, null);
+    }
+
+    public GceEdge(UUID id,
+                   String sourceNodeCode,
+                   String targetNodeCode,
+                   GceEdgeTypeEnum type,
+                   LocalDateTime createdAt,
+                   LocalDateTime updatedAt) {
         this.id = id;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
         this.sourceNodeCode = requireText(sourceNodeCode, "sourceNodeCode");
         this.targetNodeCode = requireText(targetNodeCode, "targetNodeCode");
         this.type = Objects.requireNonNull(type, "type e obrigatorio.");
@@ -51,10 +63,6 @@ public class GceEdge extends BaseEntity {
 
     public GceEdgeTypeEnum getType() {
         return type;
-    }
-
-    public boolean isIdentity() {
-        return type == GceEdgeTypeEnum.IDENTITY;
     }
 
     public boolean isNegated() {

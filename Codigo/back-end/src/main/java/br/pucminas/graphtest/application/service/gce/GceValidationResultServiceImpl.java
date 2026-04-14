@@ -108,29 +108,29 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
      */
     private void validateBasicStructure(Gce graph, List<ValidationGceMessage> errors) {
         if (graph.getNodes().isEmpty()) {
-            addError(errors, "GCE_001", "O grafo deve possuir ao menos um no.");
+            addError(errors, "GCE_001", "O grafo precisa ter pelo menos um no.");
         }
 
         if (graph.getCauseNodes().isEmpty()) {
-            addError(errors, "GCE_002", "O grafo deve possuir ao menos uma causa.");
+            addError(errors, "GCE_002", "O grafo precisa ter pelo menos uma causa.");
         }
 
         if (graph.getEffectNodes().isEmpty()) {
-            addError(errors, "GCE_003", "O grafo deve possuir ao menos um efeito.");
+            addError(errors, "GCE_003", "O grafo precisa ter pelo menos um efeito.");
         }
 
         graph.countNodeCodes().forEach((code, count) -> {
             if (count > 1) {
-                addError(errors, "GCE_004", "Codigo de no duplicado: " + code);
+                addError(errors, "GCE_004", "O codigo do no " + code + " esta repetido no grafo.");
             }
         });
 
         for (GceEdge edge : graph.getEdges()) {
             if (graph.findNode(edge.getSourceNodeCode()).isEmpty()) {
-                addError(errors, "GCE_005", "Aresta possui origem inexistente: " + edge.getSourceNodeCode());
+                addError(errors, "GCE_005", "Existe uma aresta saindo de um no que nao existe: " + edge.getSourceNodeCode() + ".");
             }
             if (graph.findNode(edge.getTargetNodeCode()).isEmpty()) {
-                addError(errors, "GCE_006", "Aresta possui destino inexistente: " + edge.getTargetNodeCode());
+                addError(errors, "GCE_006", "Existe uma aresta chegando a um no que nao existe: " + edge.getTargetNodeCode() + ".");
             }
         }
     }
@@ -154,31 +154,31 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
 
             if (node.isCause()) {
                 if (!incoming.isEmpty()) {
-                    addError(errors, "GCE_007", "Causa " + node.getCode() + " nao pode possuir arestas de entrada.");
+                    addError(errors, "GCE_007", "A causa " + node.getCode() + " nao pode receber entrada de outro no.");
                 }
                 if (outgoing.isEmpty()) {
-                    addWarning(warnings, "GCE_008", "Causa " + node.getCode() + " nao contribui para nenhum destino.");
+                    addWarning(warnings, "GCE_008", "A causa " + node.getCode() + " esta solta e nao influencia nenhum outro no.");
                 }
             }
 
             if (node.isEffect()) {
                 if (!outgoing.isEmpty()) {
-                    addError(errors, "GCE_009", "Efeito " + node.getCode() + " nao pode possuir arestas de saida.");
+                    addError(errors, "GCE_009", "O efeito " + node.getCode() + " nao pode apontar para outro no.");
                 }
                 if (incoming.isEmpty()) {
-                    addError(errors, "GCE_010", "Efeito " + node.getCode() + " deve possuir ao menos uma aresta de entrada.");
+                    addError(errors, "GCE_010", "O efeito " + node.getCode() + " precisa receber entrada de pelo menos um no.");
                 }
             }
 
             if (node.isOperator()) {
                 if (incoming.size() < 2) {
-                    addError(errors, "GCE_011", "Operador " + node.getCode() + " deve possuir pelo menos duas entradas.");
+                    addError(errors, "GCE_011", "O operador " + node.getCode() + " precisa receber entrada de dois nos.");
                 }
                 if (incoming.size() > 2) {
-                    addError(errors, "GCE_024", "Operador " + node.getCode() + " deve possuir no maximo duas entradas.");
+                    addError(errors, "GCE_024", "O operador " + node.getCode() + " recebe entrada de mais de dois nos.");
                 }
                 if (outgoing.isEmpty()) {
-                    addError(errors, "GCE_012", "Operador " + node.getCode() + " deve possuir ao menos uma saida.");
+                    addError(errors, "GCE_012", "O operador " + node.getCode() + " nao esta ligado a nenhum destino.");
                 }
 
                 long effectOutputs = outgoing.stream()
@@ -188,7 +188,7 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
                         .count();
 
                 if (effectOutputs > 1) {
-                    addError(errors, "GCE_025", "Operador " + node.getCode() + " nao pode possuir mais de uma saida direta para EFFECT.");
+                    addError(errors, "GCE_025", "O operador " + node.getCode() + " esta ligado diretamente a mais de um efeito.");
                 }
             }
         }
@@ -208,7 +208,7 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
                     .toList();
 
             if (nodes.size() != restriction.getNodeCodes().size()) {
-                addError(errors, "GCE_013", "Restricao referencia no inexistente.");
+                addError(errors, "GCE_013", "Existe uma restricao apontando para um no que nao existe.");
                 continue;
             }
 
@@ -216,13 +216,13 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
                 case EXCLUSIVE, INCLUSIVE, ONE_AND_ONLY_ONE, REQUIRE -> {
                     boolean allCauses = nodes.stream().allMatch(GceNode::isCause);
                     if (!allCauses) {
-                        addError(errors, "GCE_014", "Restricoes E, I, O e R devem referenciar apenas causas.");
+                        addError(errors, "GCE_014", "As restricoes entre causas so podem ser aplicadas em nos do tipo causa.");
                     }
                 }
                 case MASKS -> {
                     boolean allEffects = nodes.stream().allMatch(GceNode::isEffect);
                     if (!allEffects) {
-                        addError(errors, "GCE_015", "Restricao M deve referenciar apenas efeitos.");
+                        addError(errors, "GCE_015", "A restricao MASKS so pode ser aplicada em nos do tipo efeito.");
                     }
                 }
             }
@@ -251,7 +251,7 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
 
         for (GceNode node : graph.getNodes()) {
             if (detectCycle(node.getCode(), adjacency, visited, stack)) {
-                addError(errors, "GCE_016", "O grafo possui ciclo, o que torna a avaliacao logica ambigua.");
+                addError(errors, "GCE_016", "O grafo possui um ciclo. Revise as ligacoes para que o fluxo siga em uma unica direcao.");
                 return;
             }
         }
@@ -316,7 +316,7 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
 
         for (GceNode effect : graph.getEffectNodes()) {
             if (!reachable.contains(effect.getCode())) {
-                addError(errors, "GCE_017", "Efeito " + effect.getCode() + " nao e alcancavel a partir de nenhuma causa.");
+                addError(errors, "GCE_017", "O efeito " + effect.getCode() + " nao pode ser alcancado a partir de nenhuma causa.");
             }
         }
     }
@@ -336,7 +336,7 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
     private void validateSemanticConsistency(Gce graph, List<ValidationGceMessage> errors, List<ValidationGceMessage> warnings) {
         List<GceNode> causes = graph.getCauseNodes();
         if (causes.size() > MAX_CAUSES_FOR_FULL_ENUMERATION) {
-            addWarning(warnings, "GCE_018", "O modelo possui muitas causas para enumeracao completa. A validacao semantica exaustiva foi pulada.");
+            addWarning(warnings, "GCE_018", "O grafo tem muitas causas. Por isso, a validacao completa das combinacoes foi ignorada.");
             return;
         }
 
@@ -353,12 +353,12 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
 
             Map<String, Boolean> allValues = evaluateGraph(graph, assignment);
             if (allValues == null) {
-                addError(errors, "GCE_019", "O modelo nao pode ser avaliado para todas as combinacoes validas de causas.");
+                addError(errors, "GCE_019", "O grafo nao conseguiu ser resolvido para todas as combinacoes validas de causas.");
                 return;
             }
 
             if (!respectsMaskRestrictions(graph, allValues)) {
-                addError(errors, "GCE_020", "O modelo viola ao menos uma restricao M para uma combinacao valida de causas.");
+                addError(errors, "GCE_020", "Existe pelo menos uma combinacao valida de causas que faz dois efeitos mascarados ficarem verdadeiros ao mesmo tempo.");
                 return;
             }
 
@@ -369,13 +369,13 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
             addError(
                     errors,
                     "GCE_021",
-                    "O modelo e semanticamente inconsistente: nao existe combinacao valida de causas que satisfaca simultaneamente a estrutura e as restricoes."
+                    "Nao existe nenhuma combinacao de causas que respeite ao mesmo tempo a estrutura do grafo e as restricoes definidas."
             );
             return;
         }
 
         if (validEvaluatedAssignments == 0) {
-            addError(errors, "GCE_022", "O modelo nao produz nenhuma avaliacao valida para as combinacoes de causas permitidas.");
+            addError(errors, "GCE_022", "As combinacoes de causas permitidas nao produzem nenhum resultado valido para o grafo.");
         }
     }
 
@@ -423,8 +423,8 @@ public class GceValidationResultServiceImpl implements GceValidationResultServic
                         addError(
                                 errors,
                                 "GCE_023",
-                                "A causa " + entry.getKey() + " alcanca o no " + edge.getTargetNodeCode()
-                                        + " com polaridades contraditorias."
+                                "A causa " + entry.getKey() + " chega ao no " + edge.getTargetNodeCode()
+                                        + " por caminhos que se contradizem: em um caminho ela mantem o valor e em outro ela inverte o valor."
                         );
                         return;
                     }

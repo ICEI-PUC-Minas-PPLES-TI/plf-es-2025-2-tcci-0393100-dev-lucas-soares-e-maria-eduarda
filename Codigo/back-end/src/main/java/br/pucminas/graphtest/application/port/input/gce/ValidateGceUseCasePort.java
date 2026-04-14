@@ -1,6 +1,6 @@
 package br.pucminas.graphtest.application.port.input.gce;
 
-import br.pucminas.graphtest.application.port.input.gce.records.ValidateGceByIdInput;
+import br.pucminas.graphtest.application.port.input.gce.records.ValidateGceInput;
 import br.pucminas.graphtest.application.port.input.gce.records.ValidationGceOutput;
 
 /**
@@ -11,8 +11,8 @@ public interface ValidateGceUseCasePort {
     /**
      * Executa a validacao estrutural e semantica do grafo informado.
      *
-     * @param input dados contendo o identificador do grafo a ser validado
+     * @param input dados do grafo a ser validado
      * @return resultado consolidado da validacao
      */
-    ValidationGceOutput execute(ValidateGceByIdInput input);
+    ValidationGceOutput execute(ValidateGceInput input);
 }

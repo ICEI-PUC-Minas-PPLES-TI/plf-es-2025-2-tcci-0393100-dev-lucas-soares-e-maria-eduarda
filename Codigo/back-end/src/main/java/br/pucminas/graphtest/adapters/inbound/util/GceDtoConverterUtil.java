@@ -3,8 +3,10 @@ package br.pucminas.graphtest.adapters.inbound.util;
 import br.pucminas.graphtest.adapters.inbound.dto.gce.GceDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gce.GceInputDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gce.AddGceNodeDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.gce.UpdateGceDetailsDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gce.UpdateGceNodeDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gce.ValidationGceDTO;
+import br.pucminas.graphtest.application.domain.gce.enums.GceNodeTypeEnum;
 import br.pucminas.graphtest.application.port.input.gce.records.AddNodeToGceInput;
 import br.pucminas.graphtest.application.port.input.gce.records.CreateGceInput;
 import br.pucminas.graphtest.application.port.input.gce.records.GceEdgeInput;
@@ -12,8 +14,10 @@ import br.pucminas.graphtest.application.port.input.gce.records.GceNodeInput;
 import br.pucminas.graphtest.application.port.input.gce.records.GceOutput;
 import br.pucminas.graphtest.application.port.input.gce.records.GceRestrictionInput;
 import br.pucminas.graphtest.application.port.input.gce.records.ToggleGceEdgeInput;
+import br.pucminas.graphtest.application.port.input.gce.records.UpdateGceDetailsInput;
 import br.pucminas.graphtest.application.port.input.gce.records.UpdateGceInput;
 import br.pucminas.graphtest.application.port.input.gce.records.UpdateGceNodeInput;
+import br.pucminas.graphtest.application.port.input.gce.records.ValidateGceInput;
 import br.pucminas.graphtest.application.port.input.gce.records.ValidationGceMessage;
 import br.pucminas.graphtest.application.port.input.gce.records.ValidationGceOutput;
 import jakarta.validation.constraints.NotNull;
@@ -25,10 +29,6 @@ import java.util.UUID;
 import static br.pucminas.graphtest.shared.LogTopicsUtil.CONVERSOR_ENTIDADE_DTO_UTIL;
 import static java.lang.String.format;
 
-/**
- * Utilitario responsavel por converter DTOs e records do GCE entre as camadas
- * HTTP, aplicacao e dominio.
- */
 @UtilityClass
 @Slf4j(topic = CONVERSOR_ENTIDADE_DTO_UTIL)
 public class GceDtoConverterUtil {
@@ -59,6 +59,22 @@ public class GceDtoConverterUtil {
         );
     }
 
+    public static UpdateGceDetailsInput toUpdateDetailsInput(UUID id, @NotNull UpdateGceDetailsDTO graph) {
+        return new UpdateGceDetailsInput(id, graph.name(), graph.description());
+    }
+
+    public static ValidateGceInput toValidateInput(@NotNull GceInputDTO graph) {
+        return new ValidateGceInput(
+                graph.projectId(),
+                graph.name(),
+                graph.description(),
+                graph.selected(),
+                toNodeInputs(graph.nodes()),
+                toEdgeInputs(graph.edges()),
+                toRestrictionInputs(graph.restrictions())
+        );
+    }
+
     public static AddNodeToGceInput toAddNodeInput(UUID gceId, @NotNull AddGceNodeDTO node) {
         return new AddNodeToGceInput(
                 gceId,
@@ -66,8 +82,8 @@ public class GceDtoConverterUtil {
                 node.label(),
                 node.type(),
                 node.operatorType(),
-                node.sourceNodeCodes(),
-                node.targetNodeCodes()
+                node.sourceNodeCodes() == null ? List.of() : node.sourceNodeCodes(),
+                node.targetNodeCodes() == null ? List.of() : node.targetNodeCodes()
         );
     }
 
@@ -87,13 +103,17 @@ public class GceDtoConverterUtil {
                 .name(graph.name())
                 .description(graph.description())
                 .selected(graph.selected())
+                .createdAt(graph.createdAt())
+                .updatedAt(graph.updatedAt())
                 .nodes(graph.nodes().stream()
                         .map(node -> new GceDTO.GceNodeDTO(
                                 node.id(),
                                 node.code(),
                                 node.label(),
                                 node.type(),
-                                node.operatorType()
+                                node.operatorType(),
+                                node.createdAt(),
+                                node.updatedAt()
                         ))
                         .toList())
                 .edges(graph.edges().stream()
@@ -101,14 +121,18 @@ public class GceDtoConverterUtil {
                                 edge.id(),
                                 edge.sourceNodeCode(),
                                 edge.targetNodeCode(),
-                                edge.type()
+                                edge.type(),
+                                edge.createdAt(),
+                                edge.updatedAt()
                         ))
                         .toList())
                 .restrictions(graph.restrictions().stream()
                         .map(restriction -> new GceDTO.GceRestrictionDTO(
                                 restriction.id(),
                                 restriction.type(),
-                                restriction.nodeCodes()
+                                restriction.nodeCodes(),
+                                restriction.createdAt(),
+                                restriction.updatedAt()
                         ))
                         .toList())
                 .build();
@@ -134,15 +158,42 @@ public class GceDtoConverterUtil {
                         throw new IllegalArgumentException("Payload de nodes nao pode conter itens nulos.");
                     }
                 })
-                .map(node -> new GceNodeInput(
-                        node.code(),
-                        node.label(),
-                        node.type(),
-                        node.operatorType(),
-                        node.sourceNodeCodes(),
-                        node.targetNodeCodes()
-                ))
+                .map(GceDtoConverterUtil::toNodeInput)
                 .toList();
+    }
+
+    private static GceNodeInput toNodeInput(GceInputDTO.GceNodeInputDTO node) {
+        if (node instanceof GceInputDTO.GceLabeledNodeInputDTO labeledNode) {
+            validateNonOperatorNodeType(labeledNode.type());
+            return new GceNodeInput(
+                    labeledNode.code(),
+                    labeledNode.label(),
+                    labeledNode.type(),
+                    null,
+                    List.of(),
+                    List.of()
+            );
+        }
+
+        GceInputDTO.GceOperatorNodeInputDTO operatorNode = (GceInputDTO.GceOperatorNodeInputDTO) node;
+        if (operatorNode.type() != GceNodeTypeEnum.OPERATOR) {
+            throw new IllegalArgumentException("No operador deve informar type OPERATOR.");
+        }
+
+        return new GceNodeInput(
+                operatorNode.code(),
+                null,
+                operatorNode.type(),
+                operatorNode.operatorType(),
+                operatorNode.sourceNodeCodes(),
+                operatorNode.targetNodeCodes()
+        );
+    }
+
+    private static void validateNonOperatorNodeType(GceNodeTypeEnum type) {
+        if (type == GceNodeTypeEnum.OPERATOR) {
+            throw new IllegalArgumentException("No OPERATOR nao deve informar label no payload.");
+        }
     }
 
     private static List<GceEdgeInput> toEdgeInputs(List<GceInputDTO.GceEdgeInputDTO> edges) {

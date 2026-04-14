@@ -8,6 +8,8 @@ import br.pucminas.graphtest.application.port.input.project.records.ProjectOutpu
 import br.pucminas.graphtest.application.port.output.repositories.ProjectRepositoryPort;
 import br.pucminas.graphtest.application.port.output.security.CurrentUserPort;
 
+import java.time.LocalDateTime;
+
 /**
  * Caso de uso responsavel por criar um novo projeto para o usuario autenticado.
  */
@@ -43,7 +45,9 @@ public class CreateProjectUseCaseImpl implements CreateProjectUseCasePort {
                 null,
                 projectName,
                 input.description(),
-                currentUser.id()
+                currentUser.id(),
+                LocalDateTime.now(),
+                null
         );
 
         return ProjectOutput.from(projectRepository.save(project));

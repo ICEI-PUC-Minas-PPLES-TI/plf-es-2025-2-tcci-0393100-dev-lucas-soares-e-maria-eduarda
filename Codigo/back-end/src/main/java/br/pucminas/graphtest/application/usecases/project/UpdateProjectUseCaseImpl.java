@@ -7,6 +7,7 @@ import br.pucminas.graphtest.application.port.input.project.records.UpdateProjec
 import br.pucminas.graphtest.application.port.output.repositories.ProjectRepositoryPort;
 import br.pucminas.graphtest.application.service.project.interfaces.ProjectAccessService;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
@@ -57,6 +58,7 @@ public class UpdateProjectUseCaseImpl implements UpdateProjectUseCasePort {
 
         if (!changed) return ProjectOutput.from(project);
 
+        project.setUpdatedAt(LocalDateTime.now());
         return ProjectOutput.from(projectRepository.save(project));
     }
 

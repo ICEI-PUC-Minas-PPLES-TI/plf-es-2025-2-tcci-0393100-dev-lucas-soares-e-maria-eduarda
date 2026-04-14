@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.neo4j.core.DatabaseSelectionProvider;
 import org.springframework.data.neo4j.core.Neo4jClient;
@@ -80,5 +81,14 @@ public class PersistenceRepositoriesConfig {
             @Qualifier("neo4jTransactionManager") PlatformTransactionManager neo4jTransactionManager
     ) {
         return new Neo4jTemplate(neo4jClient, neo4jMappingContext, neo4jTransactionManager);
+    }
+
+    @Bean
+    public CommandLineRunner ensureNeo4jConstraints(Neo4jClient neo4jClient) {
+        return args -> neo4jClient.query("""
+                CREATE CONSTRAINT gce_node_graph_scoped_code_unique IF NOT EXISTS
+                FOR (node:GceNode)
+                REQUIRE node.graphScopedCode IS UNIQUE
+                """).run();
     }
 }
