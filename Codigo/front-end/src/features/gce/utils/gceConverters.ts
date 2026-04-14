@@ -8,6 +8,27 @@ function positionsKey(gceId: string) {
   return `gce_positions_${gceId}`;
 }
 
+function bendsKey(gceId: string) {
+  return `gce_bends_${gceId}`;
+}
+
+export function loadBends(gceId: string): Record<string, { x: number; y: number }> {
+  try {
+    return JSON.parse(localStorage.getItem(bendsKey(gceId)) ?? '{}');
+  } catch {
+    return {};
+  }
+}
+
+export function saveBends(gceId: string, edges: GCEFlowEdge[]) {
+  const bends: Record<string, { x: number; y: number }> = {};
+  edges.forEach((e) => {
+    const bend = (e.data as { bend?: { x: number; y: number } } | undefined)?.bend;
+    if (bend) bends[`${e.source}-${e.target}`] = bend;
+  });
+  localStorage.setItem(bendsKey(gceId), JSON.stringify(bends));
+}
+
 export function loadPositions(gceId: string): Record<string, { x: number; y: number }> {
   try {
     return JSON.parse(localStorage.getItem(positionsKey(gceId)) ?? '{}');
@@ -45,14 +66,16 @@ export function dtoToFlowNodes(dto: GCEDTO): GCEFlowNode[] {
 }
 
 export function dtoToFlowEdges(dto: GCEDTO): GCEFlowEdge[] {
+  const bends = loadBends(dto.id);
   return dto.edges.map((edge, i) => ({
     id: `e-${i}`,
     source: edge.sourceNodeCode,
     target: edge.targetNodeCode,
-    type: edge.type === 'NEGATED' ? 'negation' : 'default',
+    type: edge.type === 'NEGATED' ? 'negation' : 'editable',
     data: {
       edgeType: edge.type,
       backendId: edge.id,
+      bend: bends[`${edge.sourceNodeCode}-${edge.targetNodeCode}`],
     },
   }));
 }
@@ -82,7 +105,7 @@ export function flowToCreateRequest(
     selected: base.selected,
     nodes: nodes.map((n) => ({
       code: n.data.code,
-      label: n.data.label,
+      ...(n.data.nodeType !== 'OPERATOR' && { label: n.data.label }),
       type: n.data.nodeType,
       operatorType: n.data.operatorType,
     })),

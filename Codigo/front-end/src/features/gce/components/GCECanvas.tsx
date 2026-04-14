@@ -1,14 +1,18 @@
-import { useCallback, useMemo, useState, forwardRef, useImperativeHandle, useEffect } from 'react';
+import { useCallback, useMemo, useState, forwardRef, useImperativeHandle, useEffect, useRef } from 'react';
 import {
   ReactFlow,
   Background,
   Controls,
   MiniMap,
   addEdge,
+  reconnectEdge,
   useNodesState,
   useEdgesState,
   useReactFlow,
+  ConnectionMode,
+  ConnectionLineType,
   type OnConnect,
+  type OnReconnect,
   type OnSelectionChangeFunc,
   BackgroundVariant,
 } from '@xyflow/react';
@@ -18,6 +22,7 @@ import { CauseNode } from './CauseNode';
 import { EffectNode } from './EffectNode';
 import { OperatorNode } from './OperatorNode';
 import { NegationEdge } from './NegationEdge';
+import { EditableEdge } from './EditableEdge';
 import { ConstraintMenu } from './ConstraintMenu';
 import type { GCEFlowNode, GCEFlowEdge, GCENodeType, OperatorType, RestrictionType, GCERestriction } from '../types/gce';
 
@@ -27,6 +32,7 @@ interface GCECanvasProps {
   initialRestrictions: GCERestriction[];
   onSelectionChange: (nodeId: string | null, edgeId: string | null) => void;
   onRestrictionsChange?: (restrictions: GCERestriction[]) => void;
+  onChange?: () => void;
 }
 
 export interface GCECanvasHandle {
@@ -37,12 +43,12 @@ export interface GCECanvasHandle {
 }
 
 const nodeTypes = { cause: CauseNode, effect: EffectNode, operator: OperatorNode };
-const edgeTypes = { negation: NegationEdge };
+const edgeTypes = { negation: NegationEdge, editable: EditableEdge };
 
 let nodeCounter = 100;
 
 export const GCECanvas = forwardRef<GCECanvasHandle, GCECanvasProps>(
-  function GCECanvas({ initialNodes, initialEdges, initialRestrictions, onSelectionChange, onRestrictionsChange }, ref) {
+  function GCECanvas({ initialNodes, initialEdges, initialRestrictions, onSelectionChange, onRestrictionsChange, onChange }, ref) {
     const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
     const [restrictions, setRestrictions] = useState<GCERestriction[]>(initialRestrictions);
@@ -50,14 +56,28 @@ export const GCECanvas = forwardRef<GCECanvasHandle, GCECanvasProps>(
     const [constraintMenuPos, setConstraintMenuPos] = useState<{ x: number; y: number } | null>(null);
     const { flowToScreenPosition } = useReactFlow();
 
+    const onReconnect: OnReconnect = useCallback(
+      (oldEdge, newConnection) => {
+        setEdges((eds) => {
+          const duplicate = eds.some(
+            (e) => e.id !== oldEdge.id && e.source === newConnection.source && e.target === newConnection.target,
+          );
+          if (duplicate) return eds;
+          return reconnectEdge(oldEdge, newConnection, eds) as GCEFlowEdge[];
+        });
+      },
+      [setEdges],
+    );
+
     const onConnect: OnConnect = useCallback(
       (params) => {
-        setEdges((eds) =>
-          addEdge(
-            { ...params, type: 'default', data: { edgeType: 'IDENTITY' } },
-            eds,
-          ),
-        );
+        setEdges((eds) => {
+          const duplicate = eds.some(
+            (e) => e.source === params.source && e.target === params.target,
+          );
+          if (duplicate) return eds;
+          return addEdge({ ...params, type: 'editable', data: { edgeType: 'IDENTITY' } }, eds);
+        });
       },
       [setEdges],
     );
@@ -149,6 +169,21 @@ export const GCECanvas = forwardRef<GCECanvasHandle, GCECanvasProps>(
       onRestrictionsChange?.(restrictions);
     }, [restrictions, onRestrictionsChange]);
 
+    const nodeStructure = useMemo(
+      () => nodes.map((n) => `${n.id}:${n.type}:${n.data.label}:${n.data.operatorType}`).sort().join('|'),
+      [nodes],
+    );
+    const edgeStructure = useMemo(
+      () => edges.map((e) => `${e.source}->${e.target}:${e.type}`).sort().join('|'),
+      [edges],
+    );
+
+    const isFirstRender = useRef(true);
+    useEffect(() => {
+      if (isFirstRender.current) { isFirstRender.current = false; return; }
+      onChange?.();
+    }, [nodeStructure, edgeStructure, restrictions, onChange]);
+
     return (
       <div className="flex-1 relative">
         {multiSelected.length === 0 && (
@@ -168,22 +203,29 @@ export const GCECanvas = forwardRef<GCECanvasHandle, GCECanvasProps>(
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          onReconnect={onReconnect}
           onSelectionChange={handleSelectionChange}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           fitView
+          fitViewOptions={{ padding: 0.2 }}
           selectionOnDrag
           panOnScroll
           multiSelectionKeyCode="Shift"
+          connectionMode={ConnectionMode.Loose}
+          connectionLineType={ConnectionLineType.Bezier}
+          connectionLineStyle={{ stroke: '#8b949e', strokeWidth: 2, strokeDasharray: '6 3' }}
           selectNodesOnDrag={false}
+          elevateEdgesOnSelect
+          onlyRenderVisibleElements
           defaultEdgeOptions={{
             style: { stroke: 'var(--color-edge-hover)', strokeWidth: 2 },
-            type: 'default',
+            type: 'editable',
           }}
           proOptions={{ hideAttribution: true }}
           className="bg-surface!"
         >
-          <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="var(--color-edge)" />
+          <Background variant={BackgroundVariant.Dots} gap={32} size={0.8} color="var(--color-edge)" />
           <Controls
             className="bg-surface-card! border-edge! shadow-lg! [&>button]:bg-surface-card! [&>button]:border-edge! [&>button]:text-gray-300! [&>button:hover]:bg-surface-hover!"
           />

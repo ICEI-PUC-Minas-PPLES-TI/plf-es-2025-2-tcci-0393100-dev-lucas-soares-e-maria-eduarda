@@ -26,7 +26,7 @@ export function GCEList({ projectId, onCreateGCE }: GCEListProps) {
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
-    await GCEService.deletar(projectId, deleteTarget.id);
+    await GCEService.deletar(deleteTarget.id);
     setGces((prev) => prev.filter((g) => g.id !== deleteTarget.id));
     setDeleteTarget(null);
   };
