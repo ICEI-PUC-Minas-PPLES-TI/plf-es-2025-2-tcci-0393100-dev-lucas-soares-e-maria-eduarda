@@ -20,9 +20,9 @@ export const OperatorNode = memo(function OperatorNode({ data, selected }: NodeP
         boxShadow: selected ? '0 0 12px rgba(240, 136, 62, 0.3)' : 'none',
       }}
     >
-      <Handle id="left" type="target" position={Position.Left} className="w-2! h-2! bg-node-operator!" />
-      <Handle id="top" type="source" position={Position.Top} className="w-2! h-2! bg-node-operator!" />
-      <Handle id="bottom" type="source" position={Position.Bottom} className="w-2! h-2! bg-node-operator!" />
+      <Handle id="left" type="target" position={Position.Left} className="w-3! h-3! bg-node-operator!" />
+      <Handle id="top" type="source" position={Position.Top} className="w-3! h-3! bg-node-operator!" />
+      <Handle id="bottom" type="source" position={Position.Bottom} className="w-3! h-3! bg-node-operator!" />
 
       <svg width="80" height="60" className="absolute inset-0">
         {operatorType === 'AND' && (
@@ -48,7 +48,7 @@ export const OperatorNode = memo(function OperatorNode({ data, selected }: NodeP
         <span className="text-xs text-white font-bold">{operatorType}</span>
       </div>
 
-      <Handle id="right" type="source" position={Position.Right} className="w-2! h-2! bg-node-operator!" />
+      <Handle id="right" type="source" position={Position.Right} className="w-3! h-3! bg-node-operator!" />
     </div>
   );
 });

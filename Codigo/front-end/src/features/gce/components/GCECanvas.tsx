@@ -10,6 +10,7 @@ import {
   useEdgesState,
   useReactFlow,
   ConnectionMode,
+  ConnectionLineType,
   type OnConnect,
   type OnReconnect,
   type OnSelectionChangeFunc,
@@ -62,7 +63,7 @@ export const GCECanvas = forwardRef<GCECanvasHandle, GCECanvasProps>(
             (e) => e.id !== oldEdge.id && e.source === newConnection.source && e.target === newConnection.target,
           );
           if (duplicate) return eds;
-          return reconnectEdge(oldEdge, newConnection, eds);
+          return reconnectEdge(oldEdge, newConnection, eds) as GCEFlowEdge[];
         });
       },
       [setEdges],
@@ -207,11 +208,16 @@ export const GCECanvas = forwardRef<GCECanvasHandle, GCECanvasProps>(
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           fitView
+          fitViewOptions={{ padding: 0.2 }}
           selectionOnDrag
           panOnScroll
           multiSelectionKeyCode="Shift"
           connectionMode={ConnectionMode.Loose}
+          connectionLineType={ConnectionLineType.Bezier}
+          connectionLineStyle={{ stroke: '#8b949e', strokeWidth: 2, strokeDasharray: '6 3' }}
           selectNodesOnDrag={false}
+          elevateEdgesOnSelect
+          onlyRenderVisibleElements
           defaultEdgeOptions={{
             style: { stroke: 'var(--color-edge-hover)', strokeWidth: 2 },
             type: 'editable',
