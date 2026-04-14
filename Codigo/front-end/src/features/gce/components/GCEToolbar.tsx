@@ -11,9 +11,10 @@ interface GCEToolbarProps {
   saveStatus?: 'idle' | 'saving' | 'saved' | 'error';
   canValidate?: boolean;
   canSave?: boolean;
+  canGenerateTable?: boolean;
 }
 
-export function GCEToolbar({ gceName, onSave, onValidate, onGenerateTable, onNameChange, saveStatus = 'idle', canValidate = true, canSave = false }: GCEToolbarProps) {
+export function GCEToolbar({ gceName, onSave, onValidate, onGenerateTable, onNameChange, saveStatus = 'idle', canValidate = true, canSave = false, canGenerateTable = false }: GCEToolbarProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(gceName);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -72,7 +73,7 @@ export function GCEToolbar({ gceName, onSave, onValidate, onGenerateTable, onNam
       </div>
 
       <div className="flex items-center gap-2 shrink-0">
-        <Button size="sm" variant="primary" onClick={onGenerateTable}>
+        <Button size="sm" variant="primary" onClick={onGenerateTable} disabled={!canGenerateTable}>
           <Table className="w-4 h-4" />
           Gerar Tabela
         </Button>

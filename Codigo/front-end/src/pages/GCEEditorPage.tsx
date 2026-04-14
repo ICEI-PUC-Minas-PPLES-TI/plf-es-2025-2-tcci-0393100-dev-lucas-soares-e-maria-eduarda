@@ -186,11 +186,12 @@ export function GCEEditorPage() {
           gceName={gce.name}
           onSave={handleSave}
           onValidate={handleValidate}
-          onGenerateTable={() => {}}
+          onGenerateTable={() => navigate(`/projeto/${projectId}/gce/${gceId}/tabela-decisao`)}
           onNameChange={handleNameChange}
           saveStatus={saveStatus}
           canValidate
           canSave={isValidated}
+          canGenerateTable={isValidated && gce.id !== 'new'}
         />
 
         <div className="flex-1 flex overflow-hidden">

@@ -4,6 +4,7 @@ import { SignUpPage } from '../pages/SignUpPage';
 import { HomePage } from '../pages/HomePage';
 import { ProjectPage } from '../pages/ProjectPage';
 import { GCEEditorPage } from '../pages/GCEEditorPage';
+import { DecisionTablePage } from '../pages/DecisionTablePage';
 import { useAuth } from '../context/AuthContext';
 import type { ReactNode } from 'react';
 
@@ -21,6 +22,7 @@ export function AppRouter() {
         <Route path="/homepage" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
         <Route path="/projeto/:id" element={<ProtectedRoute><ProjectPage /></ProtectedRoute>} />
         <Route path="/projeto/:projectId/gce/:gceId" element={<ProtectedRoute><GCEEditorPage /></ProtectedRoute>} />
+        <Route path="/projeto/:projectId/gce/:gceId/tabela-decisao" element={<ProtectedRoute><DecisionTablePage /></ProtectedRoute>} />
         <Route path="/" element={<Navigate to="/homepage" replace />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
