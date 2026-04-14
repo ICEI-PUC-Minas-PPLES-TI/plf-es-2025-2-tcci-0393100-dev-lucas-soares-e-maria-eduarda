@@ -16,19 +16,25 @@ export const EffectNode = memo(function EffectNode({ id, data, selected }: NodeP
 
   return (
     <div
-      className="rounded-lg px-4 py-3 min-w-35 transition-shadow"
+      className="rounded-lg px-4 py-3 min-w-35 transition-all duration-150"
       style={{
-        background: 'var(--color-node-effect-bg)',
+        background: 'linear-gradient(145deg, #388bfd 0%, #0d419d 100%)',
         border: `2px solid ${borderColor}`,
-        boxShadow: selected ? '0 0 12px rgba(88, 166, 255, 0.3)' : 'none',
+        boxShadow: selected
+          ? '0 0 20px rgba(88, 166, 255, 0.4), 0 4px 12px rgba(0,0,0,0.4)'
+          : '0 4px 12px rgba(0,0,0,0.4)',
       }}
     >
-      <Handle type="target" position={Position.Left} className="w-2! h-2! bg-node-effect!" />
+      <Handle id="left" type="target" position={Position.Left} className="w-3! h-3! bg-node-effect!" />
+      <Handle id="top" type="source" position={Position.Top} className="w-3! h-3! bg-node-effect!" />
+      <Handle id="bottom" type="source" position={Position.Bottom} className="w-3! h-3! bg-node-effect!" />
 
       <div className="flex items-center gap-2">
         <Square className="w-4 h-4 shrink-0" style={{ color: 'var(--color-node-effect)' }} />
         <div className="min-w-0">
-          <span className="text-[10px] text-white/60 block">{code}</span>
+          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-black/25 text-white/80 inline-block mb-1 tracking-wide">
+            {code}
+          </span>
           {editing ? (
             <input
               ref={inputRef}
@@ -50,7 +56,7 @@ export const EffectNode = memo(function EffectNode({ id, data, selected }: NodeP
         </div>
       </div>
 
-      <Handle type="source" position={Position.Right} className="w-2! h-2! bg-node-effect!" />
+      <Handle id="right" type="source" position={Position.Right} className="w-3! h-3! bg-node-effect!" />
     </div>
   );
 });

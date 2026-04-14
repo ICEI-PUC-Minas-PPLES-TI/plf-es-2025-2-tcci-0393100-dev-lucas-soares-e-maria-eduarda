@@ -2,51 +2,7 @@ import { memo, useState, useCallback } from 'react';
 import { BaseEdge, EdgeLabelRenderer, useReactFlow, type EdgeProps } from '@xyflow/react';
 import type { GCEEdgeData } from '../types/gce';
 
-function buildNegationPath(
-  sourceX: number,
-  sourceY: number,
-  targetX: number,
-  targetY: number,
-  bx: number,
-  by: number,
-  waveWidth = 40,
-  amplitude = 10,
-): string {
-  const dx = targetX - sourceX;
-  const dy = targetY - sourceY;
-  const length = Math.sqrt(dx * dx + dy * dy);
-  if (length === 0) return `M ${sourceX} ${sourceY}`;
-
-  const ux = dx / length;
-  const uy = dy / length;
-  const px = -uy;
-  const py = ux;
-
-  const waveStartX = bx - (waveWidth / 2) * ux;
-  const waveStartY = by - (waveWidth / 2) * uy;
-  const waveEndX = bx + (waveWidth / 2) * ux;
-  const waveEndY = by + (waveWidth / 2) * uy;
-
-  const cp1x = waveStartX + (bx - waveStartX) / 3 + amplitude * px;
-  const cp1y = waveStartY + (by - waveStartY) / 3 + amplitude * py;
-  const cp2x = waveStartX + (2 * (bx - waveStartX)) / 3 + amplitude * px;
-  const cp2y = waveStartY + (2 * (by - waveStartY)) / 3 + amplitude * py;
-
-  const cp3x = bx + (waveEndX - bx) / 3 - amplitude * px;
-  const cp3y = by + (waveEndY - by) / 3 - amplitude * py;
-  const cp4x = bx + (2 * (waveEndX - bx)) / 3 - amplitude * px;
-  const cp4y = by + (2 * (waveEndY - by)) / 3 - amplitude * py;
-
-  return [
-    `M ${sourceX} ${sourceY}`,
-    `L ${waveStartX} ${waveStartY}`,
-    `C ${cp1x},${cp1y} ${cp2x},${cp2y} ${bx},${by}`,
-    `C ${cp3x},${cp3y} ${cp4x},${cp4y} ${waveEndX},${waveEndY}`,
-    `L ${targetX} ${targetY}`,
-  ].join(' ');
-}
-
-export const NegationEdge = memo(function NegationEdge(props: EdgeProps) {
+export const EditableEdge = memo(function EditableEdge(props: EdgeProps) {
   const { id, sourceX, sourceY, targetX, targetY, selected, data } = props;
   const { setEdges, screenToFlowPosition } = useReactFlow();
   const [hovered, setHovered] = useState(false);
@@ -57,7 +13,9 @@ export const NegationEdge = memo(function NegationEdge(props: EdgeProps) {
   const bx = bend?.x ?? midX;
   const by = bend?.y ?? midY;
 
-  const edgePath = buildNegationPath(sourceX, sourceY, targetX, targetY, bx, by);
+  const cpX = 2 * bx - 0.5 * (sourceX + targetX);
+  const cpY = 2 * by - 0.5 * (sourceY + targetY);
+  const edgePath = `M ${sourceX},${sourceY} Q ${cpX},${cpY} ${targetX},${targetY}`;
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();

@@ -52,3 +52,19 @@ body {
 button {
   cursor: pointer;
 }
+
+/* Handles: invisíveis por padrão, aparecem no hover do nó ou ao conectar */
+.react-flow__node .react-flow__handle {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.react-flow__node:hover .react-flow__handle {
+  opacity: 1;
+}
+
+.react-flow__handle.react-flow__handle-connecting,
+.react-flow__handle.react-flow__handle-valid {
+  opacity: 1 !important;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15);
+}

@@ -10,9 +10,10 @@ interface GCEToolbarProps {
   onNameChange?: (name: string) => void;
   saveStatus?: 'idle' | 'saving' | 'saved' | 'error';
   canValidate?: boolean;
+  canSave?: boolean;
 }
 
-export function GCEToolbar({ gceName, onSave, onValidate, onGenerateTable, onNameChange, saveStatus = 'idle', canValidate = true }: GCEToolbarProps) {
+export function GCEToolbar({ gceName, onSave, onValidate, onGenerateTable, onNameChange, saveStatus = 'idle', canValidate = true, canSave = false }: GCEToolbarProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(gceName);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -79,7 +80,7 @@ export function GCEToolbar({ gceName, onSave, onValidate, onGenerateTable, onNam
           <CheckCircle className="w-4 h-4" />
           Validar
         </Button>
-        <Button size="sm" variant="outline" onClick={onSave} disabled={saveStatus === 'saving'}>
+        <Button size="sm" variant="outline" onClick={onSave} disabled={!canSave || saveStatus === 'saving'}>
           <Save className="w-4 h-4" />
           {saveStatus === 'saving' ? 'Salvando...' : saveStatus === 'saved' ? 'Salvo!' : saveStatus === 'error' ? 'Erro ao salvar' : 'Salvar'}
         </Button>
