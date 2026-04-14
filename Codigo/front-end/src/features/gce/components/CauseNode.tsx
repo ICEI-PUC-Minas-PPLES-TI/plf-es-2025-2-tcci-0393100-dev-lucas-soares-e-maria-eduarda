@@ -19,10 +19,9 @@ export const CauseNode = memo(function CauseNode({ id, data, selected }: NodePro
       className="rounded-lg px-4 py-3 min-w-35 transition-all duration-150"
       style={{
         background: 'linear-gradient(145deg, #2ea043 0%, #196127 100%)',
-        border: `2px solid ${borderColor}`,
         boxShadow: selected
-          ? '0 0 20px rgba(63, 185, 80, 0.4), 0 4px 12px rgba(0,0,0,0.4)'
-          : '0 4px 12px rgba(0,0,0,0.4)',
+          ? `inset 0 0 0 2px ${borderColor}, 0 0 20px rgba(63, 185, 80, 0.4), 0 4px 12px rgba(0,0,0,0.4)`
+          : `inset 0 0 0 2px ${borderColor}, 0 4px 12px rgba(0,0,0,0.4)`,
       }}
     >
       <Handle id="left" type="target" position={Position.Left} className="w-3! h-3! bg-node-cause!" />
