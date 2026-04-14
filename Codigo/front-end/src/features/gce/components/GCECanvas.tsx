@@ -5,11 +5,13 @@ import {
   Controls,
   MiniMap,
   addEdge,
+  reconnectEdge,
   useNodesState,
   useEdgesState,
   useReactFlow,
   ConnectionMode,
   type OnConnect,
+  type OnReconnect,
   type OnSelectionChangeFunc,
   BackgroundVariant,
 } from '@xyflow/react';
@@ -52,6 +54,19 @@ export const GCECanvas = forwardRef<GCECanvasHandle, GCECanvasProps>(
     const [multiSelected, setMultiSelected] = useState<string[]>([]);
     const [constraintMenuPos, setConstraintMenuPos] = useState<{ x: number; y: number } | null>(null);
     const { flowToScreenPosition } = useReactFlow();
+
+    const onReconnect: OnReconnect = useCallback(
+      (oldEdge, newConnection) => {
+        setEdges((eds) => {
+          const duplicate = eds.some(
+            (e) => e.id !== oldEdge.id && e.source === newConnection.source && e.target === newConnection.target,
+          );
+          if (duplicate) return eds;
+          return reconnectEdge(oldEdge, newConnection, eds);
+        });
+      },
+      [setEdges],
+    );
 
     const onConnect: OnConnect = useCallback(
       (params) => {
@@ -187,6 +202,7 @@ export const GCECanvas = forwardRef<GCECanvasHandle, GCECanvasProps>(
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          onReconnect={onReconnect}
           onSelectionChange={handleSelectionChange}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
