@@ -13,7 +13,6 @@ export const EditableEdge = memo(function EditableEdge(props: EdgeProps) {
   const bx = bend?.x ?? midX;
   const by = bend?.y ?? midY;
 
-  // Ponto de controle da bezier quadrática que passa por (bx, by) em t=0.5
   const cpX = 2 * bx - 0.5 * (sourceX + targetX);
   const cpY = 2 * by - 0.5 * (sourceY + targetY);
   const edgePath = `M ${sourceX},${sourceY} Q ${cpX},${cpY} ${targetX},${targetY}`;
@@ -42,8 +41,9 @@ export const EditableEdge = memo(function EditableEdge(props: EdgeProps) {
         {...props}
         path={edgePath}
         style={{
-          stroke: selected ? 'var(--color-node-selected)' : 'var(--color-edge-hover)',
-          strokeWidth: selected ? 3 : 2,
+          stroke: selected ? 'var(--color-node-selected)' : hovered ? '#b0bec5' : 'var(--color-edge-hover)',
+          strokeWidth: selected ? 3 : hovered ? 2.5 : 2,
+          transition: 'stroke 0.15s, stroke-width 0.15s',
         }}
       />
       <EdgeLabelRenderer>
@@ -66,13 +66,14 @@ export const EditableEdge = memo(function EditableEdge(props: EdgeProps) {
         >
           <div
             style={{
-              width: 8,
-              height: 8,
-              borderRadius: '50%',
+              width: 10,
+              height: 10,
               background: 'var(--color-edge-hover)',
               border: '2px solid var(--color-surface)',
-              opacity: showHandle ? 1 : 0,
-              transition: 'opacity 0.15s',
+              opacity: showHandle ? 1 : 0.3,
+              transform: showHandle ? 'rotate(45deg) scale(1)' : 'rotate(45deg) scale(0.7)',
+              transition: 'opacity 0.15s, transform 0.15s',
+              boxShadow: showHandle ? '0 0 6px rgba(139, 148, 158, 0.5)' : 'none',
             }}
           />
         </div>

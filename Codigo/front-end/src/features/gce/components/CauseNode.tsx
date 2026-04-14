@@ -16,11 +16,13 @@ export const CauseNode = memo(function CauseNode({ id, data, selected }: NodePro
 
   return (
     <div
-      className="rounded-lg px-4 py-3 min-w-35 transition-shadow"
+      className="rounded-lg px-4 py-3 min-w-35 transition-all duration-150"
       style={{
-        background: 'var(--color-node-cause-bg)',
+        background: 'linear-gradient(145deg, #2ea043 0%, #196127 100%)',
         border: `2px solid ${borderColor}`,
-        boxShadow: selected ? '0 0 12px rgba(63, 185, 80, 0.3)' : 'none',
+        boxShadow: selected
+          ? '0 0 20px rgba(63, 185, 80, 0.4), 0 4px 12px rgba(0,0,0,0.4)'
+          : '0 4px 12px rgba(0,0,0,0.4)',
       }}
     >
       <Handle id="left" type="target" position={Position.Left} className="w-3! h-3! bg-node-cause!" />
@@ -30,7 +32,9 @@ export const CauseNode = memo(function CauseNode({ id, data, selected }: NodePro
       <div className="flex items-center gap-2">
         <Circle className="w-4 h-4 shrink-0" style={{ color: 'var(--color-node-cause)' }} />
         <div className="min-w-0">
-          <span className="text-[10px] text-white/60 block">{code}</span>
+          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-black/25 text-white/80 inline-block mb-1 tracking-wide">
+            {code}
+          </span>
           {editing ? (
             <input
               ref={inputRef}

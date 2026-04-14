@@ -225,7 +225,7 @@ export const GCECanvas = forwardRef<GCECanvasHandle, GCECanvasProps>(
           proOptions={{ hideAttribution: true }}
           className="bg-surface!"
         >
-          <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="var(--color-edge)" />
+          <Background variant={BackgroundVariant.Dots} gap={32} size={0.8} color="var(--color-edge)" />
           <Controls
             className="bg-surface-card! border-edge! shadow-lg! [&>button]:bg-surface-card! [&>button]:border-edge! [&>button]:text-gray-300! [&>button:hover]:bg-surface-hover!"
           />
