@@ -13,6 +13,7 @@ import {
   dtoToRestrictions,
   flowToCreateRequest,
   savePositions,
+  saveBends,
 } from '../features/gce/utils/gceConverters';
 import GCEService from '../services/GCE/GCEService';
 import ProjectService from '../services/Project/ProjectService';
@@ -88,12 +89,14 @@ export function GCEEditorPage() {
         const { id } = await GCEService.criar(request);
         const created = await GCEService.buscarPorId(id);
         savePositions(id, state.nodes);
+        saveBends(id, state.edges);
         setGce(created);
         // Atualiza a URL sem recarregar o componente
         navigate(`/projeto/${projectId}/gce/${id}`, { replace: true, state: null });
       } else {
         // Saves seguintes: atualiza
         savePositions(gce.id, state.nodes);
+        saveBends(gce.id, state.edges);
         const updated = await GCEService.atualizar(gce.id, request);
         setGce(updated);
       }
@@ -120,6 +123,7 @@ export function GCEEditorPage() {
     setSaveStatus('saving');
     try {
       savePositions(gce.id, state.nodes);
+      saveBends(gce.id, state.edges);
       const request = flowToCreateRequest(updatedGce, state.nodes, state.edges, state.restrictions);
       const updated = await GCEService.atualizar(gce.id, request);
       setGce(updated);

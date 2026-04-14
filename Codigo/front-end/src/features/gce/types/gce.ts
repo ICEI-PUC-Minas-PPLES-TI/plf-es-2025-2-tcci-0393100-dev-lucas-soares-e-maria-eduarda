@@ -16,6 +16,7 @@ export interface GCENodeData extends Record<string, unknown> {
 export interface GCEEdgeData extends Record<string, unknown> {
   edgeType: GCEEdgeType;
   backendId?: string;
+  bend?: { x: number; y: number };
 }
 
 export type GCEFlowNode = Node<GCENodeData, 'cause' | 'effect' | 'operator'>;

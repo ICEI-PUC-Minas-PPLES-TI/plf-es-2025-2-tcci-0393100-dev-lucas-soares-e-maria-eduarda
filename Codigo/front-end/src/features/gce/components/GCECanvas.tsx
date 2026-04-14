@@ -19,6 +19,7 @@ import { CauseNode } from './CauseNode';
 import { EffectNode } from './EffectNode';
 import { OperatorNode } from './OperatorNode';
 import { NegationEdge } from './NegationEdge';
+import { EditableEdge } from './EditableEdge';
 import { ConstraintMenu } from './ConstraintMenu';
 import type { GCEFlowNode, GCEFlowEdge, GCENodeType, OperatorType, RestrictionType, GCERestriction } from '../types/gce';
 
@@ -39,7 +40,7 @@ export interface GCECanvasHandle {
 }
 
 const nodeTypes = { cause: CauseNode, effect: EffectNode, operator: OperatorNode };
-const edgeTypes = { negation: NegationEdge };
+const edgeTypes = { negation: NegationEdge, editable: EditableEdge };
 
 let nodeCounter = 100;
 
@@ -59,7 +60,7 @@ export const GCECanvas = forwardRef<GCECanvasHandle, GCECanvasProps>(
             (e) => e.source === params.source && e.target === params.target,
           );
           if (duplicate) return eds;
-          return addEdge({ ...params, type: 'default', data: { edgeType: 'IDENTITY' } }, eds);
+          return addEdge({ ...params, type: 'editable', data: { edgeType: 'IDENTITY' } }, eds);
         });
       },
       [setEdges],
@@ -152,11 +153,20 @@ export const GCECanvas = forwardRef<GCECanvasHandle, GCECanvasProps>(
       onRestrictionsChange?.(restrictions);
     }, [restrictions, onRestrictionsChange]);
 
+    const nodeStructure = useMemo(
+      () => nodes.map((n) => `${n.id}:${n.type}:${n.data.label}:${n.data.operatorType}`).sort().join('|'),
+      [nodes],
+    );
+    const edgeStructure = useMemo(
+      () => edges.map((e) => `${e.source}->${e.target}:${e.type}`).sort().join('|'),
+      [edges],
+    );
+
     const isFirstRender = useRef(true);
     useEffect(() => {
       if (isFirstRender.current) { isFirstRender.current = false; return; }
       onChange?.();
-    }, [nodes, edges, restrictions, onChange]);
+    }, [nodeStructure, edgeStructure, restrictions, onChange]);
 
     return (
       <div className="flex-1 relative">
@@ -188,7 +198,7 @@ export const GCECanvas = forwardRef<GCECanvasHandle, GCECanvasProps>(
           selectNodesOnDrag={false}
           defaultEdgeOptions={{
             style: { stroke: 'var(--color-edge-hover)', strokeWidth: 2 },
-            type: 'default',
+            type: 'editable',
           }}
           proOptions={{ hideAttribution: true }}
           className="bg-surface!"
