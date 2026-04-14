@@ -3,6 +3,7 @@ package br.pucminas.graphtest.application.domain.gce.model;
 import br.pucminas.graphtest.application.domain.shared.model.BaseEntity;
 import br.pucminas.graphtest.application.domain.gce.enums.RestrictionTypeEnum;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -25,7 +26,17 @@ public class GceRestriction extends BaseEntity {
      * @param nodeCodes codigos dos nos participantes da restricao
      */
     public GceRestriction(UUID id, RestrictionTypeEnum type, List<String> nodeCodes) {
+        this(id, type, nodeCodes, null, null);
+    }
+
+    public GceRestriction(UUID id,
+                          RestrictionTypeEnum type,
+                          List<String> nodeCodes,
+                          LocalDateTime createdAt,
+                          LocalDateTime updatedAt) {
         this.id = id;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
         this.type = Objects.requireNonNull(type, "type e obrigatorio.");
         this.nodeCodes = normalizeNodeCodes(nodeCodes);
 
@@ -80,11 +91,6 @@ public class GceRestriction extends BaseEntity {
             case EXCLUSIVE, INCLUSIVE, ONE_AND_ONLY_ONE, REQUIRE -> true;
             case MASKS -> false;
         };
-    }
-
-    public boolean isEffectRestriction() {
-
-        return type == RestrictionTypeEnum.MASKS;
     }
 
     public boolean references(String nodeCode) {

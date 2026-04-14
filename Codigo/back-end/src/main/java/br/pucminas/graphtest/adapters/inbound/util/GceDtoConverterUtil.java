@@ -103,13 +103,17 @@ public class GceDtoConverterUtil {
                 .name(graph.name())
                 .description(graph.description())
                 .selected(graph.selected())
+                .createdAt(graph.createdAt())
+                .updatedAt(graph.updatedAt())
                 .nodes(graph.nodes().stream()
                         .map(node -> new GceDTO.GceNodeDTO(
                                 node.id(),
                                 node.code(),
                                 node.label(),
                                 node.type(),
-                                node.operatorType()
+                                node.operatorType(),
+                                node.createdAt(),
+                                node.updatedAt()
                         ))
                         .toList())
                 .edges(graph.edges().stream()
@@ -117,14 +121,18 @@ public class GceDtoConverterUtil {
                                 edge.id(),
                                 edge.sourceNodeCode(),
                                 edge.targetNodeCode(),
-                                edge.type()
+                                edge.type(),
+                                edge.createdAt(),
+                                edge.updatedAt()
                         ))
                         .toList())
                 .restrictions(graph.restrictions().stream()
                         .map(restriction -> new GceDTO.GceRestrictionDTO(
                                 restriction.id(),
                                 restriction.type(),
-                                restriction.nodeCodes()
+                                restriction.nodeCodes(),
+                                restriction.createdAt(),
+                                restriction.updatedAt()
                         ))
                         .toList())
                 .build();

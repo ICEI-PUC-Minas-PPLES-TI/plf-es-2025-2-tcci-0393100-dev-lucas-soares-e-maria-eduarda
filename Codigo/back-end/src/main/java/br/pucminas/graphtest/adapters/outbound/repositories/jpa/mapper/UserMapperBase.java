@@ -53,9 +53,10 @@ public class UserMapperBase implements BasePersistenceMapper<User, JpaUserEntity
                 entity.getName(),
                 entity.getEmail(),
                 entity.getPassword(),
-                toProfile(entity.getPerfilUsuario())
+                toProfile(entity.getPerfilUsuario()),
+                entity.getCreatedAt(),
+                entity.getUpdatedAt()
         );
-        user.restoreAuditFields(entity.getCreatedAt(), entity.getUpdatedAt());
         return user;
     }
 

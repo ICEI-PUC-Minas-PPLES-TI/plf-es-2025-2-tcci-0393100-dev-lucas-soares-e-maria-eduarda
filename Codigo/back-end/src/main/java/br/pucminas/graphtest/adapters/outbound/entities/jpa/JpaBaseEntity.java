@@ -39,11 +39,12 @@ public abstract class JpaBaseEntity implements Serializable {
 
     @PrePersist
     protected void onCreate() {
-        LocalDateTime now = LocalDateTime.now();
         if (createdAt == null) {
-            createdAt = now;
+            createdAt = LocalDateTime.now();
         }
-        updatedAt = now;
+        if (updatedAt == null) {
+            updatedAt = createdAt;
+        }
     }
 
     @PreUpdate

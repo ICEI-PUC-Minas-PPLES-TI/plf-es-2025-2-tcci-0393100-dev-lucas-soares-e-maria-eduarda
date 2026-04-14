@@ -8,6 +8,8 @@ import br.pucminas.graphtest.application.port.output.repositories.GceRepositoryP
 import br.pucminas.graphtest.application.service.gce.interfaces.GceMutationService;
 import br.pucminas.graphtest.application.service.project.interfaces.ProjectAccessService;
 
+import java.time.LocalDateTime;
+
 public class PatchGceDetailsUseCaseImpl implements PatchGceDetailsUseCasePort {
 
     private final GceRepositoryPort gceRepository;
@@ -26,7 +28,7 @@ public class PatchGceDetailsUseCaseImpl implements PatchGceDetailsUseCasePort {
     public GceOutput execute(UpdateGceDetailsInput input) {
         Gce graph = gceMutationService.loadAuthorizedGraph(input.id(), gceRepository, projectAccessService);
         graph.updateDetails(input.name(), input.description());
-        graph.markUpdatedNow();
+        graph.setUpdatedAt(LocalDateTime.now());
         return GceOutput.from(gceRepository.save(graph));
     }
 }

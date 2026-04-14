@@ -22,10 +22,6 @@ public class UserDetailsAdapter implements UserDetails {
     private String senha;
     private UserProfileEnum perfilUsuario;
 
-    public boolean ehPerfil(UserProfileEnum perfilUsuario) {
-        return this.perfilUsuario.equals(perfilUsuario);
-    }
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.singletonList(new SimpleGrantedAuthority(this.perfilUsuario.getDescricao()));

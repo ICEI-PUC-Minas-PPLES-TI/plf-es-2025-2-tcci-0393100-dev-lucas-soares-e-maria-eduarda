@@ -11,6 +11,8 @@ import br.pucminas.graphtest.application.service.gce.interfaces.GceMutationServi
 import br.pucminas.graphtest.application.service.gce.interfaces.GceValidationResultService;
 import br.pucminas.graphtest.application.service.project.interfaces.ProjectAccessService;
 
+import java.time.LocalDateTime;
+
 /**
  * Caso de uso responsavel por inverter o tipo de uma aresta existente do GCE.
  */
@@ -45,15 +47,15 @@ public class ToggleGceEdgeUseCaseImpl implements ToggleGceEdgeUseCasePort {
                 currentEdge.getId(),
                 currentEdge.getSourceNodeCode(),
                 currentEdge.getTargetNodeCode(),
-                toggledType
+                toggledType,
+                currentEdge.getCreatedAt(),
+                LocalDateTime.now()
         );
-        updatedEdge.restoreAuditFields(currentEdge.getCreatedAt(), currentEdge.getUpdatedAt());
-        updatedEdge.markUpdatedNow();
 
         graph.replaceEdge(updatedEdge);
 
         gceMutationService.validateAndThrow(graph, gceValidationResultService);
-        graph.markUpdatedNow();
+        graph.setUpdatedAt(LocalDateTime.now());
         return GceOutput.from(gceRepository.save(graph));
     }
 }

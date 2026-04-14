@@ -4,6 +4,7 @@ import br.pucminas.graphtest.application.domain.shared.model.BaseEntity;
 import br.pucminas.graphtest.application.domain.gce.enums.GceNodeTypeEnum;
 import br.pucminas.graphtest.application.domain.gce.enums.GceOperatorTypeEnum;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -27,7 +28,19 @@ public class GceNode extends BaseEntity {
      * @param operatorType operador logico associado, quando aplicavel
      */
     public GceNode(UUID id, String code, String label, GceNodeTypeEnum type, GceOperatorTypeEnum operatorType) {
+        this(id, code, label, type, operatorType, null, null);
+    }
+
+    public GceNode(UUID id,
+                   String code,
+                   String label,
+                   GceNodeTypeEnum type,
+                   GceOperatorTypeEnum operatorType,
+                   LocalDateTime createdAt,
+                   LocalDateTime updatedAt) {
         this.id = id;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
         this.code = requireText(code, "code");
         this.label = requireText(label, "label");
         applyTypeAndOperator(type, operatorType);
@@ -40,6 +53,10 @@ public class GceNode extends BaseEntity {
         return new GceNode(id, code, label, GceNodeTypeEnum.CAUSE, null);
     }
 
+    public static GceNode cause(UUID id, String code, String label, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        return new GceNode(id, code, label, GceNodeTypeEnum.CAUSE, null, createdAt, updatedAt);
+    }
+
     /**
      * Fabrica um no do tipo efeito.
      */
@@ -47,11 +64,24 @@ public class GceNode extends BaseEntity {
         return new GceNode(id, code, label, GceNodeTypeEnum.EFFECT, null);
     }
 
+    public static GceNode effect(UUID id, String code, String label, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        return new GceNode(id, code, label, GceNodeTypeEnum.EFFECT, null, createdAt, updatedAt);
+    }
+
     /**
      * Fabrica um no do tipo operador.
      */
     public static GceNode operator(UUID id, String code, String label, GceOperatorTypeEnum operatorType) {
         return new GceNode(id, code, label, GceNodeTypeEnum.OPERATOR, operatorType);
+    }
+
+    public static GceNode operator(UUID id,
+                                   String code,
+                                   String label,
+                                   GceOperatorTypeEnum operatorType,
+                                   LocalDateTime createdAt,
+                                   LocalDateTime updatedAt) {
+        return new GceNode(id, code, label, GceNodeTypeEnum.OPERATOR, operatorType, createdAt, updatedAt);
     }
 
     private String requireText(String value, String field) {

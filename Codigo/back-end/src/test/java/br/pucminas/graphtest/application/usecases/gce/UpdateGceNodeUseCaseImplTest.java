@@ -76,9 +76,16 @@ class UpdateGceNodeUseCaseImplTest {
                 List.of()
         );
         LocalDateTime createdAt = LocalDateTime.now().minusDays(1);
-        graph.restoreAuditFields(createdAt, createdAt);
-        graph.getNodes().forEach(node -> node.restoreAuditFields(createdAt, createdAt));
-        graph.getEdges().forEach(edge -> edge.restoreAuditFields(createdAt, createdAt));
+        graph.setCreatedAt(createdAt);
+        graph.setUpdatedAt(createdAt);
+        graph.getNodes().forEach(node -> {
+            node.setCreatedAt(createdAt);
+            node.setUpdatedAt(createdAt);
+        });
+        graph.getEdges().forEach(edge -> {
+            edge.setCreatedAt(createdAt);
+            edge.setUpdatedAt(createdAt);
+        });
 
         when(gceRepository.findById(graphId)).thenReturn(Optional.of(graph));
         when(projectAccessService.findAuthorizedProject(projectId))

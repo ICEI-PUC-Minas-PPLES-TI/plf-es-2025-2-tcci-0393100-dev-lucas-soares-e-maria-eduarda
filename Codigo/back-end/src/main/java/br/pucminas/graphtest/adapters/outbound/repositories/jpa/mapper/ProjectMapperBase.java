@@ -53,9 +53,10 @@ public class ProjectMapperBase implements BasePersistenceMapper<Project, JpaProj
                 entity.getId(),
                 entity.getName(),
                 entity.getDescription(),
-                toUserId(entity.getUser())
+                toUserId(entity.getUser()),
+                entity.getCreatedAt(),
+                entity.getUpdatedAt()
         );
-        project.restoreAuditFields(entity.getCreatedAt(), entity.getUpdatedAt());
         return project;
     }
 

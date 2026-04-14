@@ -3,6 +3,7 @@ package br.pucminas.graphtest.application.domain.gce.model;
 import br.pucminas.graphtest.application.domain.gce.rules.GceStructureRules;
 import br.pucminas.graphtest.application.domain.shared.model.BaseEntity;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -49,7 +50,24 @@ public class Gce extends BaseEntity {
             Collection<GceEdge> edges,
             Collection<GceRestriction> restrictions
     ) {
+        this(id, projectId, name, description, selected, nodes, edges, restrictions, null, null);
+    }
+
+    public Gce(
+            UUID id,
+            UUID projectId,
+            String name,
+            String description,
+            boolean selected,
+            Collection<GceNode> nodes,
+            Collection<GceEdge> edges,
+            Collection<GceRestriction> restrictions,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt
+    ) {
         this.id = id;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
         this.projectId = requireUuid(projectId, "projectId");
         this.name = requireText(name, "name");
         this.description = normalizeDescription(description);
@@ -126,13 +144,6 @@ public class Gce extends BaseEntity {
                 .orElseThrow(() -> new IllegalArgumentException("Aresta inexistente: " + edgeId));
     }
 
-    private GceRestriction requireRestriction(UUID restrictionId) {
-        return restrictions.stream()
-                .filter(restriction -> restrictionId != null && restrictionId.equals(restriction.getId()))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Restricao inexistente: " + restrictionId));
-    }
-
     private void ensureNodeCodeAvailable(String code, String ignoredNodeCode) {
         boolean alreadyInUse = nodes.values().stream()
                 .anyMatch(node -> node.getCode().equals(code) && !node.getCode().equals(ignoredNodeCode));
@@ -149,16 +160,6 @@ public class Gce extends BaseEntity {
 
         if (alreadyInUse) {
             throw new IllegalArgumentException("Ja existe aresta com mesma origem, destino e tipo.");
-        }
-    }
-
-    private void ensureRestrictionSignatureAvailable(GceRestriction restriction, UUID ignoredRestrictionId) {
-        boolean alreadyInUse = restrictions.stream()
-                .anyMatch(existingRestriction -> existingRestriction.sameDefinition(restriction)
-                        && (ignoredRestrictionId == null || !ignoredRestrictionId.equals(existingRestriction.getId())));
-
-        if (alreadyInUse) {
-            throw new IllegalArgumentException("Ja existe restricao com mesmo tipo e mesmos nos.");
         }
     }
 
@@ -197,12 +198,6 @@ public class Gce extends BaseEntity {
     public Optional<GceEdge> findEdge(UUID edgeId) {
         return edges.stream()
                 .filter(edge -> edgeId != null && edgeId.equals(edge.getId()))
-                .findFirst();
-    }
-
-    public Optional<GceRestriction> findRestriction(UUID restrictionId) {
-        return restrictions.stream()
-                .filter(restriction -> restrictionId != null && restrictionId.equals(restriction.getId()))
                 .findFirst();
     }
 
@@ -330,50 +325,4 @@ public class Gce extends BaseEntity {
         }
     }
 
-    public void removeEdge(UUID edgeId) {
-        GceEdge edge = requireEdge(edgeId);
-        edges.remove(edge);
-    }
-
-    public void addRestriction(GceRestriction restriction) {
-        if (restriction == null) {
-            throw new IllegalArgumentException("restriction e obrigatorio.");
-        }
-
-        restriction.getNodeCodes().forEach(this::requireNode);
-        ensureRestrictionSignatureAvailable(restriction, null);
-        restrictions.add(restriction);
-
-        try {
-            validateAggregate();
-        } catch (RuntimeException exception) {
-            restrictions.remove(restriction);
-            throw exception;
-        }
-    }
-
-    public void replaceRestriction(GceRestriction restriction) {
-        if (restriction == null || restriction.getId() == null) {
-            throw new IllegalArgumentException("restriction com id e obrigatorio.");
-        }
-        GceRestriction previousRestriction = requireRestriction(restriction.getId());
-
-        restriction.getNodeCodes().forEach(this::requireNode);
-        ensureRestrictionSignatureAvailable(restriction, restriction.getId());
-
-        int index = restrictions.indexOf(previousRestriction);
-        restrictions.set(index, restriction);
-
-        try {
-            validateAggregate();
-        } catch (RuntimeException exception) {
-            restrictions.set(index, previousRestriction);
-            throw exception;
-        }
-    }
-
-    public void removeRestriction(UUID restrictionId) {
-        GceRestriction restriction = requireRestriction(restrictionId);
-        restrictions.remove(restriction);
-    }
 }

@@ -3,6 +3,7 @@ package br.pucminas.graphtest.application.port.input.gce.records;
 import br.pucminas.graphtest.application.domain.gce.model.GceEdge;
 import br.pucminas.graphtest.application.domain.gce.enums.GceEdgeTypeEnum;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
@@ -12,7 +13,9 @@ public record GceEdgeOutput(
         UUID id,
         String sourceNodeCode,
         String targetNodeCode,
-        GceEdgeTypeEnum type
+        GceEdgeTypeEnum type,
+        LocalDateTime createdAt,
+        LocalDateTime updatedAt
 ) {
 
     /**
@@ -26,7 +29,13 @@ public record GceEdgeOutput(
                 edge.getId(),
                 edge.getSourceNodeCode(),
                 edge.getTargetNodeCode(),
-                edge.getType()
+                edge.getType(),
+                edge.getCreatedAt(),
+                normalizeUpdatedAt(edge.getCreatedAt(), edge.getUpdatedAt())
         );
+    }
+
+    private static LocalDateTime normalizeUpdatedAt(LocalDateTime createdAt, LocalDateTime updatedAt) {
+        return updatedAt != null && updatedAt.equals(createdAt) ? null : updatedAt;
     }
 }

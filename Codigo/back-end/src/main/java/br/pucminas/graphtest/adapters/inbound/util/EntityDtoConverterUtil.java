@@ -23,6 +23,8 @@ public class EntityDtoConverterUtil {
                 .name(userOutput.name())
                 .email(userOutput.email())
                 .password(null)
+                .createdAt(userOutput.createdAt())
+                .updatedAt(userOutput.updatedAt())
                 .build();
     }
 
@@ -32,6 +34,8 @@ public class EntityDtoConverterUtil {
                 .id(projectOutput.id())
                 .name(projectOutput.name())
                 .description(projectOutput.description())
+                .createdAt(projectOutput.createdAt())
+                .updatedAt(projectOutput.updatedAt())
                 .build();
     }
 }
