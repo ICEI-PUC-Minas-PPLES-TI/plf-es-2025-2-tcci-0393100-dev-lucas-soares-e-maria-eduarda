@@ -8,11 +8,13 @@ import { QuickActionsSection } from '../features/home/components/QuickActionsSec
 import { RecentArtifactsSection } from '../features/home/components/RecentArtifactsSection';
 import { ProjectFormModal } from '../features/projects/components/ProjectFormModal';
 import { GCEFormModal } from '../features/gce/components/GCEFormModal';
+import { SelectGCEForTableModal } from '../features/decision-table/components/SelectGCEForTableModal';
 
 export function HomePage() {
   const navigate = useNavigate();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showCreateGCEModal, setShowCreateGCEModal] = useState(false);
+  const [showSelectGCEModal, setShowSelectGCEModal] = useState(false);
 
   return (
     <div className="min-h-screen bg-surface flex flex-col">
@@ -21,7 +23,7 @@ export function HomePage() {
       <main className="flex-1">
         <HeroSection onCreateProject={() => setShowCreateModal(true)} />
         <ProjectsSection />
-        <QuickActionsSection onCreateGCE={() => setShowCreateGCEModal(true)} />
+        <QuickActionsSection onCreateGCE={() => setShowCreateGCEModal(true)} onGenerateTable={() => setShowSelectGCEModal(true)} />
         <RecentArtifactsSection />
       </main>
 
@@ -40,6 +42,12 @@ export function HomePage() {
       {showCreateGCEModal && (
         <GCEFormModal
           onClose={() => setShowCreateGCEModal(false)}
+        />
+      )}
+
+      {showSelectGCEModal && (
+        <SelectGCEForTableModal
+          onClose={() => setShowSelectGCEModal(false)}
         />
       )}
     </div>

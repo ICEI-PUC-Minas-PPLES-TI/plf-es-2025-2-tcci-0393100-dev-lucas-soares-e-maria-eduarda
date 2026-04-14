@@ -36,11 +36,13 @@ const quickActions = [
 
 interface QuickActionsSectionProps {
   onCreateGCE?: () => void;
+  onGenerateTable?: () => void;
 }
 
-export function QuickActionsSection({ onCreateGCE }: QuickActionsSectionProps) {
+export function QuickActionsSection({ onCreateGCE, onGenerateTable }: QuickActionsSectionProps) {
   const handleClick = (id: number) => {
     if (id === 2) onCreateGCE?.();
+    if (id === 3) onGenerateTable?.();
   };
 
   return (

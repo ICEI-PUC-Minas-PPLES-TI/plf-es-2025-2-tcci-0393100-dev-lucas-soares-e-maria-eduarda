@@ -3,6 +3,7 @@ import { SectionHeader } from '../../../components/SectionHeader';
 
 interface QuickActionsProps {
   onCreateGCE?: () => void;
+  onGenerateTable?: () => void;
 }
 
 const actions = [
@@ -40,9 +41,10 @@ const actions = [
   },
 ];
 
-export function QuickActions({ onCreateGCE }: QuickActionsProps) {
+export function QuickActions({ onCreateGCE, onGenerateTable }: QuickActionsProps) {
   const handleClick = (id: string) => {
     if (id === 'gce') onCreateGCE?.();
+    if (id === 'table') onGenerateTable?.();
   };
 
   return (
