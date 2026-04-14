@@ -42,7 +42,7 @@ export interface GCEValidationError {
 export interface GCENodeDTO {
   id?: string;
   code: string;
-  label: string;
+  label?: string;
   type: GCENodeType;
   operatorType: OperatorType | null;
   /** Positions are stored client-side only (not in the backend).  */

@@ -12,7 +12,13 @@ function bendsKey(gceId: string) {
   return `gce_bends_${gceId}`;
 }
 
-export function loadBends(gceId: string): Record<string, { x: number; y: number }> {
+interface EdgeMeta {
+  bend?: { x: number; y: number };
+  sourceHandle?: string;
+  targetHandle?: string;
+}
+
+export function loadBends(gceId: string): Record<string, EdgeMeta> {
   try {
     return JSON.parse(localStorage.getItem(bendsKey(gceId)) ?? '{}');
   } catch {
@@ -21,12 +27,16 @@ export function loadBends(gceId: string): Record<string, { x: number; y: number 
 }
 
 export function saveBends(gceId: string, edges: GCEFlowEdge[]) {
-  const bends: Record<string, { x: number; y: number }> = {};
+  const meta: Record<string, EdgeMeta> = {};
   edges.forEach((e) => {
-    const bend = (e.data as { bend?: { x: number; y: number } } | undefined)?.bend;
-    if (bend) bends[`${e.source}-${e.target}`] = bend;
+    const key = `${e.source}-${e.target}`;
+    const entry: EdgeMeta = {};
+    if (e.data?.bend) entry.bend = e.data.bend;
+    if (e.sourceHandle) entry.sourceHandle = e.sourceHandle;
+    if (e.targetHandle) entry.targetHandle = e.targetHandle;
+    meta[key] = entry;
   });
-  localStorage.setItem(bendsKey(gceId), JSON.stringify(bends));
+  localStorage.setItem(bendsKey(gceId), JSON.stringify(meta));
 }
 
 export function loadPositions(gceId: string): Record<string, { x: number; y: number }> {
@@ -57,7 +67,7 @@ export function dtoToFlowNodes(dto: GCEDTO): GCEFlowNode[] {
       position: saved[node.code] ?? { x: (index % 3) * 260, y: Math.floor(index / 3) * 160 },
       data: {
         code: node.code,
-        label: node.label,
+        label: node.label ?? '',
         nodeType: node.type,
         operatorType: node.operatorType,
       },
@@ -67,17 +77,22 @@ export function dtoToFlowNodes(dto: GCEDTO): GCEFlowNode[] {
 
 export function dtoToFlowEdges(dto: GCEDTO): GCEFlowEdge[] {
   const bends = loadBends(dto.id);
-  return dto.edges.map((edge, i) => ({
-    id: `e-${i}`,
-    source: edge.sourceNodeCode,
-    target: edge.targetNodeCode,
-    type: edge.type === 'NEGATED' ? 'negation' : 'editable',
-    data: {
-      edgeType: edge.type,
-      backendId: edge.id,
-      bend: bends[`${edge.sourceNodeCode}-${edge.targetNodeCode}`],
-    },
-  }));
+  return dto.edges.map((edge, i) => {
+    const meta = bends[`${edge.sourceNodeCode}-${edge.targetNodeCode}`];
+    return {
+      id: `e-${i}`,
+      source: edge.sourceNodeCode,
+      target: edge.targetNodeCode,
+      sourceHandle: meta?.sourceHandle,
+      targetHandle: meta?.targetHandle,
+      type: edge.type === 'NEGATED' ? 'negation' : 'editable',
+      data: {
+        edgeType: edge.type,
+        backendId: edge.id,
+        bend: meta?.bend,
+      },
+    };
+  });
 }
 
 export function dtoToRestrictions(dto: GCEDTO): GCERestriction[] {
