@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from '../pages/LoginPage';
 import { SignUpPage } from '../pages/SignUpPage';
 import { HomePage } from '../pages/HomePage';
+import { ProjectLayout } from '../pages/ProjectLayout';
 import { ProjectPage } from '../pages/ProjectPage';
 import { GCEEditorPage } from '../pages/GCEEditorPage';
 import { DecisionTablePage } from '../pages/DecisionTablePage';
@@ -20,9 +21,11 @@ export function AppRouter() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/cadastro" element={<SignUpPage />} />
         <Route path="/homepage" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
-        <Route path="/projeto/:id" element={<ProtectedRoute><ProjectPage /></ProtectedRoute>} />
-        <Route path="/projeto/:projectId/gce/:gceId" element={<ProtectedRoute><GCEEditorPage /></ProtectedRoute>} />
-        <Route path="/projeto/:projectId/gce/:gceId/tabela-decisao" element={<ProtectedRoute><DecisionTablePage /></ProtectedRoute>} />
+        <Route path="/projeto/:projectId" element={<ProtectedRoute><ProjectLayout /></ProtectedRoute>}>
+          <Route index element={<ProjectPage />} />
+          <Route path="gce/:gceId" element={<GCEEditorPage />} />
+          <Route path="gce/:gceId/tabela-decisao" element={<DecisionTablePage />} />
+        </Route>
         <Route path="/" element={<Navigate to="/homepage" replace />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>

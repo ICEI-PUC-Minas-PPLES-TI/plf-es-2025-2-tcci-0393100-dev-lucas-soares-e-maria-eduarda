@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { useParams, useLocation, useNavigate, useOutletContext } from 'react-router-dom';
 import { ReactFlowProvider } from '@xyflow/react';
 import { Header } from '../components/Header';
 import { GCEToolbar } from '../features/gce/components/GCEToolbar';
@@ -16,11 +16,12 @@ import {
   saveBends,
 } from '../features/gce/utils/gceConverters';
 import GCEService from '../services/GCE/GCEService';
-import ProjectService from '../services/Project/ProjectService';
 import type { GCEDTO, GCEValidationResponse, GCERestriction } from '../features/gce/types/gce';
+import type { ProjectLayoutContext } from './ProjectLayout';
 
 export function GCEEditorPage() {
   const { projectId, gceId } = useParams<{ projectId: string; gceId: string }>();
+  const { project } = useOutletContext<ProjectLayoutContext>();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -50,7 +51,6 @@ export function GCEEditorPage() {
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [isValidated, setIsValidated] = useState(false);
   const [liveRestrictions, setLiveRestrictions] = useState<GCERestriction[]>([]);
-  const [projectName, setProjectName] = useState<string | null>(null);
   const canvasRef = useRef<GCECanvasHandle>(null);
 
   useEffect(() => {
@@ -60,13 +60,6 @@ export function GCEEditorPage() {
       .catch(() => setLoadError('GCE não encontrado.'))
       .finally(() => setLoading(false));
   }, [isNew, gceId]);
-
-  useEffect(() => {
-    if (!projectId) return;
-    ProjectService.buscarPorId(projectId)
-      .then((p) => setProjectName(p.name))
-      .catch(() => {});
-  }, [projectId]);
 
   const handleSelectionChange = useCallback((nodeId: string | null, edgeId: string | null) => {
     setSelectedNodeId(nodeId);
@@ -177,7 +170,7 @@ export function GCEEditorPage() {
         <Header
           breadcrumb={[
             { label: 'Projetos', href: '/homepage' },
-            { label: projectName ?? 'Projeto', href: `/projeto/${projectId}` },
+            { label: project.name, href: `/projeto/${projectId}` },
             { label: gce.name },
           ]}
         />

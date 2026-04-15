@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { DecisionTableToolbar } from '../features/decision-table/components/DecisionTableToolbar';
 import { ConditionsPanel } from '../features/decision-table/components/ConditionsPanel';
@@ -8,16 +8,16 @@ import { ValidationStatusBar } from '../features/decision-table/components/Valid
 import { convertGCEToDecisionTable, createEmptyRule } from '../features/decision-table/utils/gceToDecisionTable';
 import decisionTableLocalService from '../features/decision-table/services/decisionTableLocalService';
 import GCEService from '../services/GCE/GCEService';
-import ProjectService from '../services/Project/ProjectService';
 import type { DecisionTable, ConditionValue, EffectValue } from '../features/decision-table/types/decisionTable';
+import type { ProjectLayoutContext } from './ProjectLayout';
 
 export function DecisionTablePage() {
   const { projectId, gceId } = useParams<{ projectId: string; gceId: string }>();
+  const { project } = useOutletContext<ProjectLayoutContext>();
   const navigate = useNavigate();
 
   const [table, setTable] = useState<DecisionTable | null>(null);
   const [gceName, setGceName] = useState<string | null>(null);
-  const [projectName, setProjectName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
@@ -51,13 +51,6 @@ export function DecisionTablePage() {
 
     load();
   }, [gceId, projectId]);
-
-  useEffect(() => {
-    if (!projectId) return;
-    ProjectService.buscarPorId(projectId)
-      .then((p) => setProjectName(p.name))
-      .catch(() => {});
-  }, [projectId]);
 
   const handleSave = useCallback(() => {
     if (!table) return;
@@ -168,7 +161,7 @@ export function DecisionTablePage() {
       <Header
         breadcrumb={[
           { label: 'Projetos', href: '/homepage' },
-          { label: projectName ?? 'Projeto', href: `/projeto/${projectId}` },
+          { label: project.name, href: `/projeto/${projectId}` },
           { label: table.name },
         ]}
       />
