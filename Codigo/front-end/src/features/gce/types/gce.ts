@@ -70,6 +70,8 @@ export interface GCEDTO {
   name: string;
   description: string;
   selected: boolean;
+  createdAt: string;
+  updatedAt: string | null;
   nodes: GCENodeDTO[];
   edges: GCEEdgeDTO[];
   restrictions: GCERestrictionDTO[];

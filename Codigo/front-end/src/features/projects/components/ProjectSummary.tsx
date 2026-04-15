@@ -1,6 +1,7 @@
 import { TrendingUp } from 'lucide-react';
 import { SectionHeader } from '../../../components/SectionHeader';
 import { ARTIFACT_TYPES } from '../../../shared/artifactTypes';
+import { formatRelativeDate, formatShortDate } from '../../../utils/formatDate';
 
 const stats = [
   { label: 'Artefatos', value: 12, icon: ARTIFACT_TYPES.CODE.icon, color: ARTIFACT_TYPES.CODE.color },
@@ -9,7 +10,12 @@ const stats = [
   { label: 'Tabelas de Decisão', value: 3, icon: ARTIFACT_TYPES.TABLE.icon, color: ARTIFACT_TYPES.TABLE.color },
 ];
 
-export function ProjectSummary() {
+interface ProjectSummaryProps {
+  createdAt: string;
+  updatedAt: string | null;
+}
+
+export function ProjectSummary({ createdAt, updatedAt }: ProjectSummaryProps) {
   return (
     <div className="bg-surface-card border border-edge rounded-lg p-5">
       <SectionHeader title="Resumo do Projeto" icon={TrendingUp} />
@@ -46,8 +52,14 @@ export function ProjectSummary() {
 
       <div className="mt-4 grid grid-cols-2 gap-3">
         <div className="bg-surface border border-edge rounded p-3">
+          <p className="text-xs text-gray-500 mb-1">Criado em</p>
+          <p className="text-sm">{formatShortDate(createdAt)}</p>
+        </div>
+        <div className="bg-surface border border-edge rounded p-3">
           <p className="text-xs text-gray-500 mb-1">Última atualização</p>
-          <p className="text-sm">2 horas atrás</p>
+          <p className="text-sm">
+            {updatedAt ? formatRelativeDate(updatedAt) : '—'}
+          </p>
         </div>
       </div>
     </div>

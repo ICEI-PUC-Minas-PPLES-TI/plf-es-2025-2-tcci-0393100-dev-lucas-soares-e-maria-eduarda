@@ -47,6 +47,8 @@ export function ProjectPage() {
       <ProjectHeader
         projectName={project.name}
         projectDescription={project.description}
+        createdAt={project.createdAt}
+        updatedAt={project.updatedAt}
         onEdit={() => setShowEditModal(true)}
         onDelete={() => setShowDeleteModal(true)}
       />
@@ -61,7 +63,7 @@ export function ProjectPage() {
               <ValidationWarnings />
             </div>
             <aside className="w-80 shrink-0 hidden lg:block">
-              <ProjectSummary />
+              <ProjectSummary createdAt={project.createdAt} updatedAt={project.updatedAt} />
             </aside>
           </div>
         )}
