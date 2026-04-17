@@ -2,6 +2,7 @@ package br.pucminas.graphtest.application.usecases.decisiontable;
 
 import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTable;
 import br.pucminas.graphtest.application.domain.gce.model.Gce;
+import br.pucminas.graphtest.application.exception.DecisionTableAlreadySynchronizedException;
 import br.pucminas.graphtest.application.exception.EntityNotFoundException;
 import br.pucminas.graphtest.application.port.input.decisiontable.RefreshDecisionTableUseCasePort;
 import br.pucminas.graphtest.application.port.input.decisiontable.records.DecisionTableByGceIdInput;
@@ -9,6 +10,7 @@ import br.pucminas.graphtest.application.port.input.decisiontable.records.Decisi
 import br.pucminas.graphtest.application.port.output.repositories.DecisionTableRepositoryPort;
 import br.pucminas.graphtest.application.port.output.repositories.GceRepositoryPort;
 import br.pucminas.graphtest.application.service.decisiontable.interfaces.DecisionTableDerivationService;
+import br.pucminas.graphtest.application.service.decisiontable.interfaces.DecisionTableSyncService;
 import br.pucminas.graphtest.application.service.gce.interfaces.GceMutationService;
 import br.pucminas.graphtest.application.service.project.interfaces.ProjectAccessService;
 
@@ -22,17 +24,20 @@ public class RefreshDecisionTableUseCaseImpl implements RefreshDecisionTableUseC
     private final ProjectAccessService projectAccessService;
     private final GceMutationService gceMutationService;
     private final DecisionTableDerivationService decisionTableDerivationService;
+    private final DecisionTableSyncService decisionTableSyncService;
 
     public RefreshDecisionTableUseCaseImpl(DecisionTableRepositoryPort decisionTableRepository,
                                            GceRepositoryPort gceRepository,
                                            ProjectAccessService projectAccessService,
                                            GceMutationService gceMutationService,
-                                           DecisionTableDerivationService decisionTableDerivationService) {
+                                           DecisionTableDerivationService decisionTableDerivationService,
+                                           DecisionTableSyncService decisionTableSyncService) {
         this.decisionTableRepository = decisionTableRepository;
         this.gceRepository = gceRepository;
         this.projectAccessService = projectAccessService;
         this.gceMutationService = gceMutationService;
         this.decisionTableDerivationService = decisionTableDerivationService;
+        this.decisionTableSyncService = decisionTableSyncService;
     }
 
     @Override
@@ -41,7 +46,16 @@ public class RefreshDecisionTableUseCaseImpl implements RefreshDecisionTableUseC
                 .orElseThrow(() -> new EntityNotFoundException("Tabela de decisao nao encontrada"));
 
         Gce graph = gceMutationService.loadAuthorizedGraph(input.gceId(), gceRepository, projectAccessService);
+        ensureDecisionTableIsOutdated(currentTable, graph);
         DecisionTable refreshedTable = decisionTableDerivationService.derive(graph, currentTable);
         return DecisionTableOutput.from(decisionTableRepository.save(refreshedTable));
+    }
+
+    private void ensureDecisionTableIsOutdated(DecisionTable currentTable, Gce graph) {
+        if (!decisionTableSyncService.isStale(currentTable, graph)) {
+            throw new DecisionTableAlreadySynchronizedException(
+                    "Tabela de decisão já está sincronizada com GCE correspondente"
+            );
+        }
     }
 }
