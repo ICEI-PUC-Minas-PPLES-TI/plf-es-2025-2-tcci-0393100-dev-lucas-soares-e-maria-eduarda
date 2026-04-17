@@ -8,6 +8,7 @@ import br.pucminas.graphtest.application.port.input.gce.records.GceOutput;
 import br.pucminas.graphtest.application.port.output.repositories.GceRepositoryPort;
 import br.pucminas.graphtest.application.service.gce.interfaces.GceMutationService;
 import br.pucminas.graphtest.application.service.gce.interfaces.GceValidationResultService;
+import br.pucminas.graphtest.application.service.decisiontable.interfaces.DecisionTableSyncStatusUpdateService;
 import br.pucminas.graphtest.application.service.project.interfaces.ProjectAccessService;
 
 import java.time.LocalDateTime;
@@ -21,15 +22,18 @@ public class AddNodeToGceUseCaseImpl implements AddNodeToGceUseCasePort {
     private final ProjectAccessService projectAccessService;
     private final GceValidationResultService gceValidationResultService;
     private final GceMutationService gceMutationService;
+    private final DecisionTableSyncStatusUpdateService decisionTableSyncStatusUpdateService;
 
     public AddNodeToGceUseCaseImpl(GceRepositoryPort gceRepository,
                                    ProjectAccessService projectAccessService,
                                    GceValidationResultService gceValidationResultService,
-                                   GceMutationService gceMutationService) {
+                                   GceMutationService gceMutationService,
+                                   DecisionTableSyncStatusUpdateService decisionTableSyncStatusUpdateService) {
         this.gceRepository = gceRepository;
         this.projectAccessService = projectAccessService;
         this.gceValidationResultService = gceValidationResultService;
         this.gceMutationService = gceMutationService;
+        this.decisionTableSyncStatusUpdateService = decisionTableSyncStatusUpdateService;
     }
 
     @Override
@@ -50,6 +54,8 @@ public class AddNodeToGceUseCaseImpl implements AddNodeToGceUseCasePort {
         gceMutationService.refreshOperatorLabels(graph);
         gceMutationService.validateAndThrow(graph, gceValidationResultService);
         graph.setUpdatedAt(LocalDateTime.now());
-        return GceOutput.from(gceRepository.save(graph));
+        Gce persistedGraph = gceRepository.save(graph);
+        decisionTableSyncStatusUpdateService.markDecisionTableAsStaleByGceId(persistedGraph.getId());
+        return GceOutput.from(persistedGraph);
     }
 }

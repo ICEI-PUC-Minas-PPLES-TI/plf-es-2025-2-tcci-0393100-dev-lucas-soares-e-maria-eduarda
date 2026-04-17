@@ -507,17 +507,15 @@ public class DecisionTableDerivationServiceImpl implements DecisionTableDerivati
 
     private String buildFingerprint(Gce graph) {
         StringBuilder builder = new StringBuilder();
-        appendGraphMetadata(graph, builder);
+        appendGraphIdentity(graph, builder);
         appendNodes(graph, builder);
         appendEdges(graph, builder);
         appendRestrictions(graph, builder);
         return hash(builder.toString());
     }
 
-    private void appendGraphMetadata(Gce graph, StringBuilder builder) {
-        builder.append(graph.getProjectId()).append('|')
-                .append(graph.getName()).append('|')
-                .append(graph.getDescription()).append('|');
+    private void appendGraphIdentity(Gce graph, StringBuilder builder) {
+        builder.append(graph.getProjectId()).append('|');
     }
 
     private void appendNodes(Gce graph, StringBuilder builder) {
@@ -554,15 +552,21 @@ public class DecisionTableDerivationServiceImpl implements DecisionTableDerivati
     private void appendRestrictions(Gce graph, StringBuilder builder) {
         graph.getRestrictions().stream()
                 .sorted(Comparator.comparing((GceRestriction restriction) -> restriction.getType().name())
-                        .thenComparing(restriction -> String.join(",", restriction.getNodeCodes())))
+                        .thenComparing(this::normalizedRestrictionNodeCodes))
                 .forEach(restriction -> appendRestriction(builder, restriction));
     }
 
     private void appendRestriction(StringBuilder builder, GceRestriction restriction) {
         builder.append("R:")
                 .append(restriction.getType()).append(':')
-                .append(String.join(",", restriction.getNodeCodes()))
+                .append(normalizedRestrictionNodeCodes(restriction))
                 .append('|');
+    }
+
+    private String normalizedRestrictionNodeCodes(GceRestriction restriction) {
+        return restriction.getNodeCodes().stream()
+                .sorted()
+                .collect(java.util.stream.Collectors.joining(","));
     }
 
     private String hash(String value) {

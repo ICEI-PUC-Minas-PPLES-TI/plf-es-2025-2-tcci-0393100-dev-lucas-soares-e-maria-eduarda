@@ -1,10 +1,11 @@
 package br.pucminas.graphtest.application.service.decisiontable;
 
-import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTable;
-import br.pucminas.graphtest.application.domain.gce.model.GceEdge;
-import br.pucminas.graphtest.application.domain.gce.model.GceRestriction;
 import br.pucminas.graphtest.application.domain.gce.model.Gce;
-import br.pucminas.graphtest.application.service.decisiontable.interfaces.DecisionTableSyncService;
+import br.pucminas.graphtest.application.domain.gce.model.GceEdge;
+import br.pucminas.graphtest.application.domain.gce.model.GceNode;
+import br.pucminas.graphtest.application.domain.gce.model.GceRestriction;
+import br.pucminas.graphtest.application.port.output.repositories.DecisionTableRepositoryPort;
+import br.pucminas.graphtest.application.service.decisiontable.interfaces.DecisionTableSyncStatusUpdateService;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -12,24 +13,38 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Comparator;
 import java.util.HexFormat;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
- * Implementacao concreta do servico responsavel por verificar sincronizacao entre tabela de decisao e GCE.
+ * Implementacao concreta do servico responsavel por persistir a marcacao de desatualizacao
+ * da tabela de decisao quando o GCE de origem muda semanticamente.
  */
-public class DecisionTableSyncServiceImpl implements DecisionTableSyncService {
+public class DecisionTableSyncStatusUpdateServiceImpl implements DecisionTableSyncStatusUpdateService {
+
+    private final DecisionTableRepositoryPort decisionTableRepository;
+
+    public DecisionTableSyncStatusUpdateServiceImpl(DecisionTableRepositoryPort decisionTableRepository) {
+        this.decisionTableRepository = decisionTableRepository;
+    }
 
     @Override
-    public boolean isStale(DecisionTable decisionTable, Gce graph) {
-        Objects.requireNonNull(decisionTable, "decisionTable e obrigatorio.");
-        return graph == null
-                || hasDifferentFingerprint(decisionTable, graph);
+    public void markDecisionTableAsStaleByGceId(UUID gceId) {
+        decisionTableRepository.findByGceId(gceId).ifPresent(decisionTable -> {
+            if (!decisionTable.isStale()) {
+                decisionTable.markAsStale();
+                decisionTableRepository.save(decisionTable);
+            }
+        });
     }
 
-    private boolean hasDifferentFingerprint(DecisionTable decisionTable, Gce graph) {
-        return !buildFingerprint(graph).equals(decisionTable.getSourceFingerprint());
+    @Override
+    public boolean hasDecisionTableRelevantChanges(Gce previousGraph, Gce currentGraph) {
+        Objects.requireNonNull(previousGraph, "previousGraph e obrigatorio.");
+        Objects.requireNonNull(currentGraph, "currentGraph e obrigatorio.");
+        return !buildRelevantFingerprint(previousGraph).equals(buildRelevantFingerprint(currentGraph));
     }
 
-    private String buildFingerprint(Gce graph) {
+    private String buildRelevantFingerprint(Gce graph) {
         StringBuilder builder = new StringBuilder();
         appendGraphIdentity(graph, builder);
         appendNodes(graph, builder);
@@ -44,11 +59,11 @@ public class DecisionTableSyncServiceImpl implements DecisionTableSyncService {
 
     private void appendNodes(Gce graph, StringBuilder builder) {
         graph.getNodes().stream()
-                .sorted(Comparator.comparing(node -> node.getCode()))
+                .sorted(Comparator.comparing(GceNode::getCode))
                 .forEach(node -> appendNode(builder, node));
     }
 
-    private void appendNode(StringBuilder builder, br.pucminas.graphtest.application.domain.gce.model.GceNode node) {
+    private void appendNode(StringBuilder builder, GceNode node) {
         builder.append("N:")
                 .append(node.getCode()).append(':')
                 .append(node.getLabel()).append(':')
@@ -98,7 +113,7 @@ public class DecisionTableSyncServiceImpl implements DecisionTableSyncService {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             return HexFormat.of().formatHex(digest.digest(value.getBytes(StandardCharsets.UTF_8)));
         } catch (NoSuchAlgorithmException exception) {
-            throw new IllegalStateException("Nao foi possivel calcular o fingerprint da tabela de decisao.", exception);
+            throw new IllegalStateException("Nao foi possivel calcular o fingerprint relevante do GCE.", exception);
         }
     }
 }
