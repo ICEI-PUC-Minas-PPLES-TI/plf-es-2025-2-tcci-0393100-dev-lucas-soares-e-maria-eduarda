@@ -1,6 +1,6 @@
 package br.pucminas.graphtest.adapters.outbound.repositories.jpa.interfaces;
 
-import br.pucminas.graphtest.adapters.outbound.entities.jpa.JpaUserEntity;
+import br.pucminas.graphtest.adapters.outbound.entities.jpa.user.JpaUserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;

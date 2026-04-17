@@ -1,5 +1,7 @@
-package br.pucminas.graphtest.adapters.outbound.entities.jpa;
+package br.pucminas.graphtest.adapters.outbound.entities.jpa.project;
 
+import br.pucminas.graphtest.adapters.outbound.entities.jpa.user.JpaUserEntity;
+import br.pucminas.graphtest.adapters.outbound.entities.jpa.shared.JpaBaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 

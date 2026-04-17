@@ -11,7 +11,19 @@ public final class ApiRequestPaths {
 
     public static final String GCE = "/grafo-de-causa-efeito";
 
+    public static final String DECISION_TABLE = "/tabela-de-decisao";
+
+    public static final String DECISION_TABLE_BY_GCE = "/gce/{gceId}";
+
+    public static final String DECISION_TABLE_GENERATE = "/a-partir-do-gce/{gceId}";
+
+    public static final String DECISION_TABLE_PREVIEW = "/pre-visualizar/a-partir-do-gce/{gceId}";
+
+    public static final String DECISION_TABLE_REFRESH = "/sincronizar/a-partir-do-gce/{gceId}";
+
     public static final String ID = "/{id}";
+
+    public static final String DECISION_TABLE_STATUS = "/{id}/status";
 
     public static final String USUARIO_SENHA = "/{id}/senha";
 
@@ -28,5 +40,7 @@ public final class ApiRequestPaths {
     public static final String GCE_NODE = "/{id}/nos/{nodeCode}";
 
     public static final String GCE_EDGE_TOGGLE = "/{id}/aresta/{edgeId}/inverter-aresta";
+
+    public static final String DECISION_TABLE_PROJECT = "/projeto/{projectId}";
 
 }

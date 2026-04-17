@@ -22,6 +22,9 @@ public class ControllerConstantsUtil {
     public static final List<String> CHAVES_GCE_CONTROLLER =
             new ArrayList<>(asList("status", "mensagem", "id_gce"));
 
+    public static final List<String> CHAVES_TABELA_DECISAO_CONTROLLER =
+            new ArrayList<>(asList("status", "mensagem", "id_tabela_decisao"));
+
     public static final String MSG_USUARIO_CRIADO = "usuario criado com sucesso";
 
     public static final String MSG_USUARIO_ATUALIZADO = "usuario atualizado com sucesso";
@@ -39,4 +42,6 @@ public class ControllerConstantsUtil {
     public static final String MSG_GCE_CRIADO = "gce criado com sucesso";
 
     public static final String MSG_GCE_DELETADO = "gce deletado com sucesso";
+
+    public static final String MSG_TABELA_DECISAO_DELETADA = "tabela de decisao deletada com sucesso";
 }
