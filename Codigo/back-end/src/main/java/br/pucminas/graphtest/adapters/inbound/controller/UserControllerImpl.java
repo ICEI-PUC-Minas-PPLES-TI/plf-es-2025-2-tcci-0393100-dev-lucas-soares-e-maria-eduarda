@@ -1,6 +1,7 @@
 package br.pucminas.graphtest.adapters.inbound.controller;
 
 import br.pucminas.graphtest.adapters.inbound.controller.interfaces.UserController;
+import br.pucminas.graphtest.adapters.inbound.controller.interfaces.OperacoesCRUDController;
 import br.pucminas.graphtest.adapters.inbound.dto.user.PasswordDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.security.TokenValidationDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.user.UserDTO;
@@ -60,7 +61,7 @@ import static org.springframework.http.HttpStatus.OK;
 @Validated
 @RequestMapping(USUARIO)
 @AllArgsConstructor
-public class UserControllerImpl implements UserController {
+public class UserControllerImpl implements UserController, OperacoesCRUDController<UserDTO, UserDTO> {
 
     private final CreateUserUseCasePort criarUsuarioUseCase;
     private final DeleteUserUseCasePort deletarUsuarioUseCase;

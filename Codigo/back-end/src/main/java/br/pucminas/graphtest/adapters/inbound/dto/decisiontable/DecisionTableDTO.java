@@ -18,7 +18,6 @@ public record DecisionTableDTO(
         String description,
         String sourceFingerprint,
         DecisionTableSyncStatusEnum syncStatus,
-        LocalDateTime generatedAt,
         LocalDateTime sourceGceUpdatedAt,
         LocalDateTime createdAt,
         LocalDateTime updatedAt,

@@ -1,6 +1,6 @@
 package br.pucminas.graphtest.adapters.outbound.entities.jpa.decisiontable;
 
-import br.pucminas.graphtest.adapters.outbound.entities.jpa.JpaBaseEntity;
+import br.pucminas.graphtest.adapters.outbound.entities.jpa.shared.JpaAssignedIdEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -20,7 +20,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @ToString(exclude = "decisionTable")
-public class JpaDecisionTableConditionEntity extends JpaBaseEntity {
+public class JpaDecisionTableConditionEntity extends JpaAssignedIdEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "DECISION_TABLE_ID", nullable = false)

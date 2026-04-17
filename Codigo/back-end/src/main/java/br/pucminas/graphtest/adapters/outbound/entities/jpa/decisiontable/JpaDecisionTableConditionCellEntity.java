@@ -1,6 +1,6 @@
 package br.pucminas.graphtest.adapters.outbound.entities.jpa.decisiontable;
 
-import br.pucminas.graphtest.adapters.outbound.entities.jpa.JpaBaseEntity;
+import br.pucminas.graphtest.adapters.outbound.entities.jpa.shared.JpaAssignedIdEntity;
 import br.pucminas.graphtest.application.domain.decisiontable.enums.DecisionTableConditionValueEnum;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -23,7 +23,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @ToString(exclude = {"decisionTable", "rule", "condition"})
-public class JpaDecisionTableConditionCellEntity extends JpaBaseEntity {
+public class JpaDecisionTableConditionCellEntity extends JpaAssignedIdEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "DECISION_TABLE_ID", nullable = false)

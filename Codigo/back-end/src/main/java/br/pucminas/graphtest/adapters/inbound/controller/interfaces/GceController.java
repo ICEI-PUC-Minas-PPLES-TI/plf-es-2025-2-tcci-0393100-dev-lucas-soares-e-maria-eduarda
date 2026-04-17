@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GCE_EDGE_TOGGLE;
@@ -26,10 +25,7 @@ import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GCE_PRO
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GCE_VALIDAR;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.ID;
 
-public interface GceController extends BaseCRUDController<GceDTO> {
-
-    @PostMapping
-    ResponseEntity<Map<String, Object>> create(@Validated @RequestBody GceInputDTO graph);
+public interface GceController {
 
     @PutMapping(ID)
     ResponseEntity<GceDTO> update(@PathVariable UUID id, @Validated @RequestBody GceInputDTO graph);

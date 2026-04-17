@@ -1,6 +1,6 @@
 package br.pucminas.graphtest.adapters.outbound.repositories.jpa;
 
-import br.pucminas.graphtest.adapters.outbound.entities.jpa.JpaProjectEntity;
+import br.pucminas.graphtest.adapters.outbound.entities.jpa.project.JpaProjectEntity;
 import br.pucminas.graphtest.adapters.outbound.repositories.jpa.interfaces.JpaProjectRepository;
 import br.pucminas.graphtest.adapters.outbound.repositories.shared.BasePersistenceMapper;
 import br.pucminas.graphtest.application.domain.project.model.Project;

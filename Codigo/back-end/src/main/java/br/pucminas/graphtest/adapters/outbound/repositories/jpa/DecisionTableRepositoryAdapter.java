@@ -21,7 +21,21 @@ public class DecisionTableRepositoryAdapter implements DecisionTableRepositoryPo
 
     @Override
     public DecisionTable save(DecisionTable decisionTable) {
-        return mapper.toDomain(jpaDecisionTableRepository.save(mapper.toEntity(decisionTable)));
+        JpaDecisionTableEntity entity = mapper.toEntity(decisionTable);
+        markEntityState(entity);
+        return mapper.toDomain(jpaDecisionTableRepository.save(entity));
+    }
+
+    /**
+     * A tabela de decisao nasce no dominio com ID proprio. Por isso o adapter precisa informar
+     * ao Spring Data se a entidade representa uma insercao inicial ou uma atualizacao.
+     */
+    private void markEntityState(JpaDecisionTableEntity entity) {
+        if (entity.getId() != null && jpaDecisionTableRepository.existsById(entity.getId())) {
+            entity.markAsExisting();
+            return;
+        }
+        entity.markAsNew();
     }
 
     @Override

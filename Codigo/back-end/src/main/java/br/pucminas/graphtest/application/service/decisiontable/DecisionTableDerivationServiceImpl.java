@@ -275,7 +275,6 @@ public class DecisionTableDerivationServiceImpl implements DecisionTableDerivati
                 graph.getDescription(),
                 buildFingerprint(graph),
                 DecisionTableSyncStatusEnum.UP_TO_DATE,
-                now,
                 effectiveGraphUpdatedAt(graph),
                 conditions,
                 actions,

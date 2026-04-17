@@ -1,6 +1,7 @@
 package br.pucminas.graphtest.adapters.inbound.controller;
 
 import br.pucminas.graphtest.adapters.inbound.controller.interfaces.GceController;
+import br.pucminas.graphtest.adapters.inbound.controller.interfaces.OperacoesCRUDController;
 import br.pucminas.graphtest.adapters.inbound.dto.gce.AddGceNodeDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gce.GceDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gce.GceInputDTO;
@@ -72,7 +73,7 @@ import static org.springframework.http.HttpStatus.OK;
 @Validated
 @RequestMapping(GCE)
 @AllArgsConstructor
-public class GceControllerImpl implements GceController {
+public class GceControllerImpl implements GceController, OperacoesCRUDController<GceInputDTO, GceDTO> {
 
     private final CreateGceUseCasePort createGceUseCasePort;
     private final DeleteGceUseCasePort deleteGceUseCasePort;
@@ -198,4 +199,5 @@ public class GceControllerImpl implements GceController {
         GceOutput updatedGraph = toggleGceEdgeUseCasePort.execute(toToggleEdgeInput(id, edgeId));
         return ResponseEntity.ok(toDto(updatedGraph));
     }
+
 }

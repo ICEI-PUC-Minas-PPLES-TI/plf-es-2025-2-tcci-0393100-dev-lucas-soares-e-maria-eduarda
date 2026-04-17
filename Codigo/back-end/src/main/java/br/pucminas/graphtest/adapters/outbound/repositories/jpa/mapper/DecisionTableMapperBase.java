@@ -40,7 +40,6 @@ public class DecisionTableMapperBase implements BasePersistenceMapper<DecisionTa
         entity.setDescription(decisionTable.getDescription());
         entity.setSourceFingerprint(decisionTable.getSourceFingerprint());
         entity.setSyncStatus(decisionTable.getSyncStatus());
-        entity.setGeneratedAt(decisionTable.getGeneratedAt());
         entity.setSourceGceUpdatedAt(decisionTable.getSourceGceUpdatedAt());
 
         Map<UUID, JpaDecisionTableConditionEntity> conditionsById = new LinkedHashMap<>();
@@ -198,7 +197,6 @@ public class DecisionTableMapperBase implements BasePersistenceMapper<DecisionTa
                 entity.getDescription(),
                 entity.getSourceFingerprint(),
                 entity.getSyncStatus(),
-                entity.getGeneratedAt(),
                 entity.getSourceGceUpdatedAt(),
                 conditions,
                 actions,

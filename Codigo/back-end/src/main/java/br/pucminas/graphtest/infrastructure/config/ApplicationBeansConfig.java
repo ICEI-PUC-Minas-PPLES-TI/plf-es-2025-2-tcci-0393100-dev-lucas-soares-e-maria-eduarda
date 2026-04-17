@@ -4,8 +4,11 @@ import br.pucminas.graphtest.application.port.input.decisiontable.DeleteDecision
 import br.pucminas.graphtest.application.port.input.decisiontable.DeleteDecisionTableByIdUseCasePort;
 import br.pucminas.graphtest.application.port.input.decisiontable.FindDecisionTableByGceIdUseCasePort;
 import br.pucminas.graphtest.application.port.input.decisiontable.FindDecisionTableByIdUseCasePort;
+import br.pucminas.graphtest.application.port.input.decisiontable.FindDecisionTableStatusByIdUseCasePort;
 import br.pucminas.graphtest.application.port.input.decisiontable.GenerateDecisionTableUseCasePort;
+import br.pucminas.graphtest.application.port.input.decisiontable.ListDecisionTablesUseCasePort;
 import br.pucminas.graphtest.application.port.input.decisiontable.ListDecisionTablesByProjectUseCasePort;
+import br.pucminas.graphtest.application.port.input.decisiontable.PatchDecisionTableDetailsUseCasePort;
 import br.pucminas.graphtest.application.port.input.decisiontable.PreviewDecisionTableUseCasePort;
 import br.pucminas.graphtest.application.port.input.decisiontable.RefreshDecisionTableUseCasePort;
 import br.pucminas.graphtest.application.port.input.project.CreateProjectUseCasePort;
@@ -74,8 +77,11 @@ import br.pucminas.graphtest.application.usecases.decisiontable.DeleteDecisionTa
 import br.pucminas.graphtest.application.usecases.decisiontable.DeleteDecisionTableByIdUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.decisiontable.FindDecisionTableByGceIdUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.decisiontable.FindDecisionTableByIdUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.decisiontable.FindDecisionTableStatusByIdUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.decisiontable.GenerateDecisionTableUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.decisiontable.ListDecisionTablesUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.decisiontable.ListDecisionTablesByProjectUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.decisiontable.PatchDecisionTableDetailsUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.decisiontable.PreviewDecisionTableUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.decisiontable.RefreshDecisionTableUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.project.CreateProjectUseCaseImpl;
@@ -280,6 +286,34 @@ public class ApplicationBeansConfig {
     }
 
     @Bean
+    public FindDecisionTableStatusByIdUseCasePort findDecisionTableStatusByIdUseCase(DecisionTableRepositoryPort decisionTableRepositoryPort,
+                                                                                     GceRepositoryPort gceRepositoryPort,
+                                                                                     ProjectAccessService projectAccessService,
+                                                                                     DecisionTableSyncService decisionTableSyncService) {
+        return new FindDecisionTableStatusByIdUseCaseImpl(
+                decisionTableRepositoryPort,
+                gceRepositoryPort,
+                projectAccessService,
+                decisionTableSyncService
+        );
+    }
+
+    @Bean
+    public ListDecisionTablesUseCasePort listDecisionTablesUseCase(DecisionTableRepositoryPort decisionTableRepositoryPort,
+                                                                   GceRepositoryPort gceRepositoryPort,
+                                                                   ProjectRepositoryPort projectRepositoryPort,
+                                                                   CurrentUserPort currentUserPort,
+                                                                   DecisionTableSyncService decisionTableSyncService) {
+        return new ListDecisionTablesUseCaseImpl(
+                decisionTableRepositoryPort,
+                gceRepositoryPort,
+                projectRepositoryPort,
+                currentUserPort,
+                decisionTableSyncService
+        );
+    }
+
+    @Bean
     public ListDecisionTablesByProjectUseCasePort listDecisionTablesByProjectUseCase(DecisionTableRepositoryPort decisionTableRepositoryPort,
                                                                                      GceRepositoryPort gceRepositoryPort,
                                                                                      ProjectAccessService projectAccessService,
@@ -290,6 +324,12 @@ public class ApplicationBeansConfig {
                 projectAccessService,
                 decisionTableSyncService
         );
+    }
+
+    @Bean
+    public PatchDecisionTableDetailsUseCasePort patchDecisionTableDetailsUseCase(DecisionTableRepositoryPort decisionTableRepositoryPort,
+                                                                                 ProjectAccessService projectAccessService) {
+        return new PatchDecisionTableDetailsUseCaseImpl(decisionTableRepositoryPort, projectAccessService);
     }
 
     @Bean

@@ -1,6 +1,7 @@
 package br.pucminas.graphtest.adapters.inbound.util;
 
 import br.pucminas.graphtest.adapters.inbound.dto.decisiontable.DecisionTableDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.decisiontable.UpdateDecisionTableDetailsDTO;
 import br.pucminas.graphtest.application.port.input.decisiontable.records.DecisionTableActionCellOutput;
 import br.pucminas.graphtest.application.port.input.decisiontable.records.DecisionTableActionOutput;
 import br.pucminas.graphtest.application.port.input.decisiontable.records.DecisionTableByGceIdInput;
@@ -11,6 +12,7 @@ import br.pucminas.graphtest.application.port.input.decisiontable.records.Decisi
 import br.pucminas.graphtest.application.port.input.decisiontable.records.DecisionTableRuleOutput;
 import br.pucminas.graphtest.application.port.input.decisiontable.records.GenerateDecisionTableInput;
 import br.pucminas.graphtest.application.port.input.decisiontable.records.ListDecisionTablesByProjectInput;
+import br.pucminas.graphtest.application.port.input.decisiontable.records.UpdateDecisionTableDetailsInput;
 import jakarta.validation.constraints.NotNull;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +37,6 @@ public class DecisionTableDtoConverterUtil {
                 .description(output.description())
                 .sourceFingerprint(output.sourceFingerprint())
                 .syncStatus(output.syncStatus())
-                .generatedAt(output.generatedAt())
                 .sourceGceUpdatedAt(output.sourceGceUpdatedAt())
                 .createdAt(output.createdAt())
                 .updatedAt(output.updatedAt())
@@ -61,6 +62,10 @@ public class DecisionTableDtoConverterUtil {
 
     public static ListDecisionTablesByProjectInput toListByProjectInput(UUID projectId) {
         return new ListDecisionTablesByProjectInput(projectId);
+    }
+
+    public static UpdateDecisionTableDetailsInput toUpdateDetailsInput(UUID id, UpdateDecisionTableDetailsDTO dto) {
+        return new UpdateDecisionTableDetailsInput(id, dto.name(), dto.description());
     }
 
     private static DecisionTableDTO.DecisionTableConditionDTO toConditionDto(DecisionTableConditionOutput output) {

@@ -28,7 +28,6 @@ public class DecisionTable extends BaseEntity {
     private String description;
     private String sourceFingerprint;
     private DecisionTableSyncStatusEnum syncStatus;
-    private LocalDateTime generatedAt;
     private LocalDateTime sourceGceUpdatedAt;
     private final List<DecisionTableCondition> conditions;
     private final List<DecisionTableAction> actions;
@@ -43,7 +42,6 @@ public class DecisionTable extends BaseEntity {
                          String description,
                          String sourceFingerprint,
                          DecisionTableSyncStatusEnum syncStatus,
-                         LocalDateTime generatedAt,
                          LocalDateTime sourceGceUpdatedAt,
                          Collection<DecisionTableCondition> conditions,
                          Collection<DecisionTableAction> actions,
@@ -58,7 +56,6 @@ public class DecisionTable extends BaseEntity {
                 description,
                 sourceFingerprint,
                 syncStatus,
-                generatedAt,
                 sourceGceUpdatedAt,
                 conditions,
                 actions,
@@ -77,7 +74,6 @@ public class DecisionTable extends BaseEntity {
                          String description,
                          String sourceFingerprint,
                          DecisionTableSyncStatusEnum syncStatus,
-                         LocalDateTime generatedAt,
                          LocalDateTime sourceGceUpdatedAt,
                          Collection<DecisionTableCondition> conditions,
                          Collection<DecisionTableAction> actions,
@@ -95,7 +91,6 @@ public class DecisionTable extends BaseEntity {
         this.description = normalizeDescription(description);
         this.sourceFingerprint = requireText(sourceFingerprint, "sourceFingerprint");
         this.syncStatus = Objects.requireNonNull(syncStatus, "syncStatus e obrigatorio.");
-        this.generatedAt = Objects.requireNonNull(generatedAt, "generatedAt e obrigatorio.");
         this.sourceGceUpdatedAt = sourceGceUpdatedAt;
         this.conditions = toList(conditions, "conditions");
         this.actions = toList(actions, "actions");
@@ -228,9 +223,8 @@ public class DecisionTable extends BaseEntity {
         this.syncStatus = DecisionTableSyncStatusEnum.STALE;
     }
 
-    public void markAsSynchronized(String sourceFingerprint, LocalDateTime generatedAt, LocalDateTime sourceGceUpdatedAt) {
+    public void markAsSynchronized(String sourceFingerprint, LocalDateTime sourceGceUpdatedAt) {
         this.sourceFingerprint = requireText(sourceFingerprint, "sourceFingerprint");
-        this.generatedAt = Objects.requireNonNull(generatedAt, "generatedAt e obrigatorio.");
         this.sourceGceUpdatedAt = sourceGceUpdatedAt;
         this.syncStatus = DecisionTableSyncStatusEnum.UP_TO_DATE;
     }
@@ -238,6 +232,11 @@ public class DecisionTable extends BaseEntity {
     public void clearGceReference() {
         this.gceId = null;
         this.markAsStale();
+    }
+
+    public void updateDetails(String name, String description) {
+        this.name = requireText(name, "name");
+        this.description = normalizeDescription(description);
     }
 
     public DecisionTableConditionCell findConditionCell(UUID ruleId, UUID conditionId) {
@@ -276,10 +275,6 @@ public class DecisionTable extends BaseEntity {
 
     public DecisionTableSyncStatusEnum getSyncStatus() {
         return syncStatus;
-    }
-
-    public LocalDateTime getGeneratedAt() {
-        return generatedAt;
     }
 
     public LocalDateTime getSourceGceUpdatedAt() {
