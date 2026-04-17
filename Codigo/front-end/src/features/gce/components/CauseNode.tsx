@@ -56,6 +56,7 @@ export const CauseNode = memo(function CauseNode({ id, data, selected }: NodePro
       </div>
 
       <Handle id="right" type="source" position={Position.Right} className="w-3! h-3! bg-node-cause!" />
+      <Handle id="right" type="source" position={Position.Right} className="w-3! h-3! bg-node-cause!" />
     </div>
   );
 });
