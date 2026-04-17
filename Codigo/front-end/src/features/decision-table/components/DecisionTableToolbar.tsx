@@ -1,10 +1,11 @@
-import { ArrowLeft, RotateCw, Save } from 'lucide-react';
+import { ArrowLeft, RotateCw, Save, AlertTriangle } from 'lucide-react';
 import { Button } from '../../../components/Button';
 
 interface DecisionTableToolbarProps {
   tableName: string;
   gceName: string;
   saveStatus: 'idle' | 'saving' | 'saved' | 'error';
+  syncStatus?: 'UP_TO_DATE' | 'STALE';
   onBack: () => void;
   onRegenerate: () => void;
   onSave: () => void;
@@ -21,6 +22,7 @@ export function DecisionTableToolbar({
   tableName,
   gceName,
   saveStatus,
+  syncStatus,
   onBack,
   onRegenerate,
   onSave,
@@ -39,6 +41,12 @@ export function DecisionTableToolbar({
         <div className="min-w-0">
           <span className="text-sm font-medium text-gray-200 truncate">{tableName}</span>
           <span className="text-xs text-gray-600 ml-2">GCE: {gceName}</span>
+          {syncStatus === 'STALE' && (
+            <span className="ml-2 inline-flex items-center gap-1 text-xs text-yellow-400">
+              <AlertTriangle className="w-3 h-3" />
+              Desatualizada
+            </span>
+          )}
         </div>
       </div>
 

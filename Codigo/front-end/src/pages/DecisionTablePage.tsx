@@ -5,8 +5,9 @@ import { DecisionTableToolbar } from '../features/decision-table/components/Deci
 import { ConditionsPanel } from '../features/decision-table/components/ConditionsPanel';
 import { DecisionMatrix } from '../features/decision-table/components/DecisionMatrix';
 import { ValidationStatusBar } from '../features/decision-table/components/ValidationStatusBar';
-import { convertGCEToDecisionTable, createEmptyRule } from '../features/decision-table/utils/gceToDecisionTable';
-import decisionTableLocalService from '../features/decision-table/services/decisionTableLocalService';
+import { createEmptyRule } from '../features/decision-table/utils/gceToDecisionTable';
+import { mapDTOToDecisionTable } from '../features/decision-table/utils/decisionTableMapper';
+import DecisionTableService from '../services/DecisionTable/DecisionTableService';
 import GCEService from '../services/GCE/GCEService';
 import type { DecisionTable, ConditionValue, EffectValue } from '../features/decision-table/types/decisionTable';
 import type { ProjectLayoutContext } from './ProjectLayout';
@@ -27,23 +28,20 @@ export function DecisionTablePage() {
 
     async function load() {
       try {
-        const gce = await GCEService.buscarPorId(gceId!);
-        setGceName(gce.name);
+        const [gce, dto] = await Promise.all([
+          GCEService.buscarPorId(gceId!),
+          DecisionTableService.buscarPorGceId(gceId!).catch(async (err) => {
+            if (err?.response?.status === 404) {
+              return DecisionTableService.criarAPartirDoGCE(gceId!);
+            }
+            throw err;
+          }),
+        ]);
 
-        const saved = decisionTableLocalService.getByGceId(gceId!);
-        if (saved) {
-          setTable(saved);
-        } else {
-          const generated = convertGCEToDecisionTable(gce);
-          const newTable: DecisionTable = {
-            ...generated,
-            id: gceId!,
-            updatedAt: generated.generatedAt,
-          };
-          setTable(newTable);
-        }
+        setGceName(gce.name);
+        setTable(mapDTOToDecisionTable(dto));
       } catch {
-        setLoadError('Erro ao carregar o GCE.');
+        setLoadError('Erro ao carregar a tabela de decisão.');
       } finally {
         setLoading(false);
       }
@@ -52,12 +50,15 @@ export function DecisionTablePage() {
     load();
   }, [gceId, projectId]);
 
-  const handleSave = useCallback(() => {
+  const handleSave = useCallback(async () => {
     if (!table) return;
     setSaveStatus('saving');
     try {
-      const updated = decisionTableLocalService.save(table);
-      setTable(updated);
+      const dto = await DecisionTableService.atualizar(table.id, {
+        name: table.name,
+        description: table.description,
+      });
+      setTable(mapDTOToDecisionTable(dto));
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
     } catch {
@@ -69,15 +70,8 @@ export function DecisionTablePage() {
   const handleRegenerate = useCallback(async () => {
     if (!gceId) return;
     try {
-      const gce = await GCEService.buscarPorId(gceId);
-      setGceName(gce.name);
-      const generated = convertGCEToDecisionTable(gce);
-      const newTable: DecisionTable = {
-        ...generated,
-        id: gceId,
-        updatedAt: generated.generatedAt,
-      };
-      setTable(newTable);
+      const dto = await DecisionTableService.sincronizar(gceId);
+      setTable(mapDTOToDecisionTable(dto));
       setSaveStatus('idle');
     } catch {
       // silently ignore — user can retry
@@ -170,6 +164,7 @@ export function DecisionTablePage() {
         tableName={table.name}
         gceName={gceName ?? ''}
         saveStatus={saveStatus}
+        syncStatus={table.syncStatus}
         onBack={handleBack}
         onRegenerate={handleRegenerate}
         onSave={handleSave}

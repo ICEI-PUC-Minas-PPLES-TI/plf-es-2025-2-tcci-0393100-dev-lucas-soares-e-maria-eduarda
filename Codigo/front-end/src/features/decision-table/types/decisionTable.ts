@@ -29,11 +29,12 @@ export interface DecisionRule {
 }
 
 export interface DecisionTable {
-  /** Uses gceId as the table's own ID (1-to-1 relationship) */
   id: string;
   gceId: string;
   projectId: string;
   name: string;
+  description?: string;
+  syncStatus?: 'UP_TO_DATE' | 'STALE';
   conditions: DecisionCondition[];
   effects: DecisionEffect[];
   rules: DecisionRule[];
