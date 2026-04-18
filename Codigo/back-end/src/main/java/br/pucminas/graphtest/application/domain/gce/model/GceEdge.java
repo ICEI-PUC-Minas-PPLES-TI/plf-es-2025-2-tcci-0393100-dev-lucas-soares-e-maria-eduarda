@@ -39,18 +39,26 @@ public class GceEdge extends BaseEntity {
         this.updatedAt = updatedAt;
         this.sourceNodeCode = requireText(sourceNodeCode, "sourceNodeCode");
         this.targetNodeCode = requireText(targetNodeCode, "targetNodeCode");
-        this.type = Objects.requireNonNull(type, "type e obrigatorio.");
+        this.type = Objects.requireNonNull(type, "O tipo da aresta é obrigatório.");
 
         if (this.sourceNodeCode.equals(this.targetNodeCode)) {
-            throw new IllegalArgumentException("Uma aresta nao pode ligar um no a ele mesmo.");
+            throw new IllegalArgumentException("Uma aresta não pode ligar um nó a ele mesmo.");
         }
     }
 
     private String requireText(String value, String field) {
         if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(field + " e obrigatorio.");
+            throw new IllegalArgumentException(displayFieldName(field) + " é obrigatório.");
         }
         return value.trim();
+    }
+
+    private String displayFieldName(String field) {
+        return switch (field) {
+            case "sourceNodeCode" -> "O código do nó de origem";
+            case "targetNodeCode" -> "O código do nó de destino";
+            default -> field;
+        };
     }
 
     public String getSourceNodeCode() {

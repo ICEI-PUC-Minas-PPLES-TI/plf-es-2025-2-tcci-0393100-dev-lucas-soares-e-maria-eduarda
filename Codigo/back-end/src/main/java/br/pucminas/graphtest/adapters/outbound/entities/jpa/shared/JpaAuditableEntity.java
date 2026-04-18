@@ -29,16 +29,13 @@ public abstract class JpaAuditableEntity implements Serializable {
     @Column(name = "CREATED_AT", nullable = false, updatable = false)
     protected LocalDateTime createdAt;
 
-    @Column(name = "UPDATED_AT", nullable = false)
+    @Column(name = "UPDATED_AT")
     protected LocalDateTime updatedAt;
 
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
-        }
-        if (updatedAt == null) {
-            updatedAt = createdAt;
         }
     }
 

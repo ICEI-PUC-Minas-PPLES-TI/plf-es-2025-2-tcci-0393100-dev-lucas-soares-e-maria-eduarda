@@ -65,7 +65,7 @@ public class GceMutationServiceImpl implements GceMutationService {
                                    GceRepositoryPort gceRepository,
                                    ProjectAccessService projectAccessService) {
         Gce graph = gceRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("GCE nao encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("GCE não encontrado"));
         projectAccessService.findAuthorizedProject(graph.getProjectId());
         return graph;
     }
@@ -82,7 +82,7 @@ public class GceMutationServiceImpl implements GceMutationService {
     public void validateAndThrow(Gce graph, GceValidationResultService validationService) {
         ValidationGceOutput validation = validationService.validate(graph);
         if (!validation.valid()) {
-            throw new InvalidGceModelException("GCE invalido: " + validation.errors());
+            throw new InvalidGceModelException("O GCE possui erros de validação: " + validation.errors());
         }
     }
 
@@ -503,26 +503,26 @@ public class GceMutationServiceImpl implements GceMutationService {
 
         if (node.type() == GceNodeTypeEnum.CAUSE) {
             if (!sourceNodeCodes.isEmpty()) {
-                throw new IllegalArgumentException("No CAUSE nao pode receber sourceNodeCodes.");
+                throw new IllegalArgumentException("Um nó do tipo causa não pode informar nós de origem.");
             }
             return;
         }
 
         if (node.type() == GceNodeTypeEnum.EFFECT) {
             if (sourceNodeCodes.size() != 1) {
-                throw new IllegalArgumentException("No EFFECT deve informar exatamente 1 sourceNodeCode.");
+                throw new IllegalArgumentException("Um nó do tipo efeito deve informar exatamente um nó de origem.");
             }
             if (!targetNodeCodes.isEmpty()) {
-                throw new IllegalArgumentException("No EFFECT nao pode informar targetNodeCodes.");
+                throw new IllegalArgumentException("Um nó do tipo efeito não pode informar nós de destino.");
             }
             return;
         }
 
         if (sourceNodeCodes.size() != 2) {
-            throw new IllegalArgumentException("No OPERATOR deve informar exatamente 2 sourceNodeCodes.");
+            throw new IllegalArgumentException("Um nó do tipo operador deve informar exatamente dois nós de origem.");
         }
         if (targetNodeCodes.size() != 1) {
-            throw new IllegalArgumentException("No OPERATOR deve informar exatamente 1 targetNodeCode.");
+            throw new IllegalArgumentException("Um nó do tipo operador deve informar exatamente um nó de destino.");
         }
     }
 
@@ -576,7 +576,7 @@ public class GceMutationServiceImpl implements GceMutationService {
         }
 
         if (!visiting.add(nodeCode)) {
-            throw new IllegalArgumentException("Nao foi possivel gerar a expressao do operador devido a ciclo envolvendo o no " + nodeCode);
+            throw new IllegalArgumentException("Não foi possível gerar a expressão do operador porque existe um ciclo envolvendo o nó " + nodeCode);
         }
 
         GceNode node = graph.findNode(nodeCode)

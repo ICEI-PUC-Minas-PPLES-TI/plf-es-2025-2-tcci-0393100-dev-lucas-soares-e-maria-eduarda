@@ -87,10 +87,10 @@ public class Gce extends BaseEntity {
 
         for (GceNode value : values) {
             if (value == null) {
-                throw new IllegalArgumentException("Colecao do agregado nao pode conter valores nulos.");
+            throw new IllegalArgumentException("A coleção do grafo não pode conter valores nulos.");
             }
             if (map.containsKey(value.getCode())) {
-                throw new IllegalArgumentException("Codigo de no duplicado no agregado.");
+            throw new IllegalArgumentException("Há código de nó duplicado no grafo.");
             }
             map.put(value.getCode(), value);
         }
@@ -102,23 +102,33 @@ public class Gce extends BaseEntity {
             return new ArrayList<>();
         }
         if (values.stream().anyMatch(item -> item == null)) {
-            throw new IllegalArgumentException(field + " nao pode conter valores nulos.");
+            throw new IllegalArgumentException(displayFieldName(field) + " não pode conter valores nulos.");
         }
         return new ArrayList<>(values);
     }
 
     private UUID requireUuid(UUID value, String field) {
         if (value == null) {
-            throw new IllegalArgumentException(field + " e obrigatorio.");
+            throw new IllegalArgumentException(displayFieldName(field) + " é obrigatório.");
         }
         return value;
     }
 
     private String requireText(String value, String field) {
         if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(field + " e obrigatorio.");
+            throw new IllegalArgumentException(displayFieldName(field) + " é obrigatório.");
         }
         return value.trim();
+    }
+
+    private String displayFieldName(String field) {
+        return switch (field) {
+            case "projectId" -> "O projeto";
+            case "name" -> "O nome";
+            case "edges" -> "As arestas";
+            case "restrictions" -> "As restrições";
+            default -> field;
+        };
     }
 
     private String normalizeDescription(String value) {
@@ -132,7 +142,7 @@ public class Gce extends BaseEntity {
     private GceNode requireNode(String nodeCode) {
         GceNode node = nodes.get(nodeCode);
         if (node == null) {
-            throw new IllegalArgumentException("No inexistente: " + nodeCode);
+            throw new IllegalArgumentException("Nó não encontrado: " + nodeCode);
         }
         return node;
     }
@@ -149,7 +159,7 @@ public class Gce extends BaseEntity {
                 .anyMatch(node -> node.getCode().equals(code) && !node.getCode().equals(ignoredNodeCode));
 
         if (alreadyInUse) {
-            throw new IllegalArgumentException("Ja existe no com o codigo informado: " + code);
+            throw new IllegalArgumentException("Já existe um nó com o código informado: " + code);
         }
     }
 
@@ -159,7 +169,7 @@ public class Gce extends BaseEntity {
                         && (ignoredEdgeId == null || !ignoredEdgeId.equals(existingEdge.getId())));
 
         if (alreadyInUse) {
-            throw new IllegalArgumentException("Ja existe aresta com mesma origem, destino e tipo.");
+            throw new IllegalArgumentException("Já existe aresta com a mesma origem, destino e tipo.");
         }
     }
 
@@ -245,7 +255,7 @@ public class Gce extends BaseEntity {
 
     public void addNode(GceNode node) {
         if (node == null) {
-            throw new IllegalArgumentException("node e obrigatorio.");
+            throw new IllegalArgumentException("O nó é obrigatório.");
         }
 
         ensureNodeCodeAvailable(node.getCode(), null);
@@ -254,7 +264,7 @@ public class Gce extends BaseEntity {
 
     public void replaceNode(GceNode node) {
         if (node == null) {
-            throw new IllegalArgumentException("node e obrigatorio.");
+            throw new IllegalArgumentException("O nó é obrigatório.");
         }
         GceNode previousNode = requireNode(node.getCode());
 
@@ -275,12 +285,12 @@ public class Gce extends BaseEntity {
 
         boolean hasAttachedEdges = edges.stream().anyMatch(edge -> edge.references(requiredNodeCode));
         if (hasAttachedEdges) {
-            throw new IllegalArgumentException("Nao e permitido remover o no " + node.getCode() + " enquanto houver arestas associadas.");
+            throw new IllegalArgumentException("Não é permitido remover o nó " + node.getCode() + " enquanto houver arestas ligadas a ele.");
         }
 
         boolean hasAttachedRestrictions = restrictions.stream().anyMatch(restriction -> restriction.references(requiredNodeCode));
         if (hasAttachedRestrictions) {
-            throw new IllegalArgumentException("Nao e permitido remover o no " + node.getCode() + " enquanto houver restricoes associadas.");
+            throw new IllegalArgumentException("Não é permitido remover o nó " + node.getCode() + " enquanto houver restrições ligadas a ele.");
         }
 
         nodes.remove(requiredNodeCode);
@@ -288,7 +298,7 @@ public class Gce extends BaseEntity {
 
     public void addEdge(GceEdge edge) {
         if (edge == null) {
-            throw new IllegalArgumentException("edge e obrigatorio.");
+            throw new IllegalArgumentException("A aresta é obrigatória.");
         }
 
         requireNode(edge.getSourceNodeCode());
@@ -306,7 +316,7 @@ public class Gce extends BaseEntity {
 
     public void replaceEdge(GceEdge edge) {
         if (edge == null || edge.getId() == null) {
-            throw new IllegalArgumentException("edge com id e obrigatorio.");
+            throw new IllegalArgumentException("A aresta com identificador é obrigatória.");
         }
         GceEdge previousEdge = requireEdge(edge.getId());
 

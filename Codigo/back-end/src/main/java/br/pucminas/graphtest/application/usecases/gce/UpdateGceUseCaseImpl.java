@@ -40,7 +40,7 @@ public class UpdateGceUseCaseImpl implements UpdateGceUseCasePort {
         Gce currentGraph = gceMutationService.loadAuthorizedGraph(input.id(), gceRepository, projectAccessService);
 
         if (!currentGraph.getProjectId().equals(input.projectId())) {
-            throw new IllegalArgumentException("Nao e permitido alterar o projectId do GCE.");
+            throw new IllegalArgumentException("Não é permitido alterar o projeto do GCE.");
         }
 
         Gce updatedGraph = buildUpdatedGraph(currentGraph, input);

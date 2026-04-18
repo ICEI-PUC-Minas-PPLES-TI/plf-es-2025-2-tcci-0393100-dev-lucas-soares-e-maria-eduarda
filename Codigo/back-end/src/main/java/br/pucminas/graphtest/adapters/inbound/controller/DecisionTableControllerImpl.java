@@ -85,6 +85,14 @@ public class DecisionTableControllerImpl implements DecisionTableController, Ope
     }
 
     @Override
+    @GetMapping(ID)
+    public ResponseEntity<DecisionTableDTO> findById(@PathVariable UUID id) {
+        log.info(">>> encontrarPorId: recebendo requisicao para encontrar tabela de decisao por id");
+
+        return ResponseEntity.ok(toDto(findDecisionTableByIdUseCasePort.execute(toByIdInput(id))));
+    }
+
+    @Override
     @GetMapping
     public ResponseEntity<List<DecisionTableDTO>> listAll() {
         log.info(">>> listarTodos: recebendo requisicao para listar tabelas de decisao do usuario autenticado");
@@ -96,13 +104,6 @@ public class DecisionTableControllerImpl implements DecisionTableController, Ope
         return ResponseEntity.ok(decisionTables);
     }
 
-    @Override
-    @GetMapping(ID)
-    public ResponseEntity<DecisionTableDTO> findById(@PathVariable UUID id) {
-        log.info(">>> encontrarPorId: recebendo requisicao para encontrar tabela de decisao por id");
-
-        return ResponseEntity.ok(toDto(findDecisionTableByIdUseCasePort.execute(toByIdInput(id))));
-    }
 
     @Override
     @GetMapping(DECISION_TABLE_STATUS)

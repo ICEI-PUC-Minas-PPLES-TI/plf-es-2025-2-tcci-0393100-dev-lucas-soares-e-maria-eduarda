@@ -37,33 +37,33 @@ public class GceRestriction extends BaseEntity {
         this.id = id;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-        this.type = Objects.requireNonNull(type, "type e obrigatorio.");
+        this.type = Objects.requireNonNull(type, "O tipo da restrição é obrigatório.");
         this.nodeCodes = normalizeNodeCodes(nodeCodes);
 
         if (this.nodeCodes.isEmpty()) {
-            throw new IllegalArgumentException("Uma restricao deve referenciar ao menos um no.");
+            throw new IllegalArgumentException("Uma restrição deve referenciar pelo menos um nó.");
         }
 
         if ((type == RestrictionTypeEnum.REQUIRE || type == RestrictionTypeEnum.MASKS) && this.nodeCodes.size() != 2) {
-            throw new IllegalArgumentException("Restricoes R e M devem possuir exatamente 2 nos.");
+            throw new IllegalArgumentException("As restrições REQUIRE e MASKS devem possuir exatamente 2 nós.");
         }
 
         if ((type == RestrictionTypeEnum.EXCLUSIVE || type == RestrictionTypeEnum.INCLUSIVE || type == RestrictionTypeEnum.ONE_AND_ONLY_ONE) && this.nodeCodes.size() < 2) {
-            throw new IllegalArgumentException("Restricoes E, I e O devem possuir pelo menos 2 nos.");
+            throw new IllegalArgumentException("As restrições EXCLUSIVE, INCLUSIVE e ONE_AND_ONLY_ONE devem possuir pelo menos 2 nós.");
         }
     }
 
     private List<String> normalizeNodeCodes(List<String> nodeCodes) {
-        Objects.requireNonNull(nodeCodes, "nodeCodes e obrigatorio.");
+        Objects.requireNonNull(nodeCodes, "Os códigos dos nós da restrição são obrigatórios.");
 
         LinkedHashSet<String> uniqueNodeCodes = new LinkedHashSet<>();
         for (String nodeCode : nodeCodes) {
             if (nodeCode == null || nodeCode.isBlank()) {
-                throw new IllegalArgumentException("nodeCodes nao pode conter valores nulos ou vazios.");
+                throw new IllegalArgumentException("Os códigos dos nós da restrição não podem conter valores nulos ou vazios.");
             }
             String normalized = nodeCode.trim();
             if (!uniqueNodeCodes.add(normalized)) {
-                throw new IllegalArgumentException("Uma restricao nao pode referenciar o mesmo no mais de uma vez.");
+                throw new IllegalArgumentException("Uma restrição não pode referenciar o mesmo nó mais de uma vez.");
             }
         }
 
