@@ -190,6 +190,7 @@ export function DecisionTablePage() {
           onEffectValueChange={handleEffectValueChange}
           onRuleAdd={handleRuleAdd}
           onRuleDelete={handleRuleDelete}
+
         />
       </div>
 
