@@ -1,6 +1,7 @@
-import { User, LogOut } from 'lucide-react';
+import { User, LogOut, Sun, Moon } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../features/auth/hooks/useAuth';
+import { useTheme } from '../context/ThemeContext';
 import { Breadcrumb } from './Breadcrumb';
 
 interface BreadcrumbItem {
@@ -14,6 +15,7 @@ interface HeaderProps {
 
 export function Header({ breadcrumb }: HeaderProps) {
   const { logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -32,6 +34,15 @@ export function Header({ breadcrumb }: HeaderProps) {
         </div>
 
         <div className="flex items-center gap-3">
+          <button
+            onClick={toggleTheme}
+            className="p-2 hover:bg-surface-hover rounded-lg transition-colors"
+            title={theme === 'dark' ? 'Modo claro' : 'Modo escuro'}
+          >
+            {theme === 'dark'
+              ? <Sun className="w-5 h-5 text-gray-300" />
+              : <Moon className="w-5 h-5 text-gray-300" />}
+          </button>
           <button className="p-2 hover:bg-surface-hover rounded-lg transition-colors">
             <User className="w-5 h-5 text-gray-300" />
           </button>

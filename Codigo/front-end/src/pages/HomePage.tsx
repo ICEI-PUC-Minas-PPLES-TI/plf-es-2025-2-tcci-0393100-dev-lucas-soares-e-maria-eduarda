@@ -22,8 +22,8 @@ export function HomePage() {
 
       <main className="flex-1">
         <HeroSection onCreateProject={() => setShowCreateModal(true)} />
-        <ProjectsSection />
         <QuickActionsSection onCreateGCE={() => setShowCreateGCEModal(true)} onGenerateTable={() => setShowSelectGCEModal(true)} />
+        <ProjectsSection />
         <RecentArtifactsSection />
       </main>
 
