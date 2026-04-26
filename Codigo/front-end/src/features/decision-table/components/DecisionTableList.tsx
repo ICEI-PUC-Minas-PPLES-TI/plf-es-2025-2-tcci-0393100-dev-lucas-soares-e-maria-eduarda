@@ -5,6 +5,7 @@ import { Button } from '../../../components/Button';
 import { ConfirmModal } from '../../../components/ConfirmModal';
 import { ARTIFACT_TYPES } from '../../../shared/artifactTypes';
 import DecisionTableService from '../../../services/DecisionTable/DecisionTableService';
+import GCEService from '../../../services/GCE/GCEService';
 import { mapDTOToDecisionTable } from '../utils/decisionTableMapper';
 import type { DecisionTable } from '../types/decisionTable';
 
@@ -15,13 +16,18 @@ interface DecisionTableListProps {
 export function DecisionTableList({ projectId }: DecisionTableListProps) {
   const navigate = useNavigate();
   const [tables, setTables] = useState<DecisionTable[]>([]);
+  const [gceNames, setGceNames] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<DecisionTable | null>(null);
 
   useEffect(() => {
-    DecisionTableService.listarPorProjeto(projectId)
-      .then((dtos) => setTables(dtos.map(mapDTOToDecisionTable)))
-      .finally(() => setLoading(false));
+    Promise.all([
+      DecisionTableService.listarPorProjeto(projectId),
+      GCEService.listarPorProjeto(projectId),
+    ]).then(([dtos, gces]) => {
+      setTables(dtos.map(mapDTOToDecisionTable));
+      setGceNames(Object.fromEntries(gces.map((g) => [g.id, g.name])));
+    }).finally(() => setLoading(false));
   }, [projectId]);
 
   const handleDelete = async () => {
@@ -74,7 +80,7 @@ export function DecisionTableList({ projectId }: DecisionTableListProps) {
                     <div className="flex items-center gap-1.5 mt-1">
                       <Network className="w-3 h-3 text-gray-600 shrink-0" />
                       <span className="text-xs text-gray-500 truncate">
-                        GCE vinculado
+                        {gceNames[table.gceId] ?? 'GCE vinculado'}
                       </span>
                       {table.syncStatus === 'STALE' && (
                         <span className="inline-flex items-center gap-0.5 text-xs text-yellow-500">
