@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../features/auth/hooks/useAuth';
 import { useTheme } from '../context/ThemeContext';
 import { Breadcrumb } from './Breadcrumb';
+import { GraphTestLogo } from './GraphTestLogo';
 
 interface BreadcrumbItem {
   label: string;
@@ -27,8 +28,9 @@ export function Header({ breadcrumb }: HeaderProps) {
     <header className="sticky top-0 z-50 bg-surface border-b border-edge">
       <div className="container mx-auto px-6 h-14 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link to="/homepage" className="text-primary-light font-mono text-lg hover:text-cyan-300 transition-colors">
-            GraphTest
+          <Link to="/homepage" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <GraphTestLogo size={28} />
+            <span className="text-primary-light font-mono text-lg">GraphTest</span>
           </Link>
           {breadcrumb && <Breadcrumb items={breadcrumb} />}
         </div>
