@@ -122,7 +122,7 @@ export function flowToCreateRequest(
       code: n.data.code,
       ...(n.data.nodeType !== 'OPERATOR' && { label: n.data.label }),
       type: n.data.nodeType,
-      operatorType: n.data.operatorType,
+      ...(n.data.nodeType === 'OPERATOR' && { operatorType: n.data.operatorType }),
     })),
     edges: edges.map((e) => ({
       sourceNodeCode: e.source,

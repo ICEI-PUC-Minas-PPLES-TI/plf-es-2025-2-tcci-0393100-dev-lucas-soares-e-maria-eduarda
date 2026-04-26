@@ -72,12 +72,12 @@ function EffectToggle({ value, onChange }: EffectToggleProps) {
 function SectionRow({ label, span }: { label: string; span: number }) {
   return (
     <tr>
-      <td
-        colSpan={span}
-        className="bg-surface-elevated border border-edge px-4 py-1 text-[10px] text-gray-500 uppercase tracking-widest"
-      >
+      <td className="sticky left-0 z-10 bg-surface-elevated border-l border-r border-b border-edge px-4 py-1 text-[10px] text-gray-500 uppercase tracking-widest">
         {label}
       </td>
+      {span > 1 && (
+        <td colSpan={span - 1} className="bg-surface-elevated border-r border-b border-edge" />
+      )}
     </tr>
   );
 }
@@ -120,18 +120,21 @@ export function DecisionMatrix({
 
   return (
     <div className="flex-1 overflow-auto p-4">
-      <table className="border-collapse text-sm">
+      {/* border-separate + border-spacing-0 fix the sticky column being overlapped
+          by scrolled cells, which happens with border-collapse in Chromium. */}
+      <table className="border-separate border-spacing-0 text-sm">
         {/* ── Header row ── */}
         <thead>
           <tr>
-            <th className="sticky left-0 top-0 z-20 bg-surface-card border border-edge px-4 py-2 text-left min-w-[220px]">
+            {/* Corner cell: all 4 borders (outer top-left) */}
+            <th className="sticky left-0 top-0 z-20 bg-surface-card border border-edge px-4 py-2 text-left min-w-55">
               <span className="text-[10px] text-gray-500 uppercase tracking-wider">Elemento</span>
             </th>
 
             {rules.map(rule => (
               <th
                 key={rule.id}
-                className="sticky top-0 z-10 bg-surface-card border border-edge px-3 py-2 min-w-[130px] text-center"
+                className="sticky top-0 z-10 bg-surface-card border-t border-r border-b border-edge px-3 py-2 min-w-32.5 text-center"
               >
                 <div className="flex items-center justify-between gap-1">
                   <span className="text-xs text-gray-400 font-normal">R{rule.order}</span>
@@ -147,7 +150,7 @@ export function DecisionMatrix({
             ))}
 
             {/* Add-rule column header */}
-            <th className="sticky top-0 z-10 bg-surface-card border border-edge px-2 py-2 w-10">
+            <th className="sticky top-0 z-10 bg-surface-card border-t border-r border-b border-edge px-2 py-2 w-10">
               <button
                 onClick={onRuleAdd}
                 className="text-gray-600 hover:text-primary transition-colors flex items-center justify-center w-full"
@@ -165,19 +168,19 @@ export function DecisionMatrix({
 
           {conditions.map(cond => (
             <tr key={cond.id}>
-              <td className="sticky left-0 z-10 bg-surface border border-edge px-4 py-2">
+              <td className="sticky left-0 z-10 bg-surface border-l border-r border-b border-edge px-4 py-2">
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-[10px] text-node-effect shrink-0 w-5">
                     C{cond.order}
                   </span>
-                  <span className="text-xs text-gray-300 truncate max-w-[160px]" title={cond.label}>
+                  <span className="text-xs text-gray-300 truncate max-w-40" title={cond.label}>
                     {cond.label}
                   </span>
                 </div>
               </td>
 
               {rules.map(rule => (
-                <td key={rule.id} className="border border-edge px-3 py-2 bg-surface">
+                <td key={rule.id} className="border-r border-b border-edge px-3 py-2 bg-surface">
                   <ConditionToggle
                     value={rule.conditions[cond.id] ?? '—'}
                     onChange={v => onConditionValueChange(rule.id, cond.id, v)}
@@ -185,7 +188,7 @@ export function DecisionMatrix({
                 </td>
               ))}
 
-              <td className="border border-edge bg-surface" />
+              <td className="border-r border-b border-edge bg-surface" />
             </tr>
           ))}
 
@@ -199,19 +202,19 @@ export function DecisionMatrix({
 
           {effects.map(eff => (
             <tr key={eff.id}>
-              <td className="sticky left-0 z-10 bg-surface border border-edge px-4 py-2">
+              <td className="sticky left-0 z-10 bg-surface border-l border-r border-b border-edge px-4 py-2">
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-[10px] text-node-cause shrink-0 w-5">
                     E{eff.order}
                   </span>
-                  <span className="text-xs text-gray-300 truncate max-w-[160px]" title={eff.label}>
+                  <span className="text-xs text-gray-300 truncate max-w-40" title={eff.label}>
                     {eff.label}
                   </span>
                 </div>
               </td>
 
               {rules.map(rule => (
-                <td key={rule.id} className="border border-edge px-3 py-2 bg-surface">
+                <td key={rule.id} className="border-r border-b border-edge px-3 py-2 bg-surface">
                   <EffectToggle
                     value={rule.effects[eff.id] ?? 'N'}
                     onChange={v => onEffectValueChange(rule.id, eff.id, v)}
@@ -219,7 +222,7 @@ export function DecisionMatrix({
                 </td>
               ))}
 
-              <td className="border border-edge bg-surface" />
+              <td className="border-r border-b border-edge bg-surface" />
             </tr>
           ))}
 
@@ -228,7 +231,7 @@ export function DecisionMatrix({
             <tr>
               <td
                 colSpan={colSpan}
-                className="border border-edge px-4 py-6 text-center text-xs text-gray-600 italic bg-surface"
+                className="border-l border-r border-b border-edge px-4 py-6 text-center text-xs text-gray-600 italic bg-surface"
               >
                 Nenhuma regra gerada. Clique em{' '}
                 <span className="not-italic font-medium text-gray-500">+</span> para adicionar

@@ -44,7 +44,7 @@ export interface GCENodeDTO {
   code: string;
   label?: string;
   type: GCENodeType;
-  operatorType: OperatorType | null;
+  operatorType?: OperatorType | null;
   /** Positions are stored client-side only (not in the backend).  */
   position?: { x: number; y: number };
   sourceNodeCodes?: string[];
