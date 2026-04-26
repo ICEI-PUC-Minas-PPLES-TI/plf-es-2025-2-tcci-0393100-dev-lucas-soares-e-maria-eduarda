@@ -30,7 +30,7 @@ export const OperatorNode = memo(function OperatorNode({ id, data, selected }: N
 
   return (
     <div
-      className="relative flex items-center justify-center transition-all duration-150"
+      className="group relative flex items-center justify-center transition-all duration-150"
       style={{ width: 80, height: 60 }}
     >
       <Handle id="left"   type="target" position={Position.Left}   className="w-3! h-3! bg-node-operator!" />
@@ -54,13 +54,14 @@ export const OperatorNode = memo(function OperatorNode({ id, data, selected }: N
         />
       </svg>
 
+      <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] font-mono px-1.5 py-0.5 rounded bg-black/70 text-white/80 tracking-wide opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none whitespace-nowrap">
+        {code}
+      </span>
+
       <div
         className="relative z-10 text-center pointer-events-none"
         style={operatorType === 'OR' ? { transform: 'translateX(-10px)' } : undefined}
       >
-        <span className="text-[9px] font-mono px-1 py-0.5 rounded bg-black/25 text-white/80 inline-block mb-0.5 tracking-wide">
-          {code}
-        </span>
         <span className="text-xs text-white font-bold block">{operatorType}</span>
       </div>
     </div>

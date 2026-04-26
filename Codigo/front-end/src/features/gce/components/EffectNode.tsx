@@ -16,7 +16,7 @@ export const EffectNode = memo(function EffectNode({ id, data, selected }: NodeP
 
   return (
     <div
-      className="rounded-lg px-4 py-3 min-w-35 transition-all duration-150"
+      className="group relative rounded-lg px-4 py-3 min-w-35 transition-all duration-150"
       style={{
         background: 'linear-gradient(145deg, #388bfd 0%, #0d419d 100%)',
         boxShadow: selected
@@ -28,12 +28,13 @@ export const EffectNode = memo(function EffectNode({ id, data, selected }: NodeP
       <Handle id="top" type="source" position={Position.Top} className="w-3! h-3! bg-node-effect!" />
       <Handle id="bottom" type="source" position={Position.Bottom} className="w-3! h-3! bg-node-effect!" />
 
+      <span className="absolute -top-5 left-2 text-[9px] font-mono px-1.5 py-0.5 rounded bg-black/70 text-white/80 tracking-wide opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none">
+        {code}
+      </span>
+
       <div className="flex items-center gap-2">
         <Square className="w-4 h-4 shrink-0" style={{ color: 'var(--color-node-effect)' }} />
         <div className="min-w-0">
-          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-black/25 text-white/80 inline-block mb-1 tracking-wide">
-            {code}
-          </span>
           {editing ? (
             <input
               ref={inputRef}
