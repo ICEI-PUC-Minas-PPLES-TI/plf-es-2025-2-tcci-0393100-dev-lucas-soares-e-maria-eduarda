@@ -16,6 +16,7 @@ import {
   saveBends,
 } from '../features/gce/utils/gceConverters';
 import GCEService from '../services/GCE/GCEService';
+import DecisionTableService from '../services/DecisionTable/DecisionTableService';
 import type { GCEDTO, GCEValidationResponse, GCERestriction } from '../features/gce/types/gce';
 import type { ProjectLayoutContext } from './ProjectLayout';
 
@@ -50,6 +51,7 @@ export function GCEEditorPage() {
   const [validationResult, setValidationResult] = useState<GCEValidationResponse | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [isValidated, setIsValidated] = useState(false);
+  const [hasDecisionTable, setHasDecisionTable] = useState(false);
   const [liveRestrictions, setLiveRestrictions] = useState<GCERestriction[]>([]);
   const canvasRef = useRef<GCECanvasHandle>(null);
 
@@ -59,6 +61,13 @@ export function GCEEditorPage() {
       .then(setGce)
       .catch(() => setLoadError('GCE não encontrado.'))
       .finally(() => setLoading(false));
+  }, [isNew, gceId]);
+
+  useEffect(() => {
+    if (isNew || !gceId) return;
+    DecisionTableService.buscarPorGceId(gceId)
+      .then(() => setHasDecisionTable(true))
+      .catch(() => setHasDecisionTable(false));
   }, [isNew, gceId]);
 
   const handleSelectionChange = useCallback((nodeId: string | null, edgeId: string | null) => {
@@ -184,6 +193,7 @@ export function GCEEditorPage() {
           saveStatus={saveStatus}
           canValidate
           canSave={isValidated}
+          hasDecisionTable={hasDecisionTable}
           canGenerateTable={isValidated && gce.id !== 'new'}
         />
 

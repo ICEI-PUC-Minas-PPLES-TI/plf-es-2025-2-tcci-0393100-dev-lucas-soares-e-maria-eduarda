@@ -12,9 +12,10 @@ interface GCEToolbarProps {
   canValidate?: boolean;
   canSave?: boolean;
   canGenerateTable?: boolean;
+  hasDecisionTable?: boolean;
 }
 
-export function GCEToolbar({ gceName, onSave, onValidate, onGenerateTable, onNameChange, saveStatus = 'idle', canValidate = true, canSave = false, canGenerateTable = false }: GCEToolbarProps) {
+export function GCEToolbar({ gceName, onSave, onValidate, onGenerateTable, onNameChange, saveStatus = 'idle', canValidate = true, canSave = false, canGenerateTable = false, hasDecisionTable = false }: GCEToolbarProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(gceName);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -73,10 +74,17 @@ export function GCEToolbar({ gceName, onSave, onValidate, onGenerateTable, onNam
       </div>
 
       <div className="flex items-center gap-2 shrink-0">
-        <Button size="sm" variant="primary" onClick={onGenerateTable} disabled={!canGenerateTable}>
-          <Table className="w-4 h-4" />
-          Gerar Tabela
-        </Button>
+        {hasDecisionTable ? (
+          <Button size="sm" variant="primary" onClick={onGenerateTable}>
+            <Table className="w-4 h-4" />
+            Ver Tabela
+          </Button>
+        ) : (
+          <Button size="sm" variant="primary" onClick={onGenerateTable} disabled={!canGenerateTable}>
+            <Table className="w-4 h-4" />
+            Gerar Tabela
+          </Button>
+        )}
         <Button size="sm" variant="outline" onClick={onValidate} disabled={!canValidate}>
           <CheckCircle className="w-4 h-4" />
           Validar

@@ -22,6 +22,7 @@ export function DecisionTablePage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [regenerateStatus, setRegenerateStatus] = useState<'idle' | 'loading' | 'synced' | 'error'>('idle');
 
   useEffect(() => {
     if (!gceId || !projectId) return;
@@ -69,12 +70,20 @@ export function DecisionTablePage() {
 
   const handleRegenerate = useCallback(async () => {
     if (!gceId) return;
+    setRegenerateStatus('loading');
     try {
       const dto = await DecisionTableService.sincronizar(gceId);
       setTable(mapDTOToDecisionTable(dto));
       setSaveStatus('idle');
-    } catch {
-      // silently ignore — user can retry
+      setRegenerateStatus('idle');
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } })?.response?.status;
+      if (status === 409) {
+        setRegenerateStatus('synced');
+      } else {
+        setRegenerateStatus('error');
+      }
+      setTimeout(() => setRegenerateStatus('idle'), 3000);
     }
   }, [gceId]);
 
@@ -167,6 +176,7 @@ export function DecisionTablePage() {
         syncStatus={table.syncStatus}
         onBack={handleBack}
         onRegenerate={handleRegenerate}
+        regenerateStatus={regenerateStatus}
         onSave={handleSave}
       />
 

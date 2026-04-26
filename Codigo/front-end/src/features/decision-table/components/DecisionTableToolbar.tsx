@@ -1,4 +1,4 @@
-import { ArrowLeft, RotateCw, Save, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, RotateCw, Save, AlertTriangle, CheckCircle } from 'lucide-react';
 import { Button } from '../../../components/Button';
 
 interface DecisionTableToolbarProps {
@@ -6,6 +6,7 @@ interface DecisionTableToolbarProps {
   gceName: string;
   saveStatus: 'idle' | 'saving' | 'saved' | 'error';
   syncStatus?: 'UP_TO_DATE' | 'STALE';
+  regenerateStatus?: 'idle' | 'loading' | 'synced' | 'error';
   onBack: () => void;
   onRegenerate: () => void;
   onSave: () => void;
@@ -23,6 +24,7 @@ export function DecisionTableToolbar({
   gceName,
   saveStatus,
   syncStatus,
+  regenerateStatus = 'idle',
   onBack,
   onRegenerate,
   onSave,
@@ -32,10 +34,11 @@ export function DecisionTableToolbar({
       <div className="flex items-center gap-2 min-w-0 mr-4">
         <button
           onClick={onBack}
-          className="p-1 rounded text-gray-500 hover:text-gray-200 hover:bg-surface-hover transition-colors"
+          className="flex items-center gap-1.5 px-2 py-1 rounded text-gray-500 hover:text-gray-200 hover:bg-surface-hover transition-colors text-sm"
           title="Voltar ao GCE"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-4 h-4 shrink-0" />
+          <span>Ver GCE</span>
         </button>
 
         <div className="min-w-0">
@@ -51,10 +54,17 @@ export function DecisionTableToolbar({
       </div>
 
       <div className="flex items-center gap-2 shrink-0">
-        <Button size="sm" variant="ghost" onClick={onRegenerate}>
-          <RotateCw className="w-4 h-4" />
-          Regenerar
-        </Button>
+        {regenerateStatus === 'synced' ? (
+          <span className="flex items-center gap-1.5 px-2 py-1 text-sm text-green-400">
+            <CheckCircle className="w-4 h-4 shrink-0" />
+            Tabela já está atualizada
+          </span>
+        ) : (
+          <Button size="sm" variant="ghost" onClick={onRegenerate} disabled={regenerateStatus === 'loading'}>
+            <RotateCw className={`w-4 h-4 ${regenerateStatus === 'loading' ? 'animate-spin' : ''}`} />
+            {regenerateStatus === 'loading' ? 'Atualizando...' : regenerateStatus === 'error' ? 'Erro ao atualizar' : 'Atualizar Tabela'}
+          </Button>
+        )}
 
         <Button
           size="sm"
