@@ -1,6 +1,5 @@
 import { memo } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
-import { Circle } from 'lucide-react';
 import type { GCEFlowNode } from '../types/gce';
 import { useInlineEdit } from '../hooks/useInlineEdit';
 
@@ -33,7 +32,9 @@ export const CauseNode = memo(function CauseNode({ id, data, selected }: NodePro
       </span>
 
       <div className="flex items-center gap-2">
-        <Circle className="w-4 h-4 shrink-0" style={{ color: 'var(--color-node-cause)' }} />
+        <span className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-black/25 text-white/70 shrink-0">
+          causa
+        </span>
         <div className="min-w-0">
           {editing ? (
             <input

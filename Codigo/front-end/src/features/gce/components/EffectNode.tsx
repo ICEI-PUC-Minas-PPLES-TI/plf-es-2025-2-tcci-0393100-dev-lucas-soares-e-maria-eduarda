@@ -1,6 +1,5 @@
 import { memo } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
-import { Square } from 'lucide-react';
 import type { GCEFlowNode } from '../types/gce';
 import { useInlineEdit } from '../hooks/useInlineEdit';
 
@@ -33,7 +32,9 @@ export const EffectNode = memo(function EffectNode({ id, data, selected }: NodeP
       </span>
 
       <div className="flex items-center gap-2">
-        <Square className="w-4 h-4 shrink-0" style={{ color: 'var(--color-node-effect)' }} />
+        <span className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-black/25 text-white/70 shrink-0">
+          efeito
+        </span>
         <div className="min-w-0">
           {editing ? (
             <input
