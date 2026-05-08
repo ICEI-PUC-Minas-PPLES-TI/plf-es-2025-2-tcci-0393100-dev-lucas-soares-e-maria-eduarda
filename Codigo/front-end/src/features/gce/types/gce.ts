@@ -42,9 +42,9 @@ export interface GCEValidationError {
 export interface GCENodeDTO {
   id?: string;
   code: string;
-  label: string;
+  label?: string;
   type: GCENodeType;
-  operatorType: OperatorType | null;
+  operatorType?: OperatorType | null;
   /** Positions are stored client-side only (not in the backend).  */
   position?: { x: number; y: number };
   sourceNodeCodes?: string[];
@@ -70,6 +70,8 @@ export interface GCEDTO {
   name: string;
   description: string;
   selected: boolean;
+  createdAt: string;
+  updatedAt: string | null;
   nodes: GCENodeDTO[];
   edges: GCEEdgeDTO[];
   restrictions: GCERestrictionDTO[];

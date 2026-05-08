@@ -86,19 +86,27 @@ public class GceNode extends BaseEntity {
 
     private String requireText(String value, String field) {
         if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(field + " e obrigatorio.");
+            throw new IllegalArgumentException(displayFieldName(field) + " é obrigatório.");
         }
         return value.trim();
     }
 
+    private String displayFieldName(String field) {
+        return switch (field) {
+            case "code" -> "O código";
+            case "label" -> "O rótulo";
+            default -> field;
+        };
+    }
+
     private void applyTypeAndOperator(GceNodeTypeEnum type, GceOperatorTypeEnum operatorType) {
-        this.type = Objects.requireNonNull(type, "type e obrigatorio.");
+        this.type = Objects.requireNonNull(type, "O tipo do nó é obrigatório.");
 
         if (this.type == GceNodeTypeEnum.OPERATOR && operatorType == null) {
-            throw new IllegalArgumentException("No operador deve possuir operatorType.");
+            throw new IllegalArgumentException("Um nó operador deve informar o tipo de operador.");
         }
         if (this.type != GceNodeTypeEnum.OPERATOR && operatorType != null) {
-            throw new IllegalArgumentException("Somente nos operadores podem possuir operatorType.");
+            throw new IllegalArgumentException("Somente nós operadores podem informar o tipo de operador.");
         }
 
         this.operatorType = operatorType;

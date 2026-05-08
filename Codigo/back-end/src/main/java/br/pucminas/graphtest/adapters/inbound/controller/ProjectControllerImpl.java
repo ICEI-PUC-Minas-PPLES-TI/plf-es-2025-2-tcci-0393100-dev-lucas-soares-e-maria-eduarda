@@ -1,6 +1,7 @@
 package br.pucminas.graphtest.adapters.inbound.controller;
 
 import br.pucminas.graphtest.adapters.inbound.controller.interfaces.ProjectController;
+import br.pucminas.graphtest.adapters.inbound.controller.interfaces.OperacoesCRUDController;
 import br.pucminas.graphtest.adapters.inbound.dto.project.ProjectDTO;
 import br.pucminas.graphtest.adapters.inbound.util.EntityDtoConverterUtil;
 import br.pucminas.graphtest.application.port.input.project.CreateProjectUseCasePort;
@@ -47,7 +48,7 @@ import static org.springframework.http.HttpStatus.OK;
 @Validated
 @RequestMapping(PROJETO)
 @AllArgsConstructor
-public class ProjectControllerImpl implements ProjectController {
+public class ProjectControllerImpl implements ProjectController, OperacoesCRUDController<ProjectDTO, ProjectDTO> {
 
     private final CreateProjectUseCasePort createProjectUseCasePort;
     private final DeleteProjectUseCasePort deleteProjectUseCasePort;

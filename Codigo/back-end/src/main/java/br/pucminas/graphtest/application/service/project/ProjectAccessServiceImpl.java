@@ -3,10 +3,10 @@ package br.pucminas.graphtest.application.service.project;
 import br.pucminas.graphtest.application.domain.project.model.Project;
 import br.pucminas.graphtest.application.security.AuthenticatedUser;
 import br.pucminas.graphtest.application.exception.EntityNotFoundException;
+import br.pucminas.graphtest.application.exception.UnauthorizedUserException;
 import br.pucminas.graphtest.application.port.output.repositories.ProjectRepositoryPort;
 import br.pucminas.graphtest.application.port.output.security.CurrentUserPort;
 import br.pucminas.graphtest.application.service.project.interfaces.ProjectAccessService;
-import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -17,6 +17,7 @@ import java.util.UUID;
 public class ProjectAccessServiceImpl implements ProjectAccessService {
 
     private static final String PROJECT_NOT_FOUND_MESSAGE = "Projeto nao encontrado";
+    private static final String PROJECT_ACCESS_DENIED_MESSAGE = "Usuario nao possui permissao para acessar o projeto";
 
     private final ProjectRepositoryPort projectRepository;
     private final CurrentUserPort currentUserPort;
@@ -38,19 +39,16 @@ public class ProjectAccessServiceImpl implements ProjectAccessService {
     @Override
     public Project findAuthorizedProject(UUID projectId) {
         AuthenticatedUser currentUser = currentUserPort.getCurrentUser();
-        return findProjectFor(currentUser, projectId)
+        Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new EntityNotFoundException(PROJECT_NOT_FOUND_MESSAGE));
+
+        ensureUserCanAccessProject(currentUser, project);
+        return project;
     }
 
-    /**
-     * Executa a busca do projeto conforme o perfil do usuario autenticado.
-     *
-     * @param currentUser usuario autenticado usado na verificacao de acesso
-     * @param projectId identificador do projeto solicitado
-     * @return {@link Optional} contendo o projeto quando encontrado e acessivel;
-     * vazio caso contrario
-     */
-    private Optional<Project> findProjectFor(AuthenticatedUser currentUser, UUID projectId) {
-        return currentUser.isAdmin() ? projectRepository.findById(projectId) : projectRepository.findByIdAndUserId(projectId, currentUser.id());
+    private void ensureUserCanAccessProject(AuthenticatedUser currentUser, Project project) {
+        if (!currentUser.isAdmin() && !project.getUserId().equals(currentUser.id())) {
+            throw new UnauthorizedUserException(PROJECT_ACCESS_DENIED_MESSAGE);
+        }
     }
 }

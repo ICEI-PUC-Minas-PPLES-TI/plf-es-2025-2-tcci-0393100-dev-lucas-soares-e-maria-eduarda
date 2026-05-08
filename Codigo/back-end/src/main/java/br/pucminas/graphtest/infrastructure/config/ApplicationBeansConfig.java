@@ -1,5 +1,16 @@
 package br.pucminas.graphtest.infrastructure.config;
 
+import br.pucminas.graphtest.application.port.input.decisiontable.DeleteDecisionTableByGceIdUseCasePort;
+import br.pucminas.graphtest.application.port.input.decisiontable.DeleteDecisionTableByIdUseCasePort;
+import br.pucminas.graphtest.application.port.input.decisiontable.FindDecisionTableByGceIdUseCasePort;
+import br.pucminas.graphtest.application.port.input.decisiontable.FindDecisionTableByIdUseCasePort;
+import br.pucminas.graphtest.application.port.input.decisiontable.FindDecisionTableStatusByIdUseCasePort;
+import br.pucminas.graphtest.application.port.input.decisiontable.GenerateDecisionTableUseCasePort;
+import br.pucminas.graphtest.application.port.input.decisiontable.ListDecisionTablesUseCasePort;
+import br.pucminas.graphtest.application.port.input.decisiontable.ListDecisionTablesByProjectUseCasePort;
+import br.pucminas.graphtest.application.port.input.decisiontable.PatchDecisionTableDetailsUseCasePort;
+import br.pucminas.graphtest.application.port.input.decisiontable.PreviewDecisionTableUseCasePort;
+import br.pucminas.graphtest.application.port.input.decisiontable.RefreshDecisionTableUseCasePort;
 import br.pucminas.graphtest.application.port.input.project.CreateProjectUseCasePort;
 import br.pucminas.graphtest.application.port.input.project.DeleteProjectUseCasePort;
 import br.pucminas.graphtest.application.port.input.project.FindProjectByIdUseCasePort;
@@ -29,11 +40,18 @@ import br.pucminas.graphtest.application.port.input.user.ListUsersUseCasePort;
 import br.pucminas.graphtest.application.port.input.user.UpdateUserPasswordUseCasePort;
 import br.pucminas.graphtest.application.port.input.user.UpdateUserUseCasePort;
 import br.pucminas.graphtest.application.port.output.repositories.GceRepositoryPort;
+import br.pucminas.graphtest.application.port.output.repositories.DecisionTableRepositoryPort;
 import br.pucminas.graphtest.application.port.output.repositories.ProjectRepositoryPort;
 import br.pucminas.graphtest.application.port.output.repositories.UserRepositoryPort;
 import br.pucminas.graphtest.application.port.output.security.CurrentUserPort;
 import br.pucminas.graphtest.application.port.output.security.PasswordEncoderPort;
 import br.pucminas.graphtest.application.port.output.security.TokenServicePort;
+import br.pucminas.graphtest.application.service.decisiontable.DecisionTableDerivationServiceImpl;
+import br.pucminas.graphtest.application.service.decisiontable.DecisionTableSyncServiceImpl;
+import br.pucminas.graphtest.application.service.decisiontable.DecisionTableSyncStatusUpdateServiceImpl;
+import br.pucminas.graphtest.application.service.decisiontable.interfaces.DecisionTableDerivationService;
+import br.pucminas.graphtest.application.service.decisiontable.interfaces.DecisionTableSyncService;
+import br.pucminas.graphtest.application.service.decisiontable.interfaces.DecisionTableSyncStatusUpdateService;
 import br.pucminas.graphtest.application.service.gce.GceValidationResultServiceImpl;
 import br.pucminas.graphtest.application.service.project.ProjectAccessServiceImpl;
 import br.pucminas.graphtest.application.service.project.ProjectDeletionServiceImpl;
@@ -57,6 +75,17 @@ import br.pucminas.graphtest.application.usecases.gce.ToggleGceEdgeUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gce.UpdateGceNodeUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gce.UpdateGceUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gce.ValidateGceUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.decisiontable.DeleteDecisionTableByGceIdUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.decisiontable.DeleteDecisionTableByIdUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.decisiontable.FindDecisionTableByGceIdUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.decisiontable.FindDecisionTableByIdUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.decisiontable.FindDecisionTableStatusByIdUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.decisiontable.GenerateDecisionTableUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.decisiontable.ListDecisionTablesUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.decisiontable.ListDecisionTablesByProjectUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.decisiontable.PatchDecisionTableDetailsUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.decisiontable.PreviewDecisionTableUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.decisiontable.RefreshDecisionTableUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.project.CreateProjectUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.project.DeleteProjectUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.project.FindProjectByIdUseCaseImpl;
@@ -92,6 +121,21 @@ public class ApplicationBeansConfig {
     }
 
     @Bean
+    public DecisionTableDerivationService decisionTableDerivationService() {
+        return new DecisionTableDerivationServiceImpl();
+    }
+
+    @Bean
+    public DecisionTableSyncService decisionTableSyncService() {
+        return new DecisionTableSyncServiceImpl();
+    }
+
+    @Bean
+    public DecisionTableSyncStatusUpdateService decisionTableSyncStatusUpdateService(DecisionTableRepositoryPort decisionTableRepositoryPort) {
+        return new DecisionTableSyncStatusUpdateServiceImpl(decisionTableRepositoryPort);
+    }
+
+    @Bean
     public CreateGceUseCasePort createGceUseCase(GceRepositoryPort gceRepositoryPort,
                                                  GceValidationResultService gceValidationResultService,
                                                  ProjectAccessService projectAccessService,
@@ -120,9 +164,15 @@ public class ApplicationBeansConfig {
 
     @Bean
     public DeleteGceUseCasePort deleteGceUseCase(GceRepositoryPort gceRepositoryPort,
+                                                 DecisionTableRepositoryPort decisionTableRepositoryPort,
                                                  ProjectAccessService projectAccessService,
                                                  GceMutationService gceMutationService) {
-        return new DeleteGceUseCaseImpl(gceRepositoryPort, projectAccessService, gceMutationService);
+        return new DeleteGceUseCaseImpl(
+                gceRepositoryPort,
+                decisionTableRepositoryPort,
+                projectAccessService,
+                gceMutationService
+        );
     }
 
     @Bean
@@ -143,32 +193,152 @@ public class ApplicationBeansConfig {
     public UpdateGceUseCasePort updateGceUseCase(GceRepositoryPort gceRepositoryPort,
                                                  ProjectAccessService projectAccessService,
                                                  GceValidationResultService gceValidationResultService,
-                                                 GceMutationService gceMutationService) {
-        return new UpdateGceUseCaseImpl(gceRepositoryPort, projectAccessService, gceValidationResultService, gceMutationService);
+                                                 GceMutationService gceMutationService,
+                                                 DecisionTableSyncStatusUpdateService decisionTableSyncStatusUpdateService) {
+        return new UpdateGceUseCaseImpl(gceRepositoryPort, projectAccessService, gceValidationResultService, gceMutationService, decisionTableSyncStatusUpdateService);
     }
 
     @Bean
     public AddNodeToGceUseCasePort addNodeToGceUseCase(GceRepositoryPort gceRepositoryPort,
                                                        ProjectAccessService projectAccessService,
                                                        GceValidationResultService gceValidationResultService,
-                                                       GceMutationService gceMutationService) {
-        return new AddNodeToGceUseCaseImpl(gceRepositoryPort, projectAccessService, gceValidationResultService, gceMutationService);
+                                                       GceMutationService gceMutationService,
+                                                       DecisionTableSyncStatusUpdateService decisionTableSyncStatusUpdateService) {
+        return new AddNodeToGceUseCaseImpl(gceRepositoryPort, projectAccessService, gceValidationResultService, gceMutationService, decisionTableSyncStatusUpdateService);
     }
 
     @Bean
     public UpdateGceNodeUseCasePort updateGceNodeUseCase(GceRepositoryPort gceRepositoryPort,
                                                          ProjectAccessService projectAccessService,
                                                          GceValidationResultService gceValidationResultService,
-                                                         GceMutationService gceMutationService) {
-        return new UpdateGceNodeUseCaseImpl(gceRepositoryPort, projectAccessService, gceValidationResultService, gceMutationService);
+                                                         GceMutationService gceMutationService,
+                                                         DecisionTableSyncStatusUpdateService decisionTableSyncStatusUpdateService) {
+        return new UpdateGceNodeUseCaseImpl(gceRepositoryPort, projectAccessService, gceValidationResultService, gceMutationService, decisionTableSyncStatusUpdateService);
     }
 
     @Bean
     public ToggleGceEdgeUseCasePort toggleGceEdgeUseCase(GceRepositoryPort gceRepositoryPort,
                                                          ProjectAccessService projectAccessService,
                                                          GceValidationResultService gceValidationResultService,
-                                                         GceMutationService gceMutationService) {
-        return new ToggleGceEdgeUseCaseImpl(gceRepositoryPort, projectAccessService, gceValidationResultService, gceMutationService);
+                                                         GceMutationService gceMutationService,
+                                                         DecisionTableSyncStatusUpdateService decisionTableSyncStatusUpdateService) {
+        return new ToggleGceEdgeUseCaseImpl(gceRepositoryPort, projectAccessService, gceValidationResultService, gceMutationService, decisionTableSyncStatusUpdateService);
+    }
+
+    @Bean
+    public GenerateDecisionTableUseCasePort generateDecisionTableUseCase(DecisionTableRepositoryPort decisionTableRepositoryPort,
+                                                                         GceRepositoryPort gceRepositoryPort,
+                                                                         ProjectAccessService projectAccessService,
+                                                                         GceMutationService gceMutationService,
+                                                                         DecisionTableDerivationService decisionTableDerivationService) {
+        return new GenerateDecisionTableUseCaseImpl(
+                decisionTableRepositoryPort,
+                gceRepositoryPort,
+                projectAccessService,
+                gceMutationService,
+                decisionTableDerivationService
+        );
+    }
+
+    @Bean
+    public PreviewDecisionTableUseCasePort previewDecisionTableUseCase(DecisionTableRepositoryPort decisionTableRepositoryPort,
+                                                                       GceRepositoryPort gceRepositoryPort,
+                                                                       ProjectAccessService projectAccessService,
+                                                                       GceMutationService gceMutationService,
+                                                                       DecisionTableDerivationService decisionTableDerivationService) {
+        return new PreviewDecisionTableUseCaseImpl(
+                decisionTableRepositoryPort,
+                gceRepositoryPort,
+                projectAccessService,
+                gceMutationService,
+                decisionTableDerivationService
+        );
+    }
+
+    @Bean
+    public RefreshDecisionTableUseCasePort refreshDecisionTableUseCase(DecisionTableRepositoryPort decisionTableRepositoryPort,
+                                                                       GceRepositoryPort gceRepositoryPort,
+                                                                       ProjectAccessService projectAccessService,
+                                                                       GceMutationService gceMutationService,
+                                                                       DecisionTableDerivationService decisionTableDerivationService,
+                                                                       DecisionTableSyncService decisionTableSyncService) {
+        return new RefreshDecisionTableUseCaseImpl(
+                decisionTableRepositoryPort,
+                gceRepositoryPort,
+                projectAccessService,
+                gceMutationService,
+                decisionTableDerivationService,
+                decisionTableSyncService
+        );
+    }
+
+    @Bean
+    public FindDecisionTableByGceIdUseCasePort findDecisionTableByGceIdUseCase(DecisionTableRepositoryPort decisionTableRepositoryPort,
+                                                                               ProjectAccessService projectAccessService) {
+        return new FindDecisionTableByGceIdUseCaseImpl(
+                decisionTableRepositoryPort,
+                projectAccessService
+        );
+    }
+
+    @Bean
+    public FindDecisionTableByIdUseCasePort findDecisionTableByIdUseCase(DecisionTableRepositoryPort decisionTableRepositoryPort,
+                                                                         ProjectAccessService projectAccessService) {
+        return new FindDecisionTableByIdUseCaseImpl(
+                decisionTableRepositoryPort,
+                projectAccessService
+        );
+    }
+
+    @Bean
+    public FindDecisionTableStatusByIdUseCasePort findDecisionTableStatusByIdUseCase(DecisionTableRepositoryPort decisionTableRepositoryPort,
+                                                                                     GceRepositoryPort gceRepositoryPort,
+                                                                                     ProjectAccessService projectAccessService,
+                                                                                     DecisionTableSyncService decisionTableSyncService) {
+        return new FindDecisionTableStatusByIdUseCaseImpl(
+                decisionTableRepositoryPort,
+                gceRepositoryPort,
+                projectAccessService,
+                decisionTableSyncService
+        );
+    }
+
+    @Bean
+    public ListDecisionTablesUseCasePort listDecisionTablesUseCase(DecisionTableRepositoryPort decisionTableRepositoryPort,
+                                                                   ProjectRepositoryPort projectRepositoryPort,
+                                                                   CurrentUserPort currentUserPort) {
+        return new ListDecisionTablesUseCaseImpl(
+                decisionTableRepositoryPort,
+                projectRepositoryPort,
+                currentUserPort
+        );
+    }
+
+    @Bean
+    public ListDecisionTablesByProjectUseCasePort listDecisionTablesByProjectUseCase(DecisionTableRepositoryPort decisionTableRepositoryPort,
+                                                                                     ProjectAccessService projectAccessService) {
+        return new ListDecisionTablesByProjectUseCaseImpl(
+                decisionTableRepositoryPort,
+                projectAccessService
+        );
+    }
+
+    @Bean
+    public PatchDecisionTableDetailsUseCasePort patchDecisionTableDetailsUseCase(DecisionTableRepositoryPort decisionTableRepositoryPort,
+                                                                                 ProjectAccessService projectAccessService) {
+        return new PatchDecisionTableDetailsUseCaseImpl(decisionTableRepositoryPort, projectAccessService);
+    }
+
+    @Bean
+    public DeleteDecisionTableByGceIdUseCasePort deleteDecisionTableByGceIdUseCase(DecisionTableRepositoryPort decisionTableRepositoryPort,
+                                                                                   ProjectAccessService projectAccessService) {
+        return new DeleteDecisionTableByGceIdUseCaseImpl(decisionTableRepositoryPort, projectAccessService);
+    }
+
+    @Bean
+    public DeleteDecisionTableByIdUseCasePort deleteDecisionTableByIdUseCase(DecisionTableRepositoryPort decisionTableRepositoryPort,
+                                                                             ProjectAccessService projectAccessService) {
+        return new DeleteDecisionTableByIdUseCaseImpl(decisionTableRepositoryPort, projectAccessService);
     }
 
     @Bean
@@ -178,8 +348,9 @@ public class ApplicationBeansConfig {
 
     @Bean
     public ProjectDeletionService projectDeletionService(ProjectRepositoryPort projectRepositoryPort,
-                                                         GceRepositoryPort gceRepositoryPort) {
-        return new ProjectDeletionServiceImpl(projectRepositoryPort, gceRepositoryPort);
+                                                         GceRepositoryPort gceRepositoryPort,
+                                                         DecisionTableRepositoryPort decisionTableRepositoryPort) {
+        return new ProjectDeletionServiceImpl(projectRepositoryPort, gceRepositoryPort, decisionTableRepositoryPort);
     }
 
     @Bean

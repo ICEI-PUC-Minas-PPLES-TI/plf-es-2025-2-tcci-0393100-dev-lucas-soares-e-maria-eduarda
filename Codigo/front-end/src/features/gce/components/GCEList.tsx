@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlertTriangle, Plus, Trash2 } from 'lucide-react';
+import { AlertTriangle, Clock, Plus, Trash2 } from 'lucide-react';
 import { Button } from '../../../components/Button';
 import { ConfirmModal } from '../../../components/ConfirmModal';
 import { ARTIFACT_TYPES } from '../../../shared/artifactTypes';
 import GCEService from '../../../services/GCE/GCEService';
+import { formatRelativeDate } from '../../../utils/formatDate';
 import type { GCEDTO } from '../types/gce';
 
 interface GCEListProps {
@@ -92,6 +93,10 @@ export function GCEList({ projectId, onCreateGCE }: GCEListProps) {
                 <p className="text-xs text-gray-600 mt-1">
                   {gce.nodes.length} nó{gce.nodes.length !== 1 ? 's' : ''} · {gce.edges.length} aresta{gce.edges.length !== 1 ? 's' : ''}
                 </p>
+                <div className="flex items-center gap-1 text-xs text-gray-600 mt-1">
+                  <Clock className="w-3 h-3" />
+                  {formatRelativeDate(gce.updatedAt ?? gce.createdAt)}
+                </div>
               </div>
 
               <Button

@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { useParams, useLocation, useNavigate, useOutletContext } from 'react-router-dom';
 import { ReactFlowProvider } from '@xyflow/react';
 import { Header } from '../components/Header';
 import { GCEToolbar } from '../features/gce/components/GCEToolbar';
@@ -16,11 +16,13 @@ import {
   saveBends,
 } from '../features/gce/utils/gceConverters';
 import GCEService from '../services/GCE/GCEService';
-import ProjectService from '../services/Project/ProjectService';
+import DecisionTableService from '../services/DecisionTable/DecisionTableService';
 import type { GCEDTO, GCEValidationResponse, GCERestriction } from '../features/gce/types/gce';
+import type { ProjectLayoutContext } from './ProjectLayout';
 
 export function GCEEditorPage() {
   const { projectId, gceId } = useParams<{ projectId: string; gceId: string }>();
+  const { project } = useOutletContext<ProjectLayoutContext>();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -49,8 +51,8 @@ export function GCEEditorPage() {
   const [validationResult, setValidationResult] = useState<GCEValidationResponse | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [isValidated, setIsValidated] = useState(false);
+  const [hasDecisionTable, setHasDecisionTable] = useState(false);
   const [liveRestrictions, setLiveRestrictions] = useState<GCERestriction[]>([]);
-  const [projectName, setProjectName] = useState<string | null>(null);
   const canvasRef = useRef<GCECanvasHandle>(null);
 
   useEffect(() => {
@@ -62,11 +64,11 @@ export function GCEEditorPage() {
   }, [isNew, gceId]);
 
   useEffect(() => {
-    if (!projectId) return;
-    ProjectService.buscarPorId(projectId)
-      .then((p) => setProjectName(p.name))
-      .catch(() => {});
-  }, [projectId]);
+    if (isNew || !gceId) return;
+    DecisionTableService.buscarPorGceId(gceId)
+      .then(() => setHasDecisionTable(true))
+      .catch(() => setHasDecisionTable(false));
+  }, [isNew, gceId]);
 
   const handleSelectionChange = useCallback((nodeId: string | null, edgeId: string | null) => {
     setSelectedNodeId(nodeId);
@@ -177,7 +179,7 @@ export function GCEEditorPage() {
         <Header
           breadcrumb={[
             { label: 'Projetos', href: '/homepage' },
-            { label: projectName ?? 'Projeto', href: `/projeto/${projectId}` },
+            { label: project.name, href: `/projeto/${projectId}` },
             { label: gce.name },
           ]}
         />
@@ -186,11 +188,13 @@ export function GCEEditorPage() {
           gceName={gce.name}
           onSave={handleSave}
           onValidate={handleValidate}
-          onGenerateTable={() => {}}
+          onGenerateTable={() => navigate(`/projeto/${projectId}/gce/${gceId}/tabela-decisao`)}
           onNameChange={handleNameChange}
           saveStatus={saveStatus}
           canValidate
           canSave={isValidated}
+          hasDecisionTable={hasDecisionTable}
+          canGenerateTable={isValidated && gce.id !== 'new'}
         />
 
         <div className="flex-1 flex overflow-hidden">

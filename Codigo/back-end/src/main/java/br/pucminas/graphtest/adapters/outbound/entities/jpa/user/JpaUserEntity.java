@@ -1,5 +1,6 @@
-package br.pucminas.graphtest.adapters.outbound.entities.jpa;
+package br.pucminas.graphtest.adapters.outbound.entities.jpa.user;
 
+import br.pucminas.graphtest.adapters.outbound.entities.jpa.shared.JpaBaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;

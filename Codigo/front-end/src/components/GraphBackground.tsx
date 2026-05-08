@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useTheme } from '../context/ThemeContext';
 
 interface Node {
   x: number;
@@ -14,6 +15,7 @@ interface GraphBackgroundProps {
 
 export function GraphBackground({ className, nodeCount = 50 }: GraphBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { theme } = useTheme();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -40,9 +42,8 @@ export function GraphBackground({ className, nodeCount = 50 }: GraphBackgroundPr
       });
     }
 
-    const rootStyles = getComputedStyle(document.documentElement);
-    const bgColor = rootStyles.getPropertyValue('--color-surface-deep').trim() || '#020617';
-    const primaryHex = rootStyles.getPropertyValue('--color-primary').trim() || '#06b6d4';
+    const bgColor = theme === 'light' ? '#dde3ea' : '#020617';
+    const primaryHex = theme === 'light' ? '#0891b2' : '#06b6d4';
     const pr = parseInt(primaryHex.slice(1, 3), 16);
     const pg = parseInt(primaryHex.slice(3, 5), 16);
     const pb = parseInt(primaryHex.slice(5, 7), 16);
@@ -103,7 +104,7 @@ export function GraphBackground({ className, nodeCount = 50 }: GraphBackgroundPr
       resizeObserver.disconnect();
       cancelAnimationFrame(animationId);
     };
-  }, [nodeCount]);
+  }, [nodeCount, theme]);
 
   return (
     <canvas

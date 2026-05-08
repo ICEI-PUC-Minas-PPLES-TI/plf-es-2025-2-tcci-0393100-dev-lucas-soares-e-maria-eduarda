@@ -1,7 +1,7 @@
 package br.pucminas.graphtest.adapters.outbound.repositories.jpa.mapper;
 
-import br.pucminas.graphtest.adapters.outbound.entities.jpa.JpaProjectEntity;
-import br.pucminas.graphtest.adapters.outbound.entities.jpa.JpaUserEntity;
+import br.pucminas.graphtest.adapters.outbound.entities.jpa.project.JpaProjectEntity;
+import br.pucminas.graphtest.adapters.outbound.entities.jpa.user.JpaUserEntity;
 import br.pucminas.graphtest.adapters.outbound.repositories.shared.BasePersistenceMapper;
 import br.pucminas.graphtest.application.domain.project.model.Project;
 import org.springframework.stereotype.Component;

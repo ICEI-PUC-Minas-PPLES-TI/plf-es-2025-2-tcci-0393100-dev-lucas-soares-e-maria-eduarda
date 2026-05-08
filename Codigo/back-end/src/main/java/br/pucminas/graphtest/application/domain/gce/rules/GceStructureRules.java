@@ -27,17 +27,17 @@ public final class GceStructureRules {
     private static void validateGraphReferences(Gce graph) {
         for (GceEdge edge : graph.getEdges()) {
             if (graph.findNode(edge.getSourceNodeCode()).isEmpty()) {
-                throw new IllegalArgumentException("Aresta referencia sourceNodeCode inexistente: " + edge.getSourceNodeCode());
+                throw new IllegalArgumentException("A aresta referencia um nó de origem inexistente: " + edge.getSourceNodeCode());
             }
             if (graph.findNode(edge.getTargetNodeCode()).isEmpty()) {
-                throw new IllegalArgumentException("Aresta referencia targetNodeCode inexistente: " + edge.getTargetNodeCode());
+                throw new IllegalArgumentException("A aresta referencia um nó de destino inexistente: " + edge.getTargetNodeCode());
             }
         }
 
         for (GceRestriction restriction : graph.getRestrictions()) {
             for (String nodeCode : restriction.getNodeCodes()) {
                 if (graph.findNode(nodeCode).isEmpty()) {
-                    throw new IllegalArgumentException("Restricao referencia no inexistente: " + nodeCode);
+                    throw new IllegalArgumentException("A restrição referencia um nó inexistente: " + nodeCode);
                 }
             }
         }
@@ -51,7 +51,7 @@ public final class GceStructureRules {
                 .toList();
 
         if (!duplicateCodes.isEmpty()) {
-            throw new IllegalArgumentException("Codigos de nos duplicados: " + String.join(", ", duplicateCodes));
+            throw new IllegalArgumentException("Há códigos de nós duplicados: " + String.join(", ", duplicateCodes));
         }
     }
 
@@ -61,16 +61,16 @@ public final class GceStructureRules {
             GceNode targetNode = graph.findNode(edge.getTargetNodeCode()).orElseThrow();
 
             if (sourceNode.isEffect()) {
-                throw new IllegalArgumentException("Efeito nao pode ser origem de aresta: " + sourceNode.getCode());
+                throw new IllegalArgumentException("Um efeito não pode ser origem de aresta: " + sourceNode.getCode());
             }
             if (sourceNode.isCause() && !targetNode.isOperator() && !targetNode.isEffect()) {
-                throw new IllegalArgumentException("Causa so pode se conectar a operador ou efeito: " + sourceNode.getCode());
+                throw new IllegalArgumentException("Uma causa só pode se conectar a um operador ou a um efeito: " + sourceNode.getCode());
             }
             if (targetNode.isCause()) {
-                throw new IllegalArgumentException("Causa nao pode ser destino de aresta: " + targetNode.getCode());
+                throw new IllegalArgumentException("Uma causa não pode ser destino de aresta: " + targetNode.getCode());
             }
             if (targetNode.isEffect() && !sourceNode.isOperator() && !sourceNode.isCause()) {
-                throw new IllegalArgumentException("Efeito so pode receber aresta de operador ou causa: " + targetNode.getCode());
+                throw new IllegalArgumentException("Um efeito só pode receber aresta de um operador ou de uma causa: " + targetNode.getCode());
             }
         }
     }
@@ -80,7 +80,7 @@ public final class GceStructureRules {
             if (node.isOperator()) {
                 int incomingEdges = graph.incomingEdges(node.getCode()).size();
                 if (incomingEdges > 2) {
-                    throw new IllegalArgumentException("Operador deve possuir no maximo duas arestas de entrada: " + node.getCode());
+                    throw new IllegalArgumentException("Um operador deve possuir no máximo duas arestas de entrada: " + node.getCode());
                 }
             }
 
@@ -91,7 +91,7 @@ public final class GceStructureRules {
             int incomingEdges = graph.incomingEdges(node.getCode()).size();
             if (incomingEdges > 1) {
                 throw new IllegalArgumentException(
-                        "Efeito deve possuir no maximo uma aresta de entrada direta. Utilize operador logico antes do efeito: "
+                        "Um efeito deve possuir no máximo uma aresta de entrada direta. Utilize um operador lógico antes do efeito: "
                                 + node.getCode()
                 );
             }
@@ -112,7 +112,7 @@ public final class GceStructureRules {
         for (String nodeCode : restriction.getNodeCodes()) {
             GceNode node = graph.findNode(nodeCode).orElseThrow();
             if (!node.isCause()) {
-                throw new IllegalArgumentException("Restricao " + restriction.getType() + " deve referenciar apenas nos CAUSE.");
+                throw new IllegalArgumentException("A restrição " + restriction.getType() + " deve referenciar apenas causas.");
             }
         }
     }
@@ -121,7 +121,7 @@ public final class GceStructureRules {
         for (String nodeCode : restriction.getNodeCodes()) {
             GceNode node = graph.findNode(nodeCode).orElseThrow();
             if (!node.isEffect()) {
-                throw new IllegalArgumentException("Restricao " + restriction.getType() + " deve referenciar apenas nos EFFECT.");
+                throw new IllegalArgumentException("A restrição " + restriction.getType() + " deve referenciar apenas efeitos.");
             }
         }
     }
