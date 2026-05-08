@@ -91,7 +91,7 @@ export function ConstraintMenu({ position, selectedCount, selectedNodeTypes, onS
       }}
     >
       <div className="px-4 py-3 border-b border-edge bg-surface">
-        <h3 className="text-sm font-semibold text-white">Criar restricao</h3>
+        <h3 className="text-sm font-semibold text-gray-200">Criar restricao</h3>
         <p className="text-xs text-gray-500 mt-1">{selectedCount} nos selecionados</p>
       </div>
 
@@ -115,7 +115,7 @@ export function ConstraintMenu({ position, selectedCount, selectedNodeTypes, onS
               </div>
 
               <div className="flex-1 text-left">
-                <span className={`text-sm font-medium ${disabled ? 'text-gray-600' : 'text-white'}`}>
+                <span className={`text-sm font-medium ${disabled ? 'text-gray-600' : 'text-gray-200'}`}>
                   {opt.label}
                 </span>
                 <span className={`text-xs block ${disabled ? 'text-gray-700' : 'text-gray-500'}`}>

@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import { AlertTriangle } from 'lucide-react';
 import { Header } from '../components/Header';
 import { ConfirmModal } from '../components/ConfirmModal';
@@ -12,64 +12,29 @@ import { ValidationWarnings } from '../features/projects/components/ValidationWa
 import { ProjectFormModal } from '../features/projects/components/ProjectFormModal';
 import { GCEFormModal } from '../features/gce/components/GCEFormModal';
 import { GCEList } from '../features/gce/components/GCEList';
+import { DecisionTableList } from '../features/decision-table/components/DecisionTableList';
+import { SelectGCEForTableModal } from '../features/decision-table/components/SelectGCEForTableModal';
 import ProjectService from '../services/Project/ProjectService';
-import type { ProjectDTO } from '../services/Project/types/project';
+import type { ProjectLayoutContext } from './ProjectLayout';
 
 export function ProjectPage() {
-  const { id } = useParams<{ id: string }>();
+  const { project, setProject } = useOutletContext<ProjectLayoutContext>();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
-  const [project, setProject] = useState<ProjectDTO | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showCreateGCEModal, setShowCreateGCEModal] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!id) return;
-
-    let cancelled = false;
-
-    ProjectService.buscarPorId(id)
-      .then((data) => {
-        if (!cancelled) setProject(data);
-      })
-      .catch(() => {
-        if (!cancelled) setError('Erro ao carregar o projeto.');
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-
-    return () => { cancelled = true; };
-  }, [id]);
+  const [showSelectGCEModal, setShowSelectGCEModal] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const handleDelete = async () => {
-    if (!id) return;
     try {
-      await ProjectService.excluir(id);
+      await ProjectService.excluir(project.id);
       navigate('/homepage');
     } catch {
-      setError('Erro ao excluir o projeto.');
+      setDeleteError('Erro ao excluir o projeto.');
     }
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-surface flex items-center justify-center">
-        <p className="text-gray-400">Carregando projeto...</p>
-      </div>
-    );
-  }
-
-  if (error || !project) {
-    return (
-      <div className="min-h-screen bg-surface flex items-center justify-center">
-        <p className="text-red-400">{error ?? 'Projeto não encontrado.'}</p>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-surface flex flex-col">
@@ -82,6 +47,8 @@ export function ProjectPage() {
       <ProjectHeader
         projectName={project.name}
         projectDescription={project.description}
+        createdAt={project.createdAt}
+        updatedAt={project.updatedAt}
         onEdit={() => setShowEditModal(true)}
         onDelete={() => setShowDeleteModal(true)}
       />
@@ -91,12 +58,12 @@ export function ProjectPage() {
         {activeTab === 'overview' && (
           <div className="container mx-auto px-6 py-6 flex gap-6">
             <div className="flex-1 space-y-6 min-w-0">
-              <QuickActions onCreateGCE={() => setShowCreateGCEModal(true)} />
+              <QuickActions onCreateGCE={() => setShowCreateGCEModal(true)} onGenerateTable={() => setShowSelectGCEModal(true)} />
               <RecentArtifacts projectId={project.id} />
               <ValidationWarnings />
             </div>
             <aside className="w-80 shrink-0 hidden lg:block">
-              <ProjectSummary />
+              <ProjectSummary createdAt={project.createdAt} updatedAt={project.updatedAt} />
             </aside>
           </div>
         )}
@@ -107,7 +74,17 @@ export function ProjectPage() {
             onCreateGCE={() => setShowCreateGCEModal(true)}
           />
         )}
+
+        {activeTab === 'tables' && (
+          <DecisionTableList projectId={project.id} />
+        )}
       </main>
+
+      {deleteError && (
+        <div className="fixed bottom-4 right-4 bg-red-900 text-red-200 px-4 py-2 rounded">
+          {deleteError}
+        </div>
+      )}
 
       {showDeleteModal && (
         <ConfirmModal
@@ -129,6 +106,13 @@ export function ProjectPage() {
         <GCEFormModal
           projectId={project.id}
           onClose={() => setShowCreateGCEModal(false)}
+        />
+      )}
+
+      {showSelectGCEModal && (
+        <SelectGCEForTableModal
+          projectId={project.id}
+          onClose={() => setShowSelectGCEModal(false)}
         />
       )}
 

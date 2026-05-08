@@ -2,6 +2,8 @@ export interface ProjectDTO {
   id: string;
   name: string;
   description: string;
+  createdAt: string;
+  updatedAt: string | null;
 }
 
 export interface CreateProjectRequest {

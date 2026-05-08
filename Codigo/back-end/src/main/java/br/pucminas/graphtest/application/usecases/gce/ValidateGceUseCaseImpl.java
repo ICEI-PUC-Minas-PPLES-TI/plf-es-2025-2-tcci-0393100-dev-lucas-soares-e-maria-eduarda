@@ -3,10 +3,13 @@ package br.pucminas.graphtest.application.usecases.gce;
 import br.pucminas.graphtest.application.domain.gce.model.Gce;
 import br.pucminas.graphtest.application.port.input.gce.ValidateGceUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.records.ValidateGceInput;
+import br.pucminas.graphtest.application.port.input.gce.records.ValidationGceMessage;
 import br.pucminas.graphtest.application.port.input.gce.records.ValidationGceOutput;
 import br.pucminas.graphtest.application.service.gce.interfaces.GceMutationService;
 import br.pucminas.graphtest.application.service.gce.interfaces.GceValidationResultService;
 import br.pucminas.graphtest.application.service.project.interfaces.ProjectAccessService;
+
+import java.util.List;
 
 /**
  * Caso de uso responsavel por orquestrar a validacao de um GCE.
@@ -40,16 +43,24 @@ public class ValidateGceUseCaseImpl implements ValidateGceUseCasePort {
     public ValidationGceOutput execute(ValidateGceInput input) {
         projectAccessService.findAuthorizedProject(input.projectId());
 
-        Gce graph = new Gce(
-                null,
-                input.projectId(),
-                input.name(),
-                input.description(),
-                Boolean.TRUE.equals(input.selected()),
-                gceMutationService.toNodes(input.nodes()),
-                gceMutationService.toEdges(input.nodes(), input.edges()),
-                gceMutationService.toRestrictions(input.restrictions())
-        );
+        Gce graph;
+        try {
+            graph = new Gce(
+                    null,
+                    input.projectId(),
+                    input.name(),
+                    input.description(),
+                    Boolean.TRUE.equals(input.selected()),
+                    gceMutationService.toNodes(input.nodes()),
+                    gceMutationService.toEdges(input.nodes(), input.edges()),
+                    gceMutationService.toRestrictions(input.restrictions())
+            );
+        } catch (IllegalArgumentException e) {
+            return new ValidationGceOutput(
+                    List.of(new ValidationGceMessage("ESTRUTURA_INVALIDA", e.getMessage())),
+                    List.of()
+            );
+        }
 
         gceMutationService.refreshOperatorLabels(graph);
         return gceValidationResultService.validate(graph);
