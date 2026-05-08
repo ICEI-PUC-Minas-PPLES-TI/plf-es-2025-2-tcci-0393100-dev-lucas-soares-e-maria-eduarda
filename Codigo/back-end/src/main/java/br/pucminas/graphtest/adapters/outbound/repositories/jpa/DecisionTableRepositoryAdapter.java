@@ -22,20 +22,16 @@ public class DecisionTableRepositoryAdapter implements DecisionTableRepositoryPo
     @Override
     public DecisionTable save(DecisionTable decisionTable) {
         JpaDecisionTableEntity entity = mapper.toEntity(decisionTable);
-        markEntityState(entity);
-        return mapper.toDomain(jpaDecisionTableRepository.save(entity));
-    }
-
-    /**
-     * A tabela de decisao nasce no dominio com ID proprio. Por isso o adapter precisa informar
-     * ao Spring Data se a entidade representa uma insercao inicial ou uma atualizacao.
-     */
-    private void markEntityState(JpaDecisionTableEntity entity) {
         if (entity.getId() != null && jpaDecisionTableRepository.existsById(entity.getId())) {
-            entity.markAsExisting();
-            return;
+            // Entidades filhas (actions, conditions, rules, cells) nao implementam Persistable,
+            // entao o merge em cascata falha ao tentar carregar filhos novos (UUID atribuido mas
+            // nao existente no banco). A solucao e deletar os filhos antigos via cascade e
+            // reinserir tudo como novo dentro da mesma transacao.
+            jpaDecisionTableRepository.deleteById(entity.getId());
+            jpaDecisionTableRepository.flush();
         }
         entity.markAsNew();
+        return mapper.toDomain(jpaDecisionTableRepository.save(entity));
     }
 
     @Override
