@@ -28,6 +28,8 @@ import br.pucminas.graphtest.application.port.input.gce.ToggleGceEdgeUseCasePort
 import br.pucminas.graphtest.application.port.input.gce.UpdateGceNodeUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.UpdateGceUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.ValidateGceUseCasePort;
+import br.pucminas.graphtest.application.port.input.gfc.ListGfcSourceMethodsUseCasePort;
+import br.pucminas.graphtest.application.port.input.gfc.PreviewGfcUseCasePort;
 import br.pucminas.graphtest.application.port.input.security.GenerateTokenUseCasePort;
 import br.pucminas.graphtest.application.port.input.security.LoadAuthenticationUserUseCasePort;
 import br.pucminas.graphtest.application.port.input.security.AuthenticatedUserByTokenUseCasePort;
@@ -53,6 +55,11 @@ import br.pucminas.graphtest.application.service.decisiontable.interfaces.Decisi
 import br.pucminas.graphtest.application.service.decisiontable.interfaces.DecisionTableSyncService;
 import br.pucminas.graphtest.application.service.decisiontable.interfaces.DecisionTableSyncStatusUpdateService;
 import br.pucminas.graphtest.application.service.gce.GceValidationResultServiceImpl;
+import br.pucminas.graphtest.application.service.gfc.GfcPreviewGenerationServiceImpl;
+import br.pucminas.graphtest.application.service.gfc.GfcSourceMethodListingServiceImpl;
+import br.pucminas.graphtest.application.service.gfc.interfaces.GfcPreviewGenerationService;
+import br.pucminas.graphtest.application.service.gfc.interfaces.GfcSourceMethodListingService;
+import br.pucminas.graphtest.application.service.gfc.parser.JavaSourceParser;
 import br.pucminas.graphtest.application.service.project.ProjectAccessServiceImpl;
 import br.pucminas.graphtest.application.service.project.ProjectDeletionServiceImpl;
 import br.pucminas.graphtest.application.service.user.UserAuthorizationServiceImpl;
@@ -75,6 +82,8 @@ import br.pucminas.graphtest.application.usecases.gce.ToggleGceEdgeUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gce.UpdateGceNodeUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gce.UpdateGceUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gce.ValidateGceUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.gfc.ListGfcSourceMethodsUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.gfc.PreviewGfcUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.decisiontable.DeleteDecisionTableByGceIdUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.decisiontable.DeleteDecisionTableByIdUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.decisiontable.FindDecisionTableByGceIdUseCaseImpl;
@@ -118,6 +127,21 @@ public class ApplicationBeansConfig {
     @Bean
     public GceMutationService gceMutationService() {
         return new GceMutationServiceImpl();
+    }
+
+    @Bean
+    public JavaSourceParser javaSourceParser() {
+        return new JavaSourceParser();
+    }
+
+    @Bean
+    public GfcPreviewGenerationService gfcPreviewGenerationService(JavaSourceParser javaSourceParser) {
+        return new GfcPreviewGenerationServiceImpl(javaSourceParser);
+    }
+
+    @Bean
+    public GfcSourceMethodListingService gfcSourceMethodListingService(JavaSourceParser javaSourceParser) {
+        return new GfcSourceMethodListingServiceImpl(javaSourceParser);
     }
 
     @Bean
@@ -223,6 +247,17 @@ public class ApplicationBeansConfig {
                                                          GceMutationService gceMutationService,
                                                          DecisionTableSyncStatusUpdateService decisionTableSyncStatusUpdateService) {
         return new ToggleGceEdgeUseCaseImpl(gceRepositoryPort, projectAccessService, gceValidationResultService, gceMutationService, decisionTableSyncStatusUpdateService);
+    }
+
+    @Bean
+    public ListGfcSourceMethodsUseCasePort listGfcSourceMethodsUseCase(GfcSourceMethodListingService gfcSourceMethodListingService) {
+        return new ListGfcSourceMethodsUseCaseImpl(gfcSourceMethodListingService);
+    }
+
+    @Bean
+    public PreviewGfcUseCasePort previewGfcUseCase(ProjectAccessService projectAccessService,
+                                                   GfcPreviewGenerationService gfcPreviewGenerationService) {
+        return new PreviewGfcUseCaseImpl(projectAccessService, gfcPreviewGenerationService);
     }
 
     @Bean
