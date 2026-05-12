@@ -1,0 +1,125 @@
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AlertTriangle, Plus, Trash2 } from 'lucide-react';
+import { Button } from '../../../components/Button';
+import { ConfirmModal } from '../../../components/ConfirmModal';
+import { ARTIFACT_TYPES } from '../../../shared/artifactTypes';
+import GFCService from '../../../services/GFC/GFCService';
+import type { GFCSummaryDTO } from '../types/gfc';
+
+interface GFCListProps {
+  projectId: string;
+  onCreateGFC: () => void;
+}
+
+export function GFCList({ projectId, onCreateGFC }: GFCListProps) {
+  const navigate = useNavigate();
+  const [gfcs, setGfcs] = useState<GFCSummaryDTO[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [deleteTarget, setDeleteTarget] = useState<GFCSummaryDTO | null>(null);
+
+  useEffect(() => {
+    GFCService.listarPorProjeto(projectId)
+      .then(setGfcs)
+      .finally(() => setLoading(false));
+  }, [projectId]);
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    await GFCService.deletar(deleteTarget.id);
+    setGfcs((prev) => prev.filter((g) => g.id !== deleteTarget.id));
+    setDeleteTarget(null);
+  };
+
+  const typeConfig = ARTIFACT_TYPES['GFC'];
+  const Icon = typeConfig.icon;
+
+  return (
+    <div className="container mx-auto px-6 py-6">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-base font-semibold text-gray-200">Grafos de Fluxo de Controle</h2>
+          <p className="text-sm text-gray-500 mt-0.5">
+            {loading ? 'Carregando...' : `${gfcs.length} grafo${gfcs.length !== 1 ? 's' : ''}`}
+          </p>
+        </div>
+        <Button size="sm" variant="primary" onClick={onCreateGFC}>
+          <Plus className="w-4 h-4" />
+          Novo GFC
+        </Button>
+      </div>
+
+      {!loading && gfcs.length === 0 ? (
+        <div className="bg-surface-card border border-edge rounded-lg p-12 flex flex-col items-center gap-3">
+          <div className={`w-12 h-12 rounded-lg ${typeConfig.bgColor} flex items-center justify-center`}>
+            <Icon className={`w-6 h-6 ${typeConfig.color}`} />
+          </div>
+          <p className="text-sm text-gray-400">Nenhum GFC criado ainda.</p>
+          <Button size="sm" variant="primary" onClick={onCreateGFC}>
+            <Plus className="w-4 h-4" />
+            Criar primeiro GFC
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {gfcs.map((gfc) => (
+            <div
+              key={gfc.id}
+              className="bg-surface-card border border-edge rounded-lg p-4 flex flex-col gap-3 hover:border-edge-hover transition-colors"
+            >
+              <div className="flex items-start justify-between">
+                <div className={`w-10 h-10 rounded ${typeConfig.bgColor} border border-edge flex items-center justify-center ${typeConfig.color} shrink-0`}>
+                  <Icon className="w-5 h-5" />
+                </div>
+                <button
+                  onClick={() => setDeleteTarget(gfc)}
+                  className="text-gray-600 hover:text-red-400 transition-colors p-1 -mr-1"
+                  title="Excluir GFC"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-medium text-gray-200 truncate" title={gfc.name}>
+                  {gfc.name}
+                </h3>
+                <p className="text-xs text-gray-500 mt-0.5 font-mono truncate" title={gfc.methodSignature}>
+                  {gfc.methodSignature}
+                </p>
+                {gfc.language && (
+                  <p className="text-xs text-gray-600 mt-1">{gfc.language}</p>
+                )}
+              </div>
+
+              <Button
+                size="sm"
+                className="w-full justify-center"
+                onClick={() => navigate(`/projeto/${projectId}/gfc/${gfc.id}`)}
+              >
+                Abrir
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {deleteTarget && (
+        <ConfirmModal
+          title="Excluir GFC"
+          message={
+            <>
+              Tem certeza que deseja excluir o GFC{' '}
+              <span className="text-gray-200 font-medium">{deleteTarget.name}</span>? Essa ação não pode ser desfeita.
+            </>
+          }
+          icon={AlertTriangle}
+          confirmLabel="Excluir"
+          confirmLoadingLabel="Excluindo..."
+          onClose={() => setDeleteTarget(null)}
+          onConfirm={handleDelete}
+        />
+      )}
+    </div>
+  );
+}

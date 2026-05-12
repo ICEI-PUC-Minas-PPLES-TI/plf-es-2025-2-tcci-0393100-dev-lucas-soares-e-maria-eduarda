@@ -21,6 +21,21 @@
   --color-node-selected: #58a6ff;
   --color-node-error: #f85149;
   --color-edge-negation: #f85149;
+
+  /* GFC — Grafo de Fluxo de Controle */
+  --color-gfc-start: #3fb950;
+  --color-gfc-start-bg: #1f6f33;
+  --color-gfc-end: #94a3b8;
+  --color-gfc-end-bg: #475569;
+  --color-gfc-statement: #58a6ff;
+  --color-gfc-statement-bg: #1f4e8a;
+  --color-gfc-decision: #eab308;
+  --color-gfc-decision-bg: #a16207;
+  --color-gfc-return: #f85149;
+  --color-gfc-return-bg: #a52821;
+  --color-gfc-edge-true: #3fb950;
+  --color-gfc-edge-false: #f85149;
+  --color-gfc-edge-loop: #a855f7;
 }
 
 :root {
@@ -64,6 +79,21 @@
   --color-gray-700: #cbd5e1;
   --color-gray-800: #e2e8f0;
   --color-gray-900: #f1f5f9;
+
+  /* GFC — tons ajustados para contraste em fundo claro */
+  --color-gfc-start: #15803d;
+  --color-gfc-start-bg: #bbf7d0;
+  --color-gfc-end: #475569;
+  --color-gfc-end-bg: #e2e8f0;
+  --color-gfc-statement: #1d4ed8;
+  --color-gfc-statement-bg: #dbeafe;
+  --color-gfc-decision: #a16207;
+  --color-gfc-decision-bg: #fef3c7;
+  --color-gfc-return: #b91c1c;
+  --color-gfc-return-bg: #fee2e2;
+  --color-gfc-edge-true: #15803d;
+  --color-gfc-edge-false: #b91c1c;
+  --color-gfc-edge-loop: #7e22ce;
 }
 
 :root.light .react-flow__handle.react-flow__handle-connecting,
@@ -100,4 +130,41 @@ button {
 .react-flow__handle.react-flow__handle-valid {
   opacity: 1 !important;
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15);
+}
+
+/* Botão inline de ação sobre métodos no SourceFileViewerModal */
+.gfc-inline-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-left: 0.75rem;
+  padding: 0.0625rem 0.5rem;
+  font-size: 0.6875rem;
+  font-family: inherit;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--color-primary-light);
+  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 40%, transparent);
+  border-radius: 0.25rem;
+  opacity: 0;
+  transition: opacity 0.15s ease, background 0.15s ease;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+.cm-line:hover .gfc-inline-action,
+.gfc-inline-action:focus-visible,
+.gfc-inline-action:hover {
+  opacity: 1;
+}
+
+.gfc-inline-action:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-primary) 25%, transparent);
+}
+
+.gfc-inline-action:disabled {
+  cursor: wait;
+  opacity: 1;
+  color: var(--color-edge-hover);
 }
