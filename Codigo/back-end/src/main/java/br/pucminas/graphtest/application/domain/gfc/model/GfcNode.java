@@ -2,10 +2,14 @@ package br.pucminas.graphtest.application.domain.gfc.model;
 
 import br.pucminas.graphtest.application.domain.gfc.enums.GfcNodeTypeEnum;
 import br.pucminas.graphtest.application.domain.shared.model.BaseEntity;
+import br.pucminas.graphtest.application.exception.InvalidGfcModelException;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
 import java.util.UUID;
+
+import static br.pucminas.graphtest.application.domain.gfc.rules.GfcDomainRules.requirePositiveLine;
+import static br.pucminas.graphtest.application.domain.gfc.rules.GfcDomainRules.requireNonNull;
+import static br.pucminas.graphtest.application.domain.gfc.rules.GfcDomainRules.requireText;
 
 /**
  * Representa um vertice do Grafo de Fluxo de Controle.
@@ -33,9 +37,9 @@ public class GfcNode extends BaseEntity {
         this.id = id;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-        this.code = requireText(code, "code");
-        this.label = requireText(label, "label");
-        this.type = Objects.requireNonNull(type, "O tipo do no e obrigatorio.");
+        this.code = requireText(code, "O codigo do no");
+        this.label = requireText(label, "O rotulo do no");
+        this.type = requireNonNull(type, "O tipo do no e obrigatorio.");
         this.startLine = startLine;
         this.endLine = endLine;
         validateLines();
@@ -69,50 +73,23 @@ public class GfcNode extends BaseEntity {
         return new GfcNode(id, code, label, GfcNodeTypeEnum.RETURN, startLine, endLine);
     }
 
-    private String requireText(String value, String field) {
-        if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(displayFieldName(field) + " e obrigatorio.");
-        }
-        return value.trim();
-    }
-
-    private Integer requirePositiveLine(Integer value, String field) {
-        if (value == null) {
-            throw new IllegalArgumentException(displayFieldName(field) + " e obrigatoria para nos de codigo-fonte.");
-        }
-        if (value < 1) {
-            throw new IllegalArgumentException(displayFieldName(field) + " deve ser maior que zero.");
-        }
-        return value;
-    }
-
-    private String displayFieldName(String field) {
-        return switch (field) {
-            case "code" -> "O codigo do no";
-            case "label" -> "O rotulo do no";
-            case "startLine" -> "A linha inicial";
-            case "endLine" -> "A linha final";
-            default -> field;
-        };
-    }
-
     private void validateLines() {
         if (isStart() || isEnd()) {
             validateOptionalArtificialNodeLines();
             return;
         }
 
-        this.startLine = requirePositiveLine(startLine, "startLine");
-        this.endLine = requirePositiveLine(endLine, "endLine");
+        this.startLine = requirePositiveLine(startLine, "A linha inicial");
+        this.endLine = requirePositiveLine(endLine, "A linha final");
         validateLineRange();
     }
 
     private void validateOptionalArtificialNodeLines() {
         if (startLine != null) {
-            this.startLine = requirePositiveLine(startLine, "startLine");
+            this.startLine = requirePositiveLine(startLine, "A linha inicial");
         }
         if (endLine != null) {
-            this.endLine = requirePositiveLine(endLine, "endLine");
+            this.endLine = requirePositiveLine(endLine, "A linha final");
         }
         if (startLine != null && endLine != null) {
             validateLineRange();
@@ -121,7 +98,7 @@ public class GfcNode extends BaseEntity {
 
     private void validateLineRange() {
         if (endLine < startLine) {
-            throw new IllegalArgumentException("A linha final nao pode ser menor que a linha inicial.");
+            throw new InvalidGfcModelException("A linha final nao pode ser menor que a linha inicial.");
         }
     }
 

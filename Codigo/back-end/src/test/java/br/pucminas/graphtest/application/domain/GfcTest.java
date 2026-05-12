@@ -5,17 +5,21 @@ import br.pucminas.graphtest.application.domain.gfc.enums.GfcNodeTypeEnum;
 import br.pucminas.graphtest.application.domain.gfc.model.Gfc;
 import br.pucminas.graphtest.application.domain.gfc.model.GfcEdge;
 import br.pucminas.graphtest.application.domain.gfc.model.GfcNode;
+import br.pucminas.graphtest.application.exception.InvalidGfcModelException;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.UUID;
 
+import static br.pucminas.graphtest.application.domain.gfc.rules.GfcDomainRules.JAVA_LANGUAGE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GfcTest {
+
+    private final UUID sourceFileId = UUID.randomUUID();
 
     @Test
     void shouldCreateControlFlowGraphWithNodesAndEdges() {
@@ -28,16 +32,17 @@ class GfcTest {
         Gfc gfc = new Gfc(
                 UUID.randomUUID(),
                 UUID.randomUUID(),
+                sourceFileId,
+                "void calcular()",
                 "Metodo calcular",
                 "Fluxo principal",
-                "void calcular() { }",
                 "Java",
                 List.of(start, decision, end),
                 List.of(edgeOne, edgeTwo)
         );
 
         assertEquals("Metodo calcular", gfc.getName());
-        assertEquals(Gfc.JAVA_LANGUAGE, gfc.getLanguage());
+        assertEquals(JAVA_LANGUAGE, gfc.getLanguage());
         assertEquals(3, gfc.getNodes().size());
         assertEquals(2, gfc.getEdges().size());
         assertEquals(1, gfc.outgoingEdges("N1").size());
@@ -50,14 +55,15 @@ class GfcTest {
     void shouldRejectNonJavaLanguage() {
         GfcNode start = GfcNode.start(UUID.randomUUID(), "N1", "Inicio");
 
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        InvalidGfcModelException exception = assertThrows(
+                InvalidGfcModelException.class,
                 () -> new Gfc(
                         UUID.randomUUID(),
                         UUID.randomUUID(),
+                        sourceFileId,
+                        "void metodo()",
                         "Metodo",
                         null,
-                        "void metodo() { }",
                         "Kotlin",
                         List.of(start),
                         List.of()
@@ -68,18 +74,60 @@ class GfcTest {
     }
 
     @Test
+    void shouldRejectPersistedGraphWithoutSourceFileId() {
+        GfcNode start = GfcNode.start(UUID.randomUUID(), "N1", "Inicio");
+
+        InvalidGfcModelException exception = assertThrows(
+                InvalidGfcModelException.class,
+                () -> new Gfc(
+                        UUID.randomUUID(),
+                        UUID.randomUUID(),
+                        null,
+                        "void metodo()",
+                        "Metodo",
+                        null,
+                        "Java",
+                        List.of(start),
+                        List.of()
+                )
+        );
+
+        assertTrue(exception.getMessage().contains("arquivo-fonte"));
+    }
+
+    @Test
+    void shouldAllowPreviewGraphWithoutSourceFileId() {
+        GfcNode start = GfcNode.start(UUID.randomUUID(), "N0", "Inicio");
+
+        Gfc preview = Gfc.preview(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                "void metodo()",
+                "Metodo",
+                null,
+                "Java",
+                List.of(start),
+                List.of()
+        );
+
+        assertNull(preview.getSourceFileId());
+        assertEquals("void metodo()", preview.getMethodSignature());
+    }
+
+    @Test
     void shouldRejectDuplicatedNodeCode() {
         GfcNode start = GfcNode.start(UUID.randomUUID(), "N1", "Inicio");
         GfcNode statement = GfcNode.statement(UUID.randomUUID(), "N1", "int x = 1", 2, 2);
 
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        InvalidGfcModelException exception = assertThrows(
+                InvalidGfcModelException.class,
                 () -> new Gfc(
                         UUID.randomUUID(),
                         UUID.randomUUID(),
+                        sourceFileId,
+                        "void metodo()",
                         "Metodo",
                         null,
-                        "void metodo() { }",
                         "Java",
                         List.of(start, statement),
                         List.of()
@@ -94,14 +142,15 @@ class GfcTest {
         GfcNode start = GfcNode.start(UUID.randomUUID(), "N1", "Inicio");
         GfcEdge edge = new GfcEdge(UUID.randomUUID(), "N1", "N2", GfcEdgeTypeEnum.SEQUENTIAL, null);
 
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        InvalidGfcModelException exception = assertThrows(
+                InvalidGfcModelException.class,
                 () -> new Gfc(
                         UUID.randomUUID(),
                         UUID.randomUUID(),
+                        sourceFileId,
+                        "void metodo()",
                         "Metodo",
                         null,
-                        "void metodo() { }",
                         "Java",
                         List.of(start),
                         List.of(edge)
@@ -113,8 +162,8 @@ class GfcTest {
 
     @Test
     void shouldRejectInvalidNodeLineRange() {
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        InvalidGfcModelException exception = assertThrows(
+                InvalidGfcModelException.class,
                 () -> new GfcNode(UUID.randomUUID(), "N1", "Comando", GfcNodeTypeEnum.STATEMENT, 10, 9)
         );
 
@@ -123,8 +172,8 @@ class GfcTest {
 
     @Test
     void shouldRejectMissingLineForSourceCodeNode() {
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        InvalidGfcModelException exception = assertThrows(
+                InvalidGfcModelException.class,
                 () -> GfcNode.statement(UUID.randomUUID(), "N1", "int x = 1", null, 1)
         );
 
@@ -139,15 +188,17 @@ class GfcTest {
         Gfc gfc = new Gfc(
                 UUID.randomUUID(),
                 UUID.randomUUID(),
+                sourceFileId,
+                "void metodo()",
                 "Metodo",
-                null,
                 null,
                 "Java",
                 List.of(decision),
                 List.of(loop)
         );
 
-        assertEquals("", gfc.getSourceCode());
+        assertEquals(sourceFileId, gfc.getSourceFileId());
+        assertEquals("void metodo()", gfc.getMethodSignature());
         assertEquals(1, gfc.outgoingEdges("N1").size());
         assertEquals(1, gfc.incomingEdges("N1").size());
     }

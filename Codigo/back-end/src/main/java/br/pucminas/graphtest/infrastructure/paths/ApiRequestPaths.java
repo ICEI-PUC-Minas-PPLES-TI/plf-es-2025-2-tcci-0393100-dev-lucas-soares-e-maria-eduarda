@@ -13,11 +13,19 @@ public final class ApiRequestPaths {
 
     public static final String GFC = "/grafo-de-fluxo-de-controle";
 
-    public static final String GFC_SOURCE = "/source";
+    public static final String GFC_SOURCE_FILE = "/source-file";
 
-    public static final String GFC_SOURCE_METHODS = "/source/methods";
+    public static final String GFC_SOURCE_FILE_ID = "/source-file/{sourceFileId}";
+
+    public static final String GFC_SOURCE_FILE_PROJECT = "/source-file/projeto/{projectId}";
+
+    public static final String GFC_SOURCE_FILE_SOURCE_CODE = "/source-file/{sourceFileId}/source-code";
+
+    public static final String GFC_SOURCE_FILE_METHODS = "/source-file/{sourceFileId}/methods";
 
     public static final String GFC_PREVIEW = "/preview";
+
+    public static final String GFC_PROJECT = "/projeto/{projectId}";
 
     public static final String DECISION_TABLE = "/tabela-de-decisao";
 

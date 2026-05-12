@@ -38,14 +38,14 @@ class PreviewGfcUseCaseImplTest {
         UUID userId = UUID.randomUUID();
         UUID graphId = UUID.randomUUID();
         PreviewGfcInput input = new PreviewGfcInput(projectId, "GFC", "Descricao", "class A { void m() {} }", "void m()");
-        Gfc graph = new Gfc(
+        Gfc graph = Gfc.preview(
                 graphId,
                 projectId,
+                input.methodSignature(),
                 "GFC",
                 "Descricao",
-                input.sourceCode(),
                 "Java",
-                List.of(GfcNode.start(UUID.randomUUID(), "START", "Inicio")),
+                List.of(GfcNode.start(UUID.randomUUID(), "N0", "Inicio")),
                 List.of()
         );
 

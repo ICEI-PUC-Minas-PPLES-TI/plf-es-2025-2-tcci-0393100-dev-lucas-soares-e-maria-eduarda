@@ -6,12 +6,14 @@ import br.pucminas.graphtest.application.domain.gfc.model.Gfc;
 import br.pucminas.graphtest.application.exception.GfcMethodNotFoundException;
 import br.pucminas.graphtest.application.exception.InvalidJavaSourceCodeException;
 import br.pucminas.graphtest.application.port.input.gfc.records.PreviewGfcInput;
+import br.pucminas.graphtest.application.service.gfc.GfcGenerationServiceImpl;
 import br.pucminas.graphtest.application.service.gfc.GfcPreviewGenerationServiceImpl;
 import br.pucminas.graphtest.application.service.gfc.parser.JavaSourceParser;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
+import static br.pucminas.graphtest.application.domain.gfc.rules.GfcDomainRules.JAVA_LANGUAGE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -19,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class GfcPreviewGenerationServiceImplTest {
 
     private final GfcPreviewGenerationServiceImpl service = new GfcPreviewGenerationServiceImpl(
-            new JavaSourceParser()
+            new GfcGenerationServiceImpl(new JavaSourceParser())
     );
 
     @Test
@@ -47,7 +49,7 @@ class GfcPreviewGenerationServiceImplTest {
 
         assertEquals(projectId, graph.getProjectId());
         assertEquals("GFC calcular", graph.getName());
-        assertEquals(Gfc.JAVA_LANGUAGE, graph.getLanguage());
+        assertEquals(JAVA_LANGUAGE, graph.getLanguage());
         assertTrue(graph.getNodes().stream().anyMatch(node -> node.isStart() && node.getCode().equals("N0") && node.getStartLine() == null));
         assertTrue(graph.getNodes().stream().anyMatch(node -> node.isEnd() && node.getCode().equals("N_END") && node.getEndLine() == null));
         assertTrue(graph.getNodes().stream().anyMatch(node -> node.getType() == GfcNodeTypeEnum.DECISION));

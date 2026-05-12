@@ -1,36 +1,44 @@
 package br.pucminas.graphtest.adapters.inbound.controller;
 
 import br.pucminas.graphtest.adapters.inbound.controller.interfaces.GfcController;
+import br.pucminas.graphtest.adapters.inbound.dto.gfc.CreateGfcDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.gfc.CreateGfcResponseDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.gfc.DeleteGfcResponseDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcDTO;
-import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcSourceCodeDTO;
-import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcSourceMethodDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcSummaryDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.PreviewGfcDTO;
 import br.pucminas.graphtest.adapters.inbound.util.GfcDtoConverterUtil;
-import br.pucminas.graphtest.application.exception.JavaSourceFileException;
-import br.pucminas.graphtest.application.port.input.gfc.ListGfcSourceMethodsUseCasePort;
+import br.pucminas.graphtest.application.port.input.gfc.CreateGfcUseCasePort;
+import br.pucminas.graphtest.application.port.input.gfc.DeleteGfcUseCasePort;
+import br.pucminas.graphtest.application.port.input.gfc.FindGfcByIdUseCasePort;
+import br.pucminas.graphtest.application.port.input.gfc.ListGfcByProjectUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.PreviewGfcUseCasePort;
+import br.pucminas.graphtest.application.port.input.gfc.records.CreateGfcOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcOutput;
-import br.pucminas.graphtest.application.port.input.gfc.records.GfcSourceMethodOutput;
+import br.pucminas.graphtest.application.port.input.gfc.records.GfcSummaryOutput;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.net.URI;
 import java.util.List;
+import java.util.UUID;
 
-import static br.pucminas.graphtest.adapters.inbound.util.GfcDtoConverterUtil.toListMethodsInput;
+import static br.pucminas.graphtest.adapters.inbound.util.GfcDtoConverterUtil.toCreateGfcInput;
 import static br.pucminas.graphtest.adapters.inbound.util.GfcDtoConverterUtil.toPreviewInput;
 import static br.pucminas.graphtest.adapters.inbound.util.GfcDtoConverterUtil.toDto;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.*;
 import static br.pucminas.graphtest.shared.LogTopicsUtil.GFC_CONTROLLER;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.OK;
 
 @Slf4j(topic = GFC_CONTROLLER)
 @RestController
@@ -39,26 +47,49 @@ import static br.pucminas.graphtest.shared.LogTopicsUtil.GFC_CONTROLLER;
 @AllArgsConstructor
 public class GfcControllerImpl implements GfcController {
 
-    private final ListGfcSourceMethodsUseCasePort listGfcSourceMethodsUseCasePort;
+    private static final String MSG_GFC_REMOVIDO = "Grafo de Fluxo de Controle removido com sucesso";
+
+    private final CreateGfcUseCasePort createGfcUseCasePort;
+    private final DeleteGfcUseCasePort deleteGfcUseCasePort;
+    private final FindGfcByIdUseCasePort findGfcByIdUseCasePort;
+    private final ListGfcByProjectUseCasePort listGfcByProjectUseCasePort;
     private final PreviewGfcUseCasePort previewGfcUseCasePort;
 
     @Override
-    @PostMapping(GFC_SOURCE)
-    public ResponseEntity<GfcSourceCodeDTO> source(@RequestParam("file") MultipartFile file) {
-        log.info(">>> obterCodigoFonte: recebendo arquivo Java para obter codigo-fonte");
+    @PostMapping
+    public ResponseEntity<CreateGfcResponseDTO> create(@Validated @RequestBody CreateGfcDTO request) {
+        log.info(">>> criarGfc: recebendo requisicao para criar GFC persistido");
 
-        String sourceCode = readJavaSourceFile(file);
-        return ResponseEntity.ok(new GfcSourceCodeDTO(sourceCode));
+        CreateGfcOutput output = createGfcUseCasePort.execute(toCreateGfcInput(request));
+        return ResponseEntity.created(URI.create(GFC + "/" + output.gfcId()))
+                .body(toDto(output, CREATED.value()));
     }
 
     @Override
-    @PostMapping(GFC_SOURCE_METHODS)
-    public ResponseEntity<List<GfcSourceMethodDTO>> listMethods(@RequestParam("file") MultipartFile file) {
-        log.info(">>> listarMetodos: recebendo arquivo Java para listar metodos disponiveis");
+    @GetMapping("/{gfcId}")
+    public ResponseEntity<GfcDTO> findById(@PathVariable UUID gfcId) {
+        log.info(">>> buscarGfcPorId: recebendo requisicao para buscar GFC persistido");
 
-        String sourceCode = readJavaSourceFile(file);
-        List<GfcSourceMethodOutput> methods = listGfcSourceMethodsUseCasePort.execute(toListMethodsInput(sourceCode));
-        return ResponseEntity.ok(methods.stream().map(GfcDtoConverterUtil::toDto).toList());
+        GfcOutput output = findGfcByIdUseCasePort.execute(gfcId);
+        return ResponseEntity.ok(toDto(output));
+    }
+
+    @Override
+    @DeleteMapping("/{gfcId}")
+    public ResponseEntity<DeleteGfcResponseDTO> delete(@PathVariable UUID gfcId) {
+        log.info(">>> removerGfc: recebendo requisicao para remover GFC persistido");
+
+        deleteGfcUseCasePort.execute(gfcId);
+        return ResponseEntity.ok(new DeleteGfcResponseDTO(MSG_GFC_REMOVIDO, OK.value()));
+    }
+
+    @Override
+    @GetMapping(GFC_PROJECT)
+    public ResponseEntity<List<GfcSummaryDTO>> listByProject(@PathVariable UUID projectId) {
+        log.info(">>> listarGfcsPorProjeto: recebendo requisicao para listar GFCs por projeto");
+
+        List<GfcSummaryOutput> outputs = listGfcByProjectUseCasePort.execute(projectId);
+        return ResponseEntity.ok(outputs.stream().map(GfcDtoConverterUtil::toSummaryDto).toList());
     }
 
     @Override
@@ -68,28 +99,5 @@ public class GfcControllerImpl implements GfcController {
 
         GfcOutput graph = previewGfcUseCasePort.execute(toPreviewInput(request));
         return ResponseEntity.ok(toDto(graph));
-    }
-
-    private String readJavaSourceFile(MultipartFile file) {
-        validateJavaSourceFile(file);
-        try {
-            return new String(file.getBytes(), StandardCharsets.UTF_8);
-        } catch (IOException exception) {
-            throw new JavaSourceFileException("Nao foi possivel ler o arquivo Java enviado.");
-        }
-    }
-
-    private void validateJavaSourceFile(MultipartFile file) {
-        if (file == null) {
-            throw new JavaSourceFileException("O arquivo Java e obrigatorio.");
-        }
-        if (file.isEmpty()) {
-            throw new JavaSourceFileException("O arquivo Java enviado esta vazio.");
-        }
-
-        String filename = file.getOriginalFilename();
-        if (filename == null || !filename.toLowerCase().endsWith(".java")) {
-            throw new JavaSourceFileException("O arquivo enviado deve possuir extensao .java.");
-        }
     }
 }

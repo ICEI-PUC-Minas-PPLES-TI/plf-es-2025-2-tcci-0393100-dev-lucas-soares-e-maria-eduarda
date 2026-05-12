@@ -1,14 +1,13 @@
 package br.pucminas.graphtest.application.service.gfc;
 
 import br.pucminas.graphtest.application.domain.gfc.model.Gfc;
+import br.pucminas.graphtest.application.exception.EmptyJavaSourceCodeException;
+import br.pucminas.graphtest.application.exception.GfcMethodNotFoundException;
+import br.pucminas.graphtest.application.exception.InvalidJavaSourceCodeException;
 import br.pucminas.graphtest.application.port.input.gfc.records.PreviewGfcInput;
 import br.pucminas.graphtest.application.service.gfc.interfaces.GfcPreviewGenerationService;
-import br.pucminas.graphtest.application.service.gfc.builder.GfcControlFlowBuildResult;
-import br.pucminas.graphtest.application.service.gfc.builder.GfcBuilder;
-import br.pucminas.graphtest.application.service.gfc.parser.JavaSourceParser;
-import com.github.javaparser.ast.body.MethodDeclaration;
-
-import java.util.UUID;
+import br.pucminas.graphtest.application.service.gfc.interfaces.GfcGenerationService;
+import br.pucminas.graphtest.application.service.gfc.records.GfcGenerationInput;
 
 /**
  * Gerador inicial de pre-visualizacao de Grafo de Fluxo de Controle baseado em JavaParser.
@@ -19,15 +18,14 @@ import java.util.UUID;
  *
  * <p>Nesta etapa inicial, o gerador escolhe o metodo indicado pela assinatura recebida
  * ou, quando nenhuma assinatura e informada, usa o primeiro metodo com corpo encontrado no
- * codigo-fonte. A construcao de nos e arestas e delegada para {@link GfcBuilder}.
- * A geracao e feita inteiramente em memoria e nao realiza persistencia.</p>
+ * codigo-fonte. A geracao e feita inteiramente em memoria e nao realiza persistencia.</p>
  */
 public class GfcPreviewGenerationServiceImpl implements GfcPreviewGenerationService {
 
-    private final JavaSourceParser javaSourceParser;
+    private final GfcGenerationService gfcGenerationService;
 
-    public GfcPreviewGenerationServiceImpl(JavaSourceParser javaSourceParser) {
-        this.javaSourceParser = javaSourceParser;
+    public GfcPreviewGenerationServiceImpl(GfcGenerationService gfcGenerationService) {
+        this.gfcGenerationService = gfcGenerationService;
     }
 
     /**
@@ -35,23 +33,19 @@ public class GfcPreviewGenerationServiceImpl implements GfcPreviewGenerationServ
      *
      * @param input dados de entrada contendo projeto, metadados e codigo-fonte Java
      * @return agregado GFC montado em memoria
-     * @throws IllegalArgumentException quando o codigo-fonte esta vazio, invalido, sem metodo com corpo
-     *                                  ou sem a assinatura solicitada
+     * @throws EmptyJavaSourceCodeException quando o codigo-fonte esta vazio
+     * @throws InvalidJavaSourceCodeException quando o codigo-fonte esta invalido
+     * @throws GfcMethodNotFoundException quando nao ha metodo com corpo ou a assinatura solicitada nao existe
      */
     @Override
     public Gfc generate(PreviewGfcInput input) {
-        MethodDeclaration method = javaSourceParser.parseMethodBySignature(input.sourceCode(), input.methodSignature());
-        GfcControlFlowBuildResult buildResult = new GfcBuilder().build(method);
-
-        return new Gfc(
-                UUID.randomUUID(),
+        return gfcGenerationService.generate(new GfcGenerationInput(
                 input.projectId(),
-                input.name(),
-                input.description(),
+                null,
                 input.sourceCode(),
-                Gfc.JAVA_LANGUAGE,
-                buildResult.nodes(),
-                buildResult.edges()
-        );
+                input.methodSignature(),
+                input.name(),
+                input.description()
+        ));
     }
 }

@@ -7,11 +7,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Porta de saida responsavel por persistir e recuperar agregados de GFC.
+ * Porta de saida responsavel por persistir e recuperar agregados GFC.
  */
 public interface GfcRepositoryPort {
 
-    Gfc save(Gfc graph);
+    Gfc save(Gfc gfc);
 
     Optional<Gfc> findById(UUID id);
 
@@ -19,5 +19,5 @@ public interface GfcRepositoryPort {
 
     void deleteById(UUID id);
 
-    void deleteAllByProjectId(UUID projectId);
+    void deleteAllBySourceFileId(UUID sourceFileId);
 }

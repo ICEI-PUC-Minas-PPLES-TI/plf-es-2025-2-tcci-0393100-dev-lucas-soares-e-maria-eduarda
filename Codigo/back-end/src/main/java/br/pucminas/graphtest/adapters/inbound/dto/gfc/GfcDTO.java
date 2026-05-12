@@ -9,9 +9,10 @@ import java.util.UUID;
 public record GfcDTO(
         UUID id,
         UUID projectId,
+        UUID sourceFileId,
+        String methodSignature,
         String name,
         String description,
-        String sourceCode,
         String language,
         List<GfcNodeDTO> nodes,
         List<GfcEdgeDTO> edges

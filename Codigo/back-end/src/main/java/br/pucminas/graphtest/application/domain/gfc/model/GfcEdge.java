@@ -4,8 +4,11 @@ import br.pucminas.graphtest.application.domain.gfc.enums.GfcEdgeTypeEnum;
 import br.pucminas.graphtest.application.domain.shared.model.BaseEntity;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
 import java.util.UUID;
+
+import static br.pucminas.graphtest.application.domain.gfc.rules.GfcDomainRules.normalizeOptionalText;
+import static br.pucminas.graphtest.application.domain.gfc.rules.GfcDomainRules.requireNonNull;
+import static br.pucminas.graphtest.application.domain.gfc.rules.GfcDomainRules.requireText;
 
 /**
  * Representa uma aresta do fluxo de controle entre dois vertices do GFC.
@@ -31,29 +34,10 @@ public class GfcEdge extends BaseEntity {
         this.id = id;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-        this.sourceNodeCode = requireText(sourceNodeCode, "sourceNodeCode");
-        this.targetNodeCode = requireText(targetNodeCode, "targetNodeCode");
-        this.type = Objects.requireNonNull(type, "O tipo da aresta e obrigatorio.");
-        this.label = normalizeLabel(label);
-    }
-
-    private String requireText(String value, String field) {
-        if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(displayFieldName(field) + " e obrigatorio.");
-        }
-        return value.trim();
-    }
-
-    private String displayFieldName(String field) {
-        return switch (field) {
-            case "sourceNodeCode" -> "O codigo do no de origem";
-            case "targetNodeCode" -> "O codigo do no de destino";
-            default -> field;
-        };
-    }
-
-    private String normalizeLabel(String value) {
-        return value == null ? "" : value.trim();
+        this.sourceNodeCode = requireText(sourceNodeCode, "O codigo do no de origem");
+        this.targetNodeCode = requireText(targetNodeCode, "O codigo do no de destino");
+        this.type = requireNonNull(type, "O tipo da aresta e obrigatorio.");
+        this.label = normalizeOptionalText(label);
     }
 
     public String getSourceNodeCode() {

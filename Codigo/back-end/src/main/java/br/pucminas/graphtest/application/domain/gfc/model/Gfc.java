@@ -1,6 +1,7 @@
 package br.pucminas.graphtest.application.domain.gfc.model;
 
 import br.pucminas.graphtest.application.domain.shared.model.BaseEntity;
+import br.pucminas.graphtest.application.exception.InvalidGfcModelException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -13,94 +14,101 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static br.pucminas.graphtest.application.domain.gfc.rules.GfcDomainRules.normalizeJavaLanguage;
+import static br.pucminas.graphtest.application.domain.gfc.rules.GfcDomainRules.normalizeOptionalText;
+import static br.pucminas.graphtest.application.domain.gfc.rules.GfcDomainRules.requireText;
+import static br.pucminas.graphtest.application.domain.gfc.rules.GfcDomainRules.requireUuid;
+
 /**
  * Agregado raiz que representa um Grafo de Fluxo de Controle.
  */
 public class Gfc extends BaseEntity {
 
-    public static final String JAVA_LANGUAGE = "Java";
-
     private UUID projectId;
+    private UUID sourceFileId;
+    private String methodSignature;
     private String name;
     private String description;
-    private String sourceCode;
     private String language;
     private final Map<String, GfcNode> nodes;
     private final List<GfcEdge> edges;
 
     public Gfc(UUID id,
                UUID projectId,
+               UUID sourceFileId,
+               String methodSignature,
                String name,
                String description,
-               String sourceCode,
                String language,
                Collection<GfcNode> nodes,
                Collection<GfcEdge> edges) {
-        this(id, projectId, name, description, sourceCode, language, nodes, edges, null, null);
+        this(id, projectId, sourceFileId, methodSignature, name, description, language, nodes, edges, null, null, true);
     }
 
     public Gfc(UUID id,
                UUID projectId,
+               UUID sourceFileId,
+               String methodSignature,
                String name,
                String description,
-               String sourceCode,
                String language,
                Collection<GfcNode> nodes,
                Collection<GfcEdge> edges,
                LocalDateTime createdAt,
                LocalDateTime updatedAt) {
+        this(id, projectId, sourceFileId, methodSignature, name, description, language, nodes, edges, createdAt, updatedAt, true);
+    }
+
+    public static Gfc preview(UUID id,
+                              UUID projectId,
+                              String methodSignature,
+                              String name,
+                              String description,
+                              String language,
+                              Collection<GfcNode> nodes,
+                              Collection<GfcEdge> edges) {
+        return new Gfc(id, projectId, null, methodSignature, name, description, language, nodes, edges, null, null, false);
+    }
+
+    public static Gfc persisted(UUID id,
+                                UUID projectId,
+                                UUID sourceFileId,
+                                String methodSignature,
+                                String name,
+                                String description,
+                                String language,
+                                Collection<GfcNode> nodes,
+                                Collection<GfcEdge> edges) {
+        return new Gfc(id, projectId, sourceFileId, methodSignature, name, description, language, nodes, edges);
+    }
+
+    private Gfc(UUID id,
+                UUID projectId,
+                UUID sourceFileId,
+                String methodSignature,
+                String name,
+                String description,
+                String language,
+                Collection<GfcNode> nodes,
+                Collection<GfcEdge> edges,
+                LocalDateTime createdAt,
+                LocalDateTime updatedAt,
+                boolean requirePersistedReferences) {
         this.id = id;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-        this.projectId = requireUuid(projectId, "projectId");
-        this.name = requireText(name, "name");
-        this.description = normalizeDescription(description);
-        this.sourceCode = normalizeSourceCode(sourceCode);
-        this.language = normalizeLanguage(language);
+        this.projectId = requireUuid(projectId, "O projeto");
+        this.sourceFileId = requirePersistedReferences ? requireUuid(sourceFileId, "O arquivo-fonte") : sourceFileId;
+        this.methodSignature = requirePersistedReferences
+                ? requireText(methodSignature, "A assinatura do metodo")
+                : normalizeOptionalText(methodSignature);
+        this.name = requireText(name, "O nome");
+        this.description = normalizeOptionalText(description);
+        this.language = normalizeJavaLanguage(language);
         this.nodes = toNodeMap(nodes);
-        this.edges = toList(edges, "edges");
+        this.edges = toList(edges, "As arestas");
 
         validateAggregate();
-    }
-
-    private UUID requireUuid(UUID value, String field) {
-        if (value == null) {
-            throw new IllegalArgumentException(displayFieldName(field) + " e obrigatorio.");
-        }
-        return value;
-    }
-
-    private String requireText(String value, String field) {
-        if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(displayFieldName(field) + " e obrigatorio.");
-        }
-        return value.trim();
-    }
-
-    private String displayFieldName(String field) {
-        return switch (field) {
-            case "projectId" -> "O projeto";
-            case "name" -> "O nome";
-            case "language" -> "A linguagem";
-            case "edges" -> "As arestas";
-            default -> field;
-        };
-    }
-
-    private String normalizeDescription(String value) {
-        return value == null ? "" : value.trim();
-    }
-
-    private String normalizeSourceCode(String value) {
-        return value == null ? "" : value.trim();
-    }
-
-    private String normalizeLanguage(String value) {
-        String normalized = requireText(value, "language");
-        if (!JAVA_LANGUAGE.equalsIgnoreCase(normalized)) {
-            throw new IllegalArgumentException("A linguagem suportada para GFC e Java.");
-        }
-        return JAVA_LANGUAGE;
     }
 
     private Map<String, GfcNode> toNodeMap(Collection<GfcNode> values) {
@@ -111,10 +119,10 @@ public class Gfc extends BaseEntity {
 
         for (GfcNode value : values) {
             if (value == null) {
-                throw new IllegalArgumentException("A colecao de nos nao pode conter valores nulos.");
+                throw new InvalidGfcModelException("A colecao de nos nao pode conter valores nulos.");
             }
             if (map.containsKey(value.getCode())) {
-                throw new IllegalArgumentException("Ha codigo de no duplicado no GFC.");
+                throw new InvalidGfcModelException("Ha codigo de no duplicado no GFC.");
             }
             map.put(value.getCode(), value);
         }
@@ -126,7 +134,7 @@ public class Gfc extends BaseEntity {
             return new ArrayList<>();
         }
         if (values.stream().anyMatch(item -> item == null)) {
-            throw new IllegalArgumentException(displayFieldName(field) + " nao pode conter valores nulos.");
+            throw new InvalidGfcModelException(field + " nao pode conter valores nulos.");
         }
         return new ArrayList<>(values);
     }
@@ -142,7 +150,7 @@ public class Gfc extends BaseEntity {
     private GfcNode requireNode(String nodeCode) {
         GfcNode node = nodes.get(nodeCode);
         if (node == null) {
-            throw new IllegalArgumentException("No nao encontrado: " + nodeCode);
+            throw new InvalidGfcModelException("No nao encontrado: " + nodeCode);
         }
         return node;
     }
@@ -153,25 +161,33 @@ public class Gfc extends BaseEntity {
                 .toList();
         long uniqueSignatures = signatures.stream().distinct().count();
         if (uniqueSignatures != signatures.size()) {
-            throw new IllegalArgumentException("Ha aresta duplicada no GFC.");
+            throw new InvalidGfcModelException("Ha aresta duplicada no GFC.");
         }
     }
 
     private void ensureNodeCodeAvailable(String code) {
         if (nodes.containsKey(code)) {
-            throw new IllegalArgumentException("Ja existe um no com o codigo informado: " + code);
+            throw new InvalidGfcModelException("Ja existe um no com o codigo informado: " + code);
         }
     }
 
     private void ensureEdgeSignatureAvailable(GfcEdge edge) {
         boolean alreadyInUse = edges.stream().anyMatch(existingEdge -> existingEdge.sameSignature(edge));
         if (alreadyInUse) {
-            throw new IllegalArgumentException("Ja existe aresta com a mesma origem, destino e tipo.");
+            throw new InvalidGfcModelException("Ja existe aresta com a mesma origem, destino e tipo.");
         }
     }
 
     public UUID getProjectId() {
         return projectId;
+    }
+
+    public UUID getSourceFileId() {
+        return sourceFileId;
+    }
+
+    public String getMethodSignature() {
+        return methodSignature;
     }
 
     public String getName() {
@@ -180,10 +196,6 @@ public class Gfc extends BaseEntity {
 
     public String getDescription() {
         return description;
-    }
-
-    public String getSourceCode() {
-        return sourceCode;
     }
 
     public String getLanguage() {
@@ -220,13 +232,13 @@ public class Gfc extends BaseEntity {
     }
 
     public void updateDetails(String name, String description) {
-        this.name = requireText(name, "name");
-        this.description = normalizeDescription(description);
+        this.name = requireText(name, "O nome");
+        this.description = normalizeOptionalText(description);
     }
 
     public void addNode(GfcNode node) {
         if (node == null) {
-            throw new IllegalArgumentException("O no e obrigatorio.");
+            throw new InvalidGfcModelException("O no e obrigatorio.");
         }
         ensureNodeCodeAvailable(node.getCode());
         nodes.put(node.getCode(), node);
@@ -234,7 +246,7 @@ public class Gfc extends BaseEntity {
 
     public void addEdge(GfcEdge edge) {
         if (edge == null) {
-            throw new IllegalArgumentException("A aresta e obrigatoria.");
+            throw new InvalidGfcModelException("A aresta e obrigatoria.");
         }
         requireNode(edge.getSourceNodeCode());
         requireNode(edge.getTargetNodeCode());

@@ -28,6 +28,15 @@ import br.pucminas.graphtest.application.port.input.gce.ToggleGceEdgeUseCasePort
 import br.pucminas.graphtest.application.port.input.gce.UpdateGceNodeUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.UpdateGceUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.ValidateGceUseCasePort;
+import br.pucminas.graphtest.application.port.input.gfc.CreateGfcSourceFileUseCasePort;
+import br.pucminas.graphtest.application.port.input.gfc.CreateGfcUseCasePort;
+import br.pucminas.graphtest.application.port.input.gfc.DeleteGfcSourceFileUseCasePort;
+import br.pucminas.graphtest.application.port.input.gfc.DeleteGfcUseCasePort;
+import br.pucminas.graphtest.application.port.input.gfc.FindGfcByIdUseCasePort;
+import br.pucminas.graphtest.application.port.input.gfc.FindGfcSourceFileByIdUseCasePort;
+import br.pucminas.graphtest.application.port.input.gfc.GetGfcSourceCodeUseCasePort;
+import br.pucminas.graphtest.application.port.input.gfc.ListGfcByProjectUseCasePort;
+import br.pucminas.graphtest.application.port.input.gfc.ListGfcSourceFilesByProjectUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.ListGfcSourceMethodsUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.PreviewGfcUseCasePort;
 import br.pucminas.graphtest.application.port.input.security.GenerateTokenUseCasePort;
@@ -43,6 +52,8 @@ import br.pucminas.graphtest.application.port.input.user.UpdateUserPasswordUseCa
 import br.pucminas.graphtest.application.port.input.user.UpdateUserUseCasePort;
 import br.pucminas.graphtest.application.port.output.repositories.GceRepositoryPort;
 import br.pucminas.graphtest.application.port.output.repositories.DecisionTableRepositoryPort;
+import br.pucminas.graphtest.application.port.output.repositories.GfcSourceFileRepositoryPort;
+import br.pucminas.graphtest.application.port.output.repositories.GfcRepositoryPort;
 import br.pucminas.graphtest.application.port.output.repositories.ProjectRepositoryPort;
 import br.pucminas.graphtest.application.port.output.repositories.UserRepositoryPort;
 import br.pucminas.graphtest.application.port.output.security.CurrentUserPort;
@@ -55,8 +66,10 @@ import br.pucminas.graphtest.application.service.decisiontable.interfaces.Decisi
 import br.pucminas.graphtest.application.service.decisiontable.interfaces.DecisionTableSyncService;
 import br.pucminas.graphtest.application.service.decisiontable.interfaces.DecisionTableSyncStatusUpdateService;
 import br.pucminas.graphtest.application.service.gce.GceValidationResultServiceImpl;
+import br.pucminas.graphtest.application.service.gfc.GfcGenerationServiceImpl;
 import br.pucminas.graphtest.application.service.gfc.GfcPreviewGenerationServiceImpl;
 import br.pucminas.graphtest.application.service.gfc.GfcSourceMethodListingServiceImpl;
+import br.pucminas.graphtest.application.service.gfc.interfaces.GfcGenerationService;
 import br.pucminas.graphtest.application.service.gfc.interfaces.GfcPreviewGenerationService;
 import br.pucminas.graphtest.application.service.gfc.interfaces.GfcSourceMethodListingService;
 import br.pucminas.graphtest.application.service.gfc.parser.JavaSourceParser;
@@ -82,6 +95,15 @@ import br.pucminas.graphtest.application.usecases.gce.ToggleGceEdgeUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gce.UpdateGceNodeUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gce.UpdateGceUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gce.ValidateGceUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.gfc.CreateGfcSourceFileUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.gfc.CreateGfcUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.gfc.DeleteGfcSourceFileUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.gfc.DeleteGfcUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.gfc.FindGfcByIdUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.gfc.FindGfcSourceFileByIdUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.gfc.GetGfcSourceCodeUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.gfc.ListGfcByProjectUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.gfc.ListGfcSourceFilesByProjectUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gfc.ListGfcSourceMethodsUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gfc.PreviewGfcUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.decisiontable.DeleteDecisionTableByGceIdUseCaseImpl;
@@ -135,8 +157,13 @@ public class ApplicationBeansConfig {
     }
 
     @Bean
-    public GfcPreviewGenerationService gfcPreviewGenerationService(JavaSourceParser javaSourceParser) {
-        return new GfcPreviewGenerationServiceImpl(javaSourceParser);
+    public GfcGenerationService gfcGenerationService(JavaSourceParser javaSourceParser) {
+        return new GfcGenerationServiceImpl(javaSourceParser);
+    }
+
+    @Bean
+    public GfcPreviewGenerationService gfcPreviewGenerationService(GfcGenerationService gfcGenerationService) {
+        return new GfcPreviewGenerationServiceImpl(gfcGenerationService);
     }
 
     @Bean
@@ -250,8 +277,72 @@ public class ApplicationBeansConfig {
     }
 
     @Bean
-    public ListGfcSourceMethodsUseCasePort listGfcSourceMethodsUseCase(GfcSourceMethodListingService gfcSourceMethodListingService) {
-        return new ListGfcSourceMethodsUseCaseImpl(gfcSourceMethodListingService);
+    public ListGfcSourceMethodsUseCasePort listGfcSourceMethodsUseCase(ProjectAccessService projectAccessService,
+                                                                       GfcSourceFileRepositoryPort gfcSourceFileRepositoryPort,
+                                                                       GfcSourceMethodListingService gfcSourceMethodListingService) {
+        return new ListGfcSourceMethodsUseCaseImpl(projectAccessService, gfcSourceFileRepositoryPort, gfcSourceMethodListingService);
+    }
+
+    @Bean
+    public CreateGfcUseCasePort createGfcUseCase(ProjectAccessService projectAccessService,
+                                                 GfcSourceFileRepositoryPort gfcSourceFileRepositoryPort,
+                                                 GfcGenerationService gfcGenerationService,
+                                                 GfcRepositoryPort gfcRepositoryPort) {
+        return new CreateGfcUseCaseImpl(
+                projectAccessService,
+                gfcSourceFileRepositoryPort,
+                gfcGenerationService,
+                gfcRepositoryPort
+        );
+    }
+
+    @Bean
+    public FindGfcByIdUseCasePort findGfcByIdUseCase(GfcRepositoryPort gfcRepositoryPort,
+                                                     ProjectAccessService projectAccessService) {
+        return new FindGfcByIdUseCaseImpl(gfcRepositoryPort, projectAccessService);
+    }
+
+    @Bean
+    public DeleteGfcUseCasePort deleteGfcUseCase(GfcRepositoryPort gfcRepositoryPort,
+                                                 ProjectAccessService projectAccessService) {
+        return new DeleteGfcUseCaseImpl(gfcRepositoryPort, projectAccessService);
+    }
+
+    @Bean
+    public ListGfcByProjectUseCasePort listGfcByProjectUseCase(GfcRepositoryPort gfcRepositoryPort,
+                                                               ProjectAccessService projectAccessService) {
+        return new ListGfcByProjectUseCaseImpl(gfcRepositoryPort, projectAccessService);
+    }
+
+    @Bean
+    public CreateGfcSourceFileUseCasePort createGfcSourceFileUseCase(ProjectAccessService projectAccessService,
+                                                                     GfcSourceFileRepositoryPort gfcSourceFileRepositoryPort) {
+        return new CreateGfcSourceFileUseCaseImpl(projectAccessService, gfcSourceFileRepositoryPort);
+    }
+
+    @Bean
+    public FindGfcSourceFileByIdUseCasePort findGfcSourceFileByIdUseCase(GfcSourceFileRepositoryPort gfcSourceFileRepositoryPort,
+                                                                         ProjectAccessService projectAccessService) {
+        return new FindGfcSourceFileByIdUseCaseImpl(gfcSourceFileRepositoryPort, projectAccessService);
+    }
+
+    @Bean
+    public ListGfcSourceFilesByProjectUseCasePort listGfcSourceFilesByProjectUseCase(GfcSourceFileRepositoryPort gfcSourceFileRepositoryPort,
+                                                                                     ProjectAccessService projectAccessService) {
+        return new ListGfcSourceFilesByProjectUseCaseImpl(gfcSourceFileRepositoryPort, projectAccessService);
+    }
+
+    @Bean
+    public DeleteGfcSourceFileUseCasePort deleteGfcSourceFileUseCase(GfcSourceFileRepositoryPort gfcSourceFileRepositoryPort,
+                                                                     GfcRepositoryPort gfcRepositoryPort,
+                                                                     ProjectAccessService projectAccessService) {
+        return new DeleteGfcSourceFileUseCaseImpl(gfcSourceFileRepositoryPort, gfcRepositoryPort, projectAccessService);
+    }
+
+    @Bean
+    public GetGfcSourceCodeUseCasePort getGfcSourceCodeUseCase(ProjectAccessService projectAccessService,
+                                                               GfcSourceFileRepositoryPort gfcSourceFileRepositoryPort) {
+        return new GetGfcSourceCodeUseCaseImpl(projectAccessService, gfcSourceFileRepositoryPort);
     }
 
     @Bean
