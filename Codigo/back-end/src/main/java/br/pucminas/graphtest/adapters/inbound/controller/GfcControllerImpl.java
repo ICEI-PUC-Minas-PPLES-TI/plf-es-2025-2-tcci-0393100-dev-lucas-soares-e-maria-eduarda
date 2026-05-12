@@ -2,6 +2,7 @@ package br.pucminas.graphtest.adapters.inbound.controller;
 
 import br.pucminas.graphtest.adapters.inbound.controller.interfaces.GfcController;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcSourceCodeDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcSourceMethodDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.PreviewGfcDTO;
 import br.pucminas.graphtest.adapters.inbound.util.GfcDtoConverterUtil;
@@ -28,9 +29,7 @@ import java.util.List;
 import static br.pucminas.graphtest.adapters.inbound.util.GfcDtoConverterUtil.toListMethodsInput;
 import static br.pucminas.graphtest.adapters.inbound.util.GfcDtoConverterUtil.toPreviewInput;
 import static br.pucminas.graphtest.adapters.inbound.util.GfcDtoConverterUtil.toDto;
-import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GFC;
-import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GFC_METHODS;
-import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GFC_PREVIEW;
+import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.*;
 import static br.pucminas.graphtest.shared.LogTopicsUtil.GFC_CONTROLLER;
 
 @Slf4j(topic = GFC_CONTROLLER)
@@ -44,8 +43,17 @@ public class GfcControllerImpl implements GfcController {
     private final PreviewGfcUseCasePort previewGfcUseCasePort;
 
     @Override
-    @PostMapping(GFC_METHODS)
-    public ResponseEntity<List<GfcSourceMethodDTO>> methods(@RequestParam("file") MultipartFile file) {
+    @PostMapping(GFC_SOURCE)
+    public ResponseEntity<GfcSourceCodeDTO> source(@RequestParam("file") MultipartFile file) {
+        log.info(">>> obterCodigoFonte: recebendo arquivo Java para obter codigo-fonte");
+
+        String sourceCode = readJavaSourceFile(file);
+        return ResponseEntity.ok(new GfcSourceCodeDTO(sourceCode));
+    }
+
+    @Override
+    @PostMapping(GFC_SOURCE_METHODS)
+    public ResponseEntity<List<GfcSourceMethodDTO>> listMethods(@RequestParam("file") MultipartFile file) {
         log.info(">>> listarMetodos: recebendo arquivo Java para listar metodos disponiveis");
 
         String sourceCode = readJavaSourceFile(file);

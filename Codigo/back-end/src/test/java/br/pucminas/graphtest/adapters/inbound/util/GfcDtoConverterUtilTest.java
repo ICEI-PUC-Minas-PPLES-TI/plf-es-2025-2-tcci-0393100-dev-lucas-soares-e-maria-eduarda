@@ -7,6 +7,7 @@ import br.pucminas.graphtest.application.domain.gfc.enums.GfcNodeTypeEnum;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcEdgeOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcNodeOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcOutput;
+import br.pucminas.graphtest.application.port.input.gfc.records.GfcSourceMethodOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.PreviewGfcInput;
 import org.junit.jupiter.api.Test;
 
@@ -58,5 +59,17 @@ class GfcDtoConverterUtilTest {
         assertEquals(GfcNodeTypeEnum.STATEMENT, dto.nodes().getFirst().type());
         assertEquals(edgeId, dto.edges().getFirst().id());
         assertEquals(GfcEdgeTypeEnum.SEQUENTIAL, dto.edges().getFirst().type());
+    }
+
+    @Test
+    void shouldConvertSourceMethodOutputToResponseDto() {
+        GfcSourceMethodOutput output = new GfcSourceMethodOutput("soma", "int soma(int a, int b)", 1, 1);
+
+        var dto = GfcDtoConverterUtil.toDto(output);
+
+        assertEquals("soma", dto.name());
+        assertEquals("int soma(int a, int b)", dto.signature());
+        assertEquals(1, dto.startLine());
+        assertEquals(1, dto.endLine());
     }
 }

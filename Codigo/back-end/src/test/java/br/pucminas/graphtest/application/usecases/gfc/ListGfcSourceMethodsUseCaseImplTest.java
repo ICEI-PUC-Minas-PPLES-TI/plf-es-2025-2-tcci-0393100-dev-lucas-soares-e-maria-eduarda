@@ -18,8 +18,7 @@ class ListGfcSourceMethodsUseCaseImplTest {
 
     @Test
     void shouldListMethodsFromJavaSource() {
-        ListGfcSourceMethodsInput input = new ListGfcSourceMethodsInput(
-                """
+        String sourceCode = """
                         class Exemplo {
                             int soma(int a, int b) {
                                 return a + b;
@@ -29,8 +28,8 @@ class ListGfcSourceMethodsUseCaseImplTest {
                                 return email != null;
                             }
                         }
-                        """
-        );
+                        """;
+        ListGfcSourceMethodsInput input = new ListGfcSourceMethodsInput(sourceCode);
 
         List<GfcSourceMethodOutput> methods = useCase.execute(input);
 

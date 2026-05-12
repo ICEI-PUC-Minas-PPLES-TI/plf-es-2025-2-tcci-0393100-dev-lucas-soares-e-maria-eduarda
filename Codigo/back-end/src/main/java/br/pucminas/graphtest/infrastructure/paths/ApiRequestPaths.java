@@ -11,9 +11,11 @@ public final class ApiRequestPaths {
 
     public static final String GCE = "/grafo-de-causa-efeito";
 
-    public static final String GFC = "/gfc";
+    public static final String GFC = "/grafo-de-fluxo-de-controle";
 
-    public static final String GFC_METHODS = "/methods";
+    public static final String GFC_SOURCE = "/source";
+
+    public static final String GFC_SOURCE_METHODS = "/source/methods";
 
     public static final String GFC_PREVIEW = "/preview";
 
