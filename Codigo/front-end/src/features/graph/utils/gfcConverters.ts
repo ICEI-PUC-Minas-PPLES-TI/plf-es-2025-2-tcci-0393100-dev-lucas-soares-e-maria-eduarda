@@ -1,3 +1,4 @@
+import dagre from '@dagrejs/dagre';
 import type {
   GFCDTO,
   GFCFlowNode,
@@ -32,11 +33,11 @@ export function savePositions(gfcId: string, nodes: GFCFlowNode[]) {
 }
 
 // ──────────────────────────────────────────────
-// Layout BFS top-down
+// Layout Dagre (Sugiyama / layered)
 // ──────────────────────────────────────────────
 
-const LEVEL_HEIGHT = 120;
 const NODE_WIDTH = 200;
+const NODE_HEIGHT = 80;
 
 interface Position {
   x: number;
@@ -44,59 +45,43 @@ interface Position {
 }
 
 /**
- * Distribui os nós em níveis usando BFS a partir do nó START.
- * Nós no mesmo nível ficam alinhados horizontalmente, espaçados em torno do x=0.
- * Se não há START, parte do primeiro nó da lista.
+ * Calcula posições usando @dagrejs/dagre (algoritmo de layered/Sugiyama).
+ * Trata ciclos via `acyclicer: 'greedy'` (back-edges como LOOP_BACK não causam crossing).
+ * Dagre devolve coordenadas do centro do nó; converte para top-left esperado pelo React Flow.
  */
-export function computeBFSLayout(dto: GFCDTO): Record<string, Position> {
+export function computeDagreLayout(dto: GFCDTO): Record<string, Position> {
   const positions: Record<string, Position> = {};
   if (dto.nodes.length === 0) return positions;
 
-  const adjacency = new Map<string, string[]>();
-  dto.nodes.forEach((n) => adjacency.set(n.code, []));
-  dto.edges.forEach((e) => {
-    const list = adjacency.get(e.sourceNodeCode);
-    if (list && !list.includes(e.targetNodeCode)) list.push(e.targetNodeCode);
+  const g = new dagre.graphlib.Graph();
+  g.setGraph({
+    rankdir: 'TB',
+    nodesep: 50,
+    ranksep: 70,
+    acyclicer: 'greedy',
+    ranker: 'network-simplex',
   });
+  g.setDefaultEdgeLabel(() => ({}));
 
-  const root = dto.nodes.find((n) => n.type === 'START')?.code ?? dto.nodes[0].code;
-  const level = new Map<string, number>();
-  const queue: string[] = [root];
-  level.set(root, 0);
-
-  while (queue.length > 0) {
-    const current = queue.shift()!;
-    const currentLevel = level.get(current)!;
-    const neighbors = adjacency.get(current) ?? [];
-    for (const neighbor of neighbors) {
-      if (!level.has(neighbor)) {
-        level.set(neighbor, currentLevel + 1);
-        queue.push(neighbor);
-      }
-    }
-  }
-
-  // Nós inalcançáveis: empurra para o último nível conhecido + 1
-  let maxLevel = 0;
-  level.forEach((l) => { if (l > maxLevel) maxLevel = l; });
   dto.nodes.forEach((n) => {
-    if (!level.has(n.code)) level.set(n.code, maxLevel + 1);
+    g.setNode(n.code, { width: NODE_WIDTH, height: NODE_HEIGHT });
+  });
+  dto.edges.forEach((e) => {
+    g.setEdge(e.sourceNodeCode, e.targetNodeCode);
   });
 
-  // Agrupa por nível
-  const byLevel = new Map<number, string[]>();
-  level.forEach((l, code) => {
-    if (!byLevel.has(l)) byLevel.set(l, []);
-    byLevel.get(l)!.push(code);
-  });
+  dagre.layout(g);
 
-  // Centraliza cada nível em torno de x=0
-  byLevel.forEach((codes, l) => {
-    const total = codes.length;
-    const startX = -((total - 1) * NODE_WIDTH) / 2;
-    codes.forEach((code, idx) => {
-      positions[code] = { x: startX + idx * NODE_WIDTH, y: l * LEVEL_HEIGHT };
-    });
+  dto.nodes.forEach((n) => {
+    const node = g.node(n.code);
+    if (!node) {
+      positions[n.code] = { x: 0, y: 0 };
+      return;
+    }
+    positions[n.code] = {
+      x: node.x - NODE_WIDTH / 2,
+      y: node.y - NODE_HEIGHT / 2,
+    };
   });
 
   return positions;
@@ -116,7 +101,7 @@ const NODE_TYPE_TO_KIND: Record<GFCNodeType, GFCFlowNodeKind> = {
 
 export function dtoToFlowNodes(dto: GFCDTO): GFCFlowNode[] {
   const saved = loadPositions(dto.id);
-  const computed = computeBFSLayout(dto);
+  const computed = computeDagreLayout(dto);
   return dto.nodes.map((node) => ({
     id: node.code,
     type: NODE_TYPE_TO_KIND[node.type],
@@ -136,6 +121,8 @@ export function dtoToFlowEdges(dto: GFCDTO): GFCFlowEdge[] {
     id: edge.id,
     source: edge.sourceNodeCode,
     target: edge.targetNodeCode,
+    sourceHandle: sourceHandleFor(edge.type),
+    targetHandle: 'top',
     type: 'smoothstep',
     label: edgeLabel(edge.type, edge.label),
     data: {
@@ -144,6 +131,20 @@ export function dtoToFlowEdges(dto: GFCDTO): GFCFlowEdge[] {
       label: edge.label,
     },
   }));
+}
+
+/**
+ * Para o nó DECISÃO, escolhe o handle de saída com base no tipo de aresta.
+ * - TRUE_BRANCH → handle esquerdo (verde)
+ * - FALSE_BRANCH → handle direito (vermelho)
+ * - LOOP_BACK → handle direito também (mais comum em loops "do/while")
+ * - SEQUENTIAL e demais → handle inferior (default)
+ */
+function sourceHandleFor(type: GFCEdgeType): string {
+  if (type === 'TRUE_BRANCH') return 'left';
+  if (type === 'FALSE_BRANCH') return 'right';
+  if (type === 'LOOP_BACK') return 'right';
+  return 'bottom';
 }
 
 function edgeLabel(type: GFCEdgeType, raw: string | null): string {
