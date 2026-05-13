@@ -23,6 +23,8 @@ public final class ApiRequestPaths {
 
     public static final String GFC_SOURCE_FILE_METHODS = "/source-file/{sourceFileId}/methods";
 
+    public static final String GFC_SOURCE_FILE_METHOD_DETAILS = "/source-file/{sourceFileId}/method";
+
     public static final String GFC_PREVIEW = "/preview";
 
     public static final String GFC_PROJECT = "/projeto/{projectId}";

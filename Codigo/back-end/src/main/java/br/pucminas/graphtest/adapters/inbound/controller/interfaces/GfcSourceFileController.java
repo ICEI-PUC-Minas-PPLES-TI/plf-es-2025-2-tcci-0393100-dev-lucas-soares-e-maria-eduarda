@@ -4,6 +4,7 @@ import br.pucminas.graphtest.adapters.inbound.dto.gfc.CreateGfcSourceFileRespons
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.DeleteGfcSourceFileResponseDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcSourceCodeDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcSourceFileDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcSourceMethodDetailsDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcSourceMethodDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,6 +19,7 @@ import java.util.UUID;
 
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GFC_SOURCE_FILE;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GFC_SOURCE_FILE_ID;
+import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GFC_SOURCE_FILE_METHOD_DETAILS;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GFC_SOURCE_FILE_METHODS;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GFC_SOURCE_FILE_PROJECT;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GFC_SOURCE_FILE_SOURCE_CODE;
@@ -39,6 +41,10 @@ public interface GfcSourceFileController {
 
     @GetMapping(GFC_SOURCE_FILE_METHODS)
     ResponseEntity<List<GfcSourceMethodDTO>> listMethods(@PathVariable UUID sourceFileId);
+
+    @GetMapping(GFC_SOURCE_FILE_METHOD_DETAILS)
+    ResponseEntity<GfcSourceMethodDetailsDTO> getMethodDetails(@PathVariable UUID sourceFileId,
+                                                               @RequestParam("signature") String methodSignature);
 
     @DeleteMapping(GFC_SOURCE_FILE_ID)
     ResponseEntity<DeleteGfcSourceFileResponseDTO> delete(@PathVariable UUID sourceFileId);

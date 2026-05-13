@@ -4,18 +4,21 @@ import br.pucminas.graphtest.adapters.inbound.dto.gfc.CreateGfcSourceFileRespons
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.DeleteGfcSourceFileResponseDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcSourceCodeDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcSourceFileDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcSourceMethodDetailsDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcSourceMethodDTO;
 import br.pucminas.graphtest.application.exception.JavaSourceFileException;
 import br.pucminas.graphtest.application.port.input.gfc.CreateGfcSourceFileUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.DeleteGfcSourceFileUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.FindGfcSourceFileByIdUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.GetGfcSourceCodeUseCasePort;
+import br.pucminas.graphtest.application.port.input.gfc.GetGfcSourceMethodDetailsUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.ListGfcSourceFilesByProjectUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.ListGfcSourceMethodsUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.records.CreateGfcSourceFileInput;
 import br.pucminas.graphtest.application.port.input.gfc.records.CreateGfcSourceFileOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcSourceCodeOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcSourceFileOutput;
+import br.pucminas.graphtest.application.port.input.gfc.records.GfcSourceMethodDetailsOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcSourceMethodOutput;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -55,6 +58,9 @@ class GfcSourceFileControllerImplTest {
 
     @Mock
     private ListGfcSourceMethodsUseCasePort listGfcSourceMethodsUseCasePort;
+
+    @Mock
+    private GetGfcSourceMethodDetailsUseCasePort getGfcSourceMethodDetailsUseCasePort;
 
     @Mock
     private DeleteGfcSourceFileUseCasePort deleteGfcSourceFileUseCasePort;
@@ -155,6 +161,33 @@ class GfcSourceFileControllerImplTest {
         verify(listGfcSourceMethodsUseCasePort).execute(sourceFileId);
         assertEquals("soma", response.getBody().getFirst().name());
         assertEquals("int soma(int a, int b)", response.getBody().getFirst().signature());
+    }
+
+    @Test
+    void shouldReturnMethodDetailsFromPersistedSourceFileThroughInputPort() {
+        UUID sourceFileId = UUID.randomUUID();
+        String signature = "int soma(int a, int b)";
+        String methodSourceCode = """
+                int soma(int a, int b) {
+                    return a + b;
+                }""";
+        GfcSourceMethodDetailsOutput output = new GfcSourceMethodDetailsOutput(
+                "soma",
+                signature,
+                2,
+                4,
+                methodSourceCode
+        );
+        when(getGfcSourceMethodDetailsUseCasePort.execute(sourceFileId, signature)).thenReturn(output);
+
+        ResponseEntity<GfcSourceMethodDetailsDTO> response = controller.getMethodDetails(sourceFileId, signature);
+
+        verify(getGfcSourceMethodDetailsUseCasePort).execute(sourceFileId, signature);
+        assertEquals("soma", response.getBody().name());
+        assertEquals(signature, response.getBody().signature());
+        assertEquals(2, response.getBody().startLine());
+        assertEquals(4, response.getBody().endLine());
+        assertEquals(methodSourceCode, response.getBody().sourceCode());
     }
 
     @Test

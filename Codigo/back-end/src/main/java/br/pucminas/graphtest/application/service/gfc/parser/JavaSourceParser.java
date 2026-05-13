@@ -161,7 +161,7 @@ public class JavaSourceParser {
                 """.formatted(sourceCode);
     }
 
-    private String signatureOf(MethodDeclaration method) {
+    public String signatureOf(MethodDeclaration method) {
         String parameters = method.getParameters().stream()
                 .map(this::parameterSignature)
                 .collect(Collectors.joining(", "));
@@ -172,11 +172,11 @@ public class JavaSourceParser {
         return parameter.getType().asString() + " " + parameter.getNameAsString();
     }
 
-    private Integer startLine(MethodDeclaration method) {
+    public Integer startLine(MethodDeclaration method) {
         return method.getRange().map(range -> range.begin.line).orElse(null);
     }
 
-    private Integer endLine(MethodDeclaration method) {
+    public Integer endLine(MethodDeclaration method) {
         return method.getRange().map(range -> range.end.line).orElse(null);
     }
 

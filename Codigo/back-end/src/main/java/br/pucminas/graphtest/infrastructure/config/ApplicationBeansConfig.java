@@ -35,6 +35,7 @@ import br.pucminas.graphtest.application.port.input.gfc.DeleteGfcUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.FindGfcByIdUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.FindGfcSourceFileByIdUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.GetGfcSourceCodeUseCasePort;
+import br.pucminas.graphtest.application.port.input.gfc.GetGfcSourceMethodDetailsUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.ListGfcByProjectUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.ListGfcSourceFilesByProjectUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.ListGfcSourceMethodsUseCasePort;
@@ -68,9 +69,11 @@ import br.pucminas.graphtest.application.service.decisiontable.interfaces.Decisi
 import br.pucminas.graphtest.application.service.gce.GceValidationResultServiceImpl;
 import br.pucminas.graphtest.application.service.gfc.GfcGenerationServiceImpl;
 import br.pucminas.graphtest.application.service.gfc.GfcPreviewGenerationServiceImpl;
+import br.pucminas.graphtest.application.service.gfc.GfcSourceMethodDetailsServiceImpl;
 import br.pucminas.graphtest.application.service.gfc.GfcSourceMethodListingServiceImpl;
 import br.pucminas.graphtest.application.service.gfc.interfaces.GfcGenerationService;
 import br.pucminas.graphtest.application.service.gfc.interfaces.GfcPreviewGenerationService;
+import br.pucminas.graphtest.application.service.gfc.interfaces.GfcSourceMethodDetailsService;
 import br.pucminas.graphtest.application.service.gfc.interfaces.GfcSourceMethodListingService;
 import br.pucminas.graphtest.application.service.gfc.parser.JavaSourceParser;
 import br.pucminas.graphtest.application.service.project.ProjectAccessServiceImpl;
@@ -102,6 +105,7 @@ import br.pucminas.graphtest.application.usecases.gfc.DeleteGfcUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gfc.FindGfcByIdUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gfc.FindGfcSourceFileByIdUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gfc.GetGfcSourceCodeUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.gfc.GetGfcSourceMethodDetailsUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gfc.ListGfcByProjectUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gfc.ListGfcSourceFilesByProjectUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gfc.ListGfcSourceMethodsUseCaseImpl;
@@ -169,6 +173,11 @@ public class ApplicationBeansConfig {
     @Bean
     public GfcSourceMethodListingService gfcSourceMethodListingService(JavaSourceParser javaSourceParser) {
         return new GfcSourceMethodListingServiceImpl(javaSourceParser);
+    }
+
+    @Bean
+    public GfcSourceMethodDetailsService gfcSourceMethodDetailsService(JavaSourceParser javaSourceParser) {
+        return new GfcSourceMethodDetailsServiceImpl(javaSourceParser);
     }
 
     @Bean
@@ -343,6 +352,17 @@ public class ApplicationBeansConfig {
     public GetGfcSourceCodeUseCasePort getGfcSourceCodeUseCase(ProjectAccessService projectAccessService,
                                                                GfcSourceFileRepositoryPort gfcSourceFileRepositoryPort) {
         return new GetGfcSourceCodeUseCaseImpl(projectAccessService, gfcSourceFileRepositoryPort);
+    }
+
+    @Bean
+    public GetGfcSourceMethodDetailsUseCasePort getGfcSourceMethodDetailsUseCase(ProjectAccessService projectAccessService,
+                                                                                 GfcSourceFileRepositoryPort gfcSourceFileRepositoryPort,
+                                                                                 GfcSourceMethodDetailsService gfcSourceMethodDetailsService) {
+        return new GetGfcSourceMethodDetailsUseCaseImpl(
+                projectAccessService,
+                gfcSourceFileRepositoryPort,
+                gfcSourceMethodDetailsService
+        );
     }
 
     @Bean

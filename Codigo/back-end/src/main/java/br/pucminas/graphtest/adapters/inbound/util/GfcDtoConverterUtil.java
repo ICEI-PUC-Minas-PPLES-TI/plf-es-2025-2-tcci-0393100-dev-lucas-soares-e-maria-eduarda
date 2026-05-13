@@ -8,6 +8,7 @@ import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcEdgeDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcNodeDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcSourceCodeDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcSourceFileDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcSourceMethodDetailsDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcSourceMethodDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcSummaryDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.PreviewGfcDTO;
@@ -20,6 +21,7 @@ import br.pucminas.graphtest.application.port.input.gfc.records.GfcNodeOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcSourceCodeOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcSourceFileOutput;
+import br.pucminas.graphtest.application.port.input.gfc.records.GfcSourceMethodDetailsOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcSourceMethodOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcSummaryOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.PreviewGfcInput;
@@ -101,6 +103,16 @@ public class GfcDtoConverterUtil {
                 output.signature(),
                 output.startLine(),
                 output.endLine()
+        );
+    }
+
+    public static GfcSourceMethodDetailsDTO toDto(GfcSourceMethodDetailsOutput output) {
+        return new GfcSourceMethodDetailsDTO(
+                output.name(),
+                output.signature(),
+                output.startLine(),
+                output.endLine(),
+                output.sourceCode()
         );
     }
 
