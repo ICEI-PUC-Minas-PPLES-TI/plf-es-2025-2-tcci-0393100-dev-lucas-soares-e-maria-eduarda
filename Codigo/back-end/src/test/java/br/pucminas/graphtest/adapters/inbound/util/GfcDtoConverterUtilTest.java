@@ -17,6 +17,7 @@ import br.pucminas.graphtest.application.port.input.gfc.records.GfcNodeOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcSourceCodeOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcSourceFileOutput;
+import br.pucminas.graphtest.application.port.input.gfc.records.GfcSourceMethodDetailsOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcSourceMethodOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcSummaryOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.PreviewGfcInput;
@@ -117,6 +118,25 @@ class GfcDtoConverterUtilTest {
         assertEquals("int soma(int a, int b)", dto.signature());
         assertEquals(1, dto.startLine());
         assertEquals(1, dto.endLine());
+    }
+
+    @Test
+    void shouldConvertSourceMethodDetailsOutputToResponseDto() {
+        GfcSourceMethodDetailsOutput output = new GfcSourceMethodDetailsOutput(
+                "soma",
+                "int soma(int a, int b)",
+                2,
+                4,
+                "int soma(int a, int b) {\n    return a + b;\n}"
+        );
+
+        var dto = GfcDtoConverterUtil.toDto(output);
+
+        assertEquals("soma", dto.name());
+        assertEquals("int soma(int a, int b)", dto.signature());
+        assertEquals(2, dto.startLine());
+        assertEquals(4, dto.endLine());
+        assertEquals("int soma(int a, int b) {\n    return a + b;\n}", dto.sourceCode());
     }
 
     @Test

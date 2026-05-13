@@ -5,17 +5,20 @@ import br.pucminas.graphtest.adapters.inbound.dto.gfc.CreateGfcSourceFileRespons
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.DeleteGfcSourceFileResponseDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcSourceCodeDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcSourceFileDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcSourceMethodDetailsDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcSourceMethodDTO;
 import br.pucminas.graphtest.adapters.inbound.util.GfcDtoConverterUtil;
 import br.pucminas.graphtest.application.port.input.gfc.CreateGfcSourceFileUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.DeleteGfcSourceFileUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.FindGfcSourceFileByIdUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.GetGfcSourceCodeUseCasePort;
+import br.pucminas.graphtest.application.port.input.gfc.GetGfcSourceMethodDetailsUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.ListGfcSourceFilesByProjectUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.ListGfcSourceMethodsUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.records.CreateGfcSourceFileOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcSourceCodeOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcSourceFileOutput;
+import br.pucminas.graphtest.application.port.input.gfc.records.GfcSourceMethodDetailsOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcSourceMethodOutput;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +43,7 @@ import static br.pucminas.graphtest.adapters.inbound.util.GfcJavaSourceFileUploa
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GFC;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GFC_SOURCE_FILE;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GFC_SOURCE_FILE_ID;
+import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GFC_SOURCE_FILE_METHOD_DETAILS;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GFC_SOURCE_FILE_METHODS;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GFC_SOURCE_FILE_PROJECT;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GFC_SOURCE_FILE_SOURCE_CODE;
@@ -61,6 +65,7 @@ public class GfcSourceFileControllerImpl implements GfcSourceFileController {
     private final ListGfcSourceFilesByProjectUseCasePort listGfcSourceFilesByProjectUseCasePort;
     private final GetGfcSourceCodeUseCasePort getGfcSourceCodeUseCasePort;
     private final ListGfcSourceMethodsUseCasePort listGfcSourceMethodsUseCasePort;
+    private final GetGfcSourceMethodDetailsUseCasePort getGfcSourceMethodDetailsUseCasePort;
     private final DeleteGfcSourceFileUseCasePort deleteGfcSourceFileUseCasePort;
 
     @Override
@@ -112,6 +117,16 @@ public class GfcSourceFileControllerImpl implements GfcSourceFileController {
 
         List<GfcSourceMethodOutput> methods = listGfcSourceMethodsUseCasePort.execute(sourceFileId);
         return ResponseEntity.ok(methods.stream().map(GfcDtoConverterUtil::toDto).toList());
+    }
+
+    @Override
+    @GetMapping(GFC_SOURCE_FILE_METHOD_DETAILS)
+    public ResponseEntity<GfcSourceMethodDetailsDTO> getMethodDetails(@PathVariable UUID sourceFileId,
+                                                                      @RequestParam("signature") String methodSignature) {
+        log.info(">>> detalharMetodo: recebendo requisicao para detalhar metodo de source-file GFC");
+
+        GfcSourceMethodDetailsOutput output = getGfcSourceMethodDetailsUseCasePort.execute(sourceFileId, methodSignature);
+        return ResponseEntity.ok(toDto(output));
     }
 
     @Override
