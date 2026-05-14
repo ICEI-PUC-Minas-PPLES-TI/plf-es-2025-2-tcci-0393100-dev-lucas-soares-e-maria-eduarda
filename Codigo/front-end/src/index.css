@@ -132,6 +132,12 @@ button {
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15);
 }
 
+/* Barra de progresso indeterminada usada no GFCViewerPage durante transição */
+@keyframes gfc-progress {
+  0% { left: -33%; }
+  100% { left: 100%; }
+}
+
 /* Botão inline de ação sobre métodos no SourceFileViewerModal */
 .gfc-inline-action {
   display: inline-flex;

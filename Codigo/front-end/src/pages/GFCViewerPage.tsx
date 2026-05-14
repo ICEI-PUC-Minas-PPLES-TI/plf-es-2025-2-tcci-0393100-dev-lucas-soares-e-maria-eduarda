@@ -9,6 +9,7 @@ import { GFCCanvas } from '../features/graph/components/GFCCanvas';
 import { MethodPanel } from '../features/graph/components/MethodPanel';
 import { NodeInfoPanel } from '../features/graph/components/NodeInfoPanel';
 import { SourceFileViewerModal } from '../features/graph/components/SourceFileViewerModal';
+import { MethodCodeViewerModal } from '../features/graph/components/MethodCodeViewerModal';
 import {
   dtoToFlowNodes,
   dtoToFlowEdges,
@@ -39,6 +40,7 @@ export function GFCViewerPage() {
   const [generateError, setGenerateError] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showSourceModal, setShowSourceModal] = useState(false);
+  const [showMethodModal, setShowMethodModal] = useState(false);
 
   const [methodPanelCollapsed, setMethodPanelCollapsed] = useState(false);
   const [nodeInfoCollapsed, setNodeInfoCollapsed] = useState(false);
@@ -132,7 +134,7 @@ export function GFCViewerPage() {
     navigate(`/projeto/${projectId}`);
   };
 
-  if (loading) {
+  if (loading && !gfc) {
     return (
       <div className="min-h-screen bg-surface flex items-center justify-center">
         <p className="text-gray-400">Carregando GFC...</p>
@@ -140,13 +142,15 @@ export function GFCViewerPage() {
     );
   }
 
-  if (loadError || !gfc) {
+  if ((loadError && !gfc) || !gfc) {
     return (
       <div className="min-h-screen bg-surface flex items-center justify-center">
         <p className="text-red-400">{loadError ?? 'GFC não encontrado.'}</p>
       </div>
     );
   }
+
+  const transitioning = loading && !!gfc;
 
   return (
     <ReactFlowProvider>
@@ -166,9 +170,19 @@ export function GFCViewerPage() {
           canDelete
           onViewSource={() => setShowSourceModal(true)}
           canViewSource={!!sourceFile}
+          onViewMethod={() => setShowMethodModal(true)}
+          canViewMethod={!!sourceFile && !!gfc.methodSignature}
         />
 
-        <div className="flex-1 flex overflow-hidden">
+        {transitioning && (
+          <div className="h-0.5 bg-primary/20 overflow-hidden relative shrink-0">
+            <div className="absolute inset-y-0 w-1/3 bg-primary animate-[gfc-progress_1.1s_ease-in-out_infinite]" />
+          </div>
+        )}
+
+        <div
+          className={`flex-1 flex overflow-hidden transition-opacity ${transitioning ? 'opacity-60 pointer-events-none' : 'opacity-100'}`}
+        >
           <MethodPanel
             isCollapsed={methodPanelCollapsed}
             onToggleCollapse={() => setMethodPanelCollapsed((v) => !v)}
@@ -217,6 +231,15 @@ export function GFCViewerPage() {
             confirmLoadingLabel="Excluindo..."
             onClose={() => setShowDeleteModal(false)}
             onConfirm={handleDelete}
+          />
+        )}
+
+        {showMethodModal && sourceFile && gfc.methodSignature && (
+          <MethodCodeViewerModal
+            sourceFileId={sourceFile.id}
+            methodSignature={gfc.methodSignature}
+            fileName={sourceFile.fileName}
+            onClose={() => setShowMethodModal(false)}
           />
         )}
 

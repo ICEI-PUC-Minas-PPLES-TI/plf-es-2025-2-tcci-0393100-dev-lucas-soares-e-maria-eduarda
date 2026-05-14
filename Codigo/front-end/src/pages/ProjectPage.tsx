@@ -14,6 +14,7 @@ import { GCEFormModal } from '../features/gce/components/GCEFormModal';
 import { GCEList } from '../features/gce/components/GCEList';
 import { GFCList } from '../features/graph/components/GFCList';
 import { CreateGFCModal } from '../features/graph/components/CreateGFCModal';
+import { SourceFileList } from '../features/graph/components/SourceFileList';
 import { DecisionTableList } from '../features/decision-table/components/DecisionTableList';
 import { SelectGCEForTableModal } from '../features/decision-table/components/SelectGCEForTableModal';
 import ProjectService from '../services/Project/ProjectService';
@@ -73,6 +74,10 @@ export function ProjectPage() {
               <ProjectSummary createdAt={project.createdAt} updatedAt={project.updatedAt} />
             </aside>
           </div>
+        )}
+
+        {activeTab === 'artifacts' && (
+          <SourceFileList projectId={project.id} />
         )}
 
         {activeTab === 'gfc' && (

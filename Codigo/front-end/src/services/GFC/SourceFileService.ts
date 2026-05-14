@@ -3,6 +3,7 @@ import type {
   GFCSourceFileDTO,
   GFCSourceMethodDTO,
   GFCSourceCodeDTO,
+  GFCSourceMethodCodeDTO,
   CreateGFCSourceFileResponse,
 } from '../../features/graph/types/gfc';
 
@@ -36,6 +37,17 @@ class SourceFileService extends BaseService {
 
   listarMetodos = async (sourceFileId: string): Promise<GFCSourceMethodDTO[]> => {
     const res = await this.get<GFCSourceMethodDTO[]>(`${BASE}/${sourceFileId}/methods`);
+    return res.data;
+  };
+
+  obterMetodo = async (
+    sourceFileId: string,
+    signature: string,
+  ): Promise<GFCSourceMethodCodeDTO> => {
+    const res = await this.get<GFCSourceMethodCodeDTO>(
+      `${BASE}/${sourceFileId}/method`,
+      { params: { signature } },
+    );
     return res.data;
   };
 

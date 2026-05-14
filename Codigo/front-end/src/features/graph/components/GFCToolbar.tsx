@@ -1,4 +1,4 @@
-import { Trash2, FileCode } from 'lucide-react';
+import { Trash2, FileCode, Code2 } from 'lucide-react';
 import { Button } from '../../../components/Button';
 
 interface GFCToolbarProps {
@@ -8,6 +8,8 @@ interface GFCToolbarProps {
   canDelete?: boolean;
   onViewSource?: () => void;
   canViewSource?: boolean;
+  onViewMethod?: () => void;
+  canViewMethod?: boolean;
 }
 
 export function GFCToolbar({
@@ -17,6 +19,8 @@ export function GFCToolbar({
   canDelete = false,
   onViewSource,
   canViewSource = false,
+  onViewMethod,
+  canViewMethod = false,
 }: GFCToolbarProps) {
   return (
     <div className="h-12 bg-surface-card border-b border-edge flex items-center justify-between px-4 shrink-0">
@@ -35,6 +39,12 @@ export function GFCToolbar({
       </div>
 
       <div className="flex items-center gap-2 shrink-0">
+        {canViewMethod && onViewMethod && (
+          <Button size="sm" variant="outline" onClick={onViewMethod}>
+            <Code2 className="w-4 h-4" />
+            Ver método
+          </Button>
+        )}
         {canViewSource && onViewSource && (
           <Button size="sm" variant="outline" onClick={onViewSource}>
             <FileCode className="w-4 h-4" />

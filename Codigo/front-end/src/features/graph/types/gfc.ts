@@ -88,6 +88,14 @@ export interface GFCSourceCodeDTO {
   sourceCode: string;
 }
 
+export interface GFCSourceMethodCodeDTO {
+  name: string;
+  signature: string;
+  startLine: number;
+  endLine: number;
+  sourceCode: string;
+}
+
 export interface CreateGFCSourceFileResponse {
   id_arquivo: string;
   mensagem: string;
