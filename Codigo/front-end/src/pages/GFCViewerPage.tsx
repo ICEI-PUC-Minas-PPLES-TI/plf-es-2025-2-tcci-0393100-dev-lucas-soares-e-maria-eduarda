@@ -9,7 +9,7 @@ import { GFCCanvas } from '../features/graph/components/GFCCanvas';
 import { MethodPanel } from '../features/graph/components/MethodPanel';
 import { NodeInfoPanel } from '../features/graph/components/NodeInfoPanel';
 import { SourceFileViewerModal } from '../features/graph/components/SourceFileViewerModal';
-import { MethodCodeViewerModal } from '../features/graph/components/MethodCodeViewerModal';
+import { MethodCodePanel } from '../features/graph/components/MethodCodePanel';
 import {
   dtoToFlowNodes,
   dtoToFlowEdges,
@@ -40,7 +40,7 @@ export function GFCViewerPage() {
   const [generateError, setGenerateError] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showSourceModal, setShowSourceModal] = useState(false);
-  const [showMethodModal, setShowMethodModal] = useState(false);
+  const [methodCodePanelCollapsed, setMethodCodePanelCollapsed] = useState(true);
 
   const [methodPanelCollapsed, setMethodPanelCollapsed] = useState(false);
   const [nodeInfoCollapsed, setNodeInfoCollapsed] = useState(false);
@@ -170,7 +170,7 @@ export function GFCViewerPage() {
           canDelete
           onViewSource={() => setShowSourceModal(true)}
           canViewSource={!!sourceFile}
-          onViewMethod={() => setShowMethodModal(true)}
+          onViewMethod={() => setMethodCodePanelCollapsed((v) => !v)}
           canViewMethod={!!sourceFile && !!gfc.methodSignature}
         />
 
@@ -203,6 +203,13 @@ export function GFCViewerPage() {
             onNodeSelect={setSelectedNodeId}
           />
 
+          <MethodCodePanel
+            sourceFileId={sourceFile?.id ?? null}
+            methodSignature={gfc.methodSignature}
+            isCollapsed={methodCodePanelCollapsed}
+            onToggleCollapse={() => setMethodCodePanelCollapsed((v) => !v)}
+          />
+
           <NodeInfoPanel
             node={selectedNodeInfo}
             isCollapsed={nodeInfoCollapsed}
@@ -231,15 +238,6 @@ export function GFCViewerPage() {
             confirmLoadingLabel="Excluindo..."
             onClose={() => setShowDeleteModal(false)}
             onConfirm={handleDelete}
-          />
-        )}
-
-        {showMethodModal && sourceFile && gfc.methodSignature && (
-          <MethodCodeViewerModal
-            sourceFileId={sourceFile.id}
-            methodSignature={gfc.methodSignature}
-            fileName={sourceFile.fileName}
-            onClose={() => setShowMethodModal(false)}
           />
         )}
 
