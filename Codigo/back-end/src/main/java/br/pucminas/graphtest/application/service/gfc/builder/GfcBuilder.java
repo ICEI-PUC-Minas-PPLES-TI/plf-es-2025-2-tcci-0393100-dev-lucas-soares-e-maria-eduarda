@@ -155,7 +155,7 @@ public class GfcBuilder {
         String bodyEntryNodeCode = firstCreatedNodeCode(firstBodyNodeIndex);
 
         GfcNode loop = createNode(GfcNodeTypeEnum.LOOP, labelForDo(statement), statement);
-        connectPendingEdges(normalExits(bodyExits), loop.getCode(), GfcEdgeTypeEnum.LOOP_BACK, "loop");
+        connectLoopBackEdges(normalExits(bodyExits), loop.getCode());
         connectContinueEdges(bodyExits, loop.getCode());
 
         String loopBodyTargetNodeCode = bodyEntryNodeCode == null ? loop.getCode() : bodyEntryNodeCode;
@@ -175,7 +175,7 @@ public class GfcBuilder {
                 body,
                 new PendingEdge(loop.getCode(), GfcEdgeTypeEnum.LOOP_BODY, "body")
         );
-        connectPendingEdges(normalExits(bodyExits), loop.getCode(), GfcEdgeTypeEnum.LOOP_BACK, "loop");
+        connectLoopBackEdges(normalExits(bodyExits), loop.getCode());
         connectContinueEdges(bodyExits, loop.getCode());
 
         List<PendingEdge> exits = new ArrayList<>();
@@ -236,6 +236,16 @@ public class GfcBuilder {
                                      String label) {
         for (PendingEdge pendingEdge : pendingEdges) {
             addEdge(pendingEdge.sourceNodeCode(), targetNodeCode, type, label);
+        }
+    }
+
+    private void connectLoopBackEdges(Collection<PendingEdge> pendingEdges, String loopNodeCode) {
+        for (PendingEdge pendingEdge : pendingEdges) {
+            if (pendingEdge.type() == GfcEdgeTypeEnum.BREAK_FLOW) {
+                addEdge(pendingEdge.sourceNodeCode(), loopNodeCode, GfcEdgeTypeEnum.BREAK_FLOW, pendingEdge.label());
+                continue;
+            }
+            addEdge(pendingEdge.sourceNodeCode(), loopNodeCode, GfcEdgeTypeEnum.LOOP_BACK, "loop");
         }
     }
 

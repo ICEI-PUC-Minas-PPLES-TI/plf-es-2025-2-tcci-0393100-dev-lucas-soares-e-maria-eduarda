@@ -294,6 +294,89 @@ class GfcPreviewGenerationServiceImplTest {
     }
 
     @Test
+    void shouldRouteNestedLoopBreakToStatementAfterInnerLoop() {
+        PreviewGfcInput input = new PreviewGfcInput(
+                UUID.randomUUID(),
+                "GFC nested break",
+                null,
+                """
+                        public class Exemplo {
+                            void executar() {
+                                for (int i = 0; i < 3; i++) {
+                                    while (true) {
+                                        break;
+                                    }
+                                    executarFor();
+                                }
+                            }
+                        }
+                        """,
+                null
+        );
+
+        Gfc graph = service.generate(input);
+
+        String outerLoopCode = graph.getNodes().stream()
+                .filter(node -> node.getType() == GfcNodeTypeEnum.LOOP)
+                .filter(node -> node.getLabel().contains("for (int i = 0; i < 3; i++)"))
+                .findFirst()
+                .orElseThrow()
+                .getCode();
+        String breakNodeCode = graph.getNodes().stream()
+                .filter(node -> node.getType() == GfcNodeTypeEnum.BREAK)
+                .findFirst()
+                .orElseThrow()
+                .getCode();
+
+        assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getSourceNodeCode().equals(breakNodeCode)
+                && edge.getType() == GfcEdgeTypeEnum.BREAK_FLOW
+                && graph.findNode(edge.getTargetNodeCode()).orElseThrow().getLabel().contains("executarFor")));
+        assertTrue(graph.getEdges().stream().noneMatch(edge -> edge.getSourceNodeCode().equals(breakNodeCode)
+                && edge.getTargetNodeCode().equals(outerLoopCode)));
+        assertTrue(graph.getEdges().stream().noneMatch(edge -> edge.getSourceNodeCode().equals(breakNodeCode)
+                && edge.getType() == GfcEdgeTypeEnum.LOOP_BACK));
+    }
+
+    @Test
+    void shouldKeepNestedLoopContinueTargetingInnerLoop() {
+        PreviewGfcInput input = new PreviewGfcInput(
+                UUID.randomUUID(),
+                "GFC nested continue",
+                null,
+                """
+                        public class Exemplo {
+                            void executar() {
+                                for (int i = 0; i < 3; i++) {
+                                    while (true) {
+                                        continue;
+                                    }
+                                }
+                            }
+                        }
+                        """,
+                null
+        );
+
+        Gfc graph = service.generate(input);
+
+        String innerLoopCode = graph.getNodes().stream()
+                .filter(node -> node.getType() == GfcNodeTypeEnum.LOOP)
+                .filter(node -> node.getLabel().contains("while (true)"))
+                .findFirst()
+                .orElseThrow()
+                .getCode();
+        String continueNodeCode = graph.getNodes().stream()
+                .filter(node -> node.getType() == GfcNodeTypeEnum.CONTINUE)
+                .findFirst()
+                .orElseThrow()
+                .getCode();
+
+        assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getSourceNodeCode().equals(continueNodeCode)
+                && edge.getTargetNodeCode().equals(innerLoopCode)
+                && edge.getType() == GfcEdgeTypeEnum.CONTINUE_FLOW));
+    }
+
+    @Test
     void shouldRejectInvalidJavaSourceCode() {
         PreviewGfcInput input = new PreviewGfcInput(UUID.randomUUID(), "GFC", null, "class {", null);
 
