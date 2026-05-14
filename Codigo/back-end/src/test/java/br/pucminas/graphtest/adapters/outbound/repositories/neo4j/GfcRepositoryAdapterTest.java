@@ -1,9 +1,14 @@
 package br.pucminas.graphtest.adapters.outbound.repositories.neo4j;
 
 import br.pucminas.graphtest.adapters.outbound.entities.neo4j.gfc.Neo4jGfcEntity;
+import br.pucminas.graphtest.adapters.outbound.entities.neo4j.gfc.Neo4jGfcNodeEntity;
 import br.pucminas.graphtest.adapters.outbound.repositories.neo4j.interfaces.Neo4jGfcRepository;
 import br.pucminas.graphtest.adapters.outbound.repositories.neo4j.mapper.GfcMapperBase;
+import br.pucminas.graphtest.application.domain.gfc.enums.GfcEdgeTypeEnum;
+import br.pucminas.graphtest.application.domain.gfc.enums.GfcNodeTypeEnum;
 import br.pucminas.graphtest.application.domain.gfc.model.Gfc;
+import br.pucminas.graphtest.application.domain.gfc.model.GfcEdge;
+import br.pucminas.graphtest.application.domain.gfc.model.GfcNode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -104,5 +109,35 @@ class GfcRepositoryAdapterTest {
         adapter.deleteAllBySourceFileId(sourceFileId);
 
         verify(neo4jGfcRepository).deleteAllBySourceFileId(sourceFileId);
+    }
+
+    @Test
+    void shouldMapAdvancedControlFlowEnumValuesToNeo4jEntity() {
+        UUID graphId = UUID.randomUUID();
+        UUID projectId = UUID.randomUUID();
+        UUID sourceFileId = UUID.randomUUID();
+        GfcNode loopNode = new GfcNode(UUID.randomUUID(), "N1", "while (ativo)", GfcNodeTypeEnum.LOOP, 3, 3);
+        GfcNode statementNode = GfcNode.statement(UUID.randomUUID(), "N2", "executar();", 4, 4);
+        GfcEdge loopBodyEdge = new GfcEdge(UUID.randomUUID(), "N1", "N2", GfcEdgeTypeEnum.LOOP_BODY, "body");
+        Gfc graph = new Gfc(
+                graphId,
+                projectId,
+                sourceFileId,
+                "void executar()",
+                "GFC executar",
+                "Descricao",
+                JAVA_LANGUAGE,
+                List.of(loopNode, statementNode),
+                List.of(loopBodyEdge)
+        );
+
+        Neo4jGfcEntity entity = mapper.toEntity(graph);
+
+        Neo4jGfcNodeEntity mappedLoopNode = entity.getNodes().stream()
+                .filter(node -> "N1".equals(node.getCode()))
+                .findFirst()
+                .orElseThrow();
+        assertEquals(GfcNodeTypeEnum.LOOP, mappedLoopNode.getType());
+        assertEquals(GfcEdgeTypeEnum.LOOP_BODY, mappedLoopNode.getOutgoingEdges().getFirst().getType());
     }
 }

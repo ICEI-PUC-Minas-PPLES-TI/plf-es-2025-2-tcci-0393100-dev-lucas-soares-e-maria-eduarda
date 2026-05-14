@@ -109,6 +109,31 @@ class GfcDtoConverterUtilTest {
     }
 
     @Test
+    void shouldConvertAdvancedControlFlowEnumsToResponseDto() {
+        UUID graphId = UUID.randomUUID();
+        UUID projectId = UUID.randomUUID();
+        UUID sourceFileId = UUID.randomUUID();
+        UUID nodeId = UUID.randomUUID();
+        UUID edgeId = UUID.randomUUID();
+        GfcOutput output = new GfcOutput(
+                graphId,
+                projectId,
+                sourceFileId,
+                "void m()",
+                "GFC",
+                "Descricao",
+                "Java",
+                List.of(new GfcNodeOutput(nodeId, "N1", "while (ativo)", GfcNodeTypeEnum.LOOP, 3, 3)),
+                List.of(new GfcEdgeOutput(edgeId, "N1", "N2", GfcEdgeTypeEnum.LOOP_BODY, "body"))
+        );
+
+        GfcDTO dto = GfcDtoConverterUtil.toDto(output);
+
+        assertEquals(GfcNodeTypeEnum.LOOP, dto.nodes().getFirst().type());
+        assertEquals(GfcEdgeTypeEnum.LOOP_BODY, dto.edges().getFirst().type());
+    }
+
+    @Test
     void shouldConvertSourceMethodOutputToResponseDto() {
         GfcSourceMethodOutput output = new GfcSourceMethodOutput("soma", "int soma(int a, int b)", 1, 1);
 

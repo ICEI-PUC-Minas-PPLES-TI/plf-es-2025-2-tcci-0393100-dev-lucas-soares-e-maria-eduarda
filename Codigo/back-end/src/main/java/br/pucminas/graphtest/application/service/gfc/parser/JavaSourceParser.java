@@ -9,6 +9,11 @@ import com.github.javaparser.ParseResult;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
+import com.github.javaparser.ast.stmt.DoStmt;
+import com.github.javaparser.ast.stmt.ForEachStmt;
+import com.github.javaparser.ast.stmt.ForStmt;
+import com.github.javaparser.ast.stmt.Statement;
+import com.github.javaparser.ast.stmt.WhileStmt;
 
 import java.util.Comparator;
 import java.util.List;
@@ -95,6 +100,52 @@ public class JavaSourceParser {
                         endLine(method)
                 ))
                 .toList();
+    }
+
+    public boolean isLoopStatement(Statement statement) {
+        return statement != null
+                && (statement.isWhileStmt()
+                || statement.isForStmt()
+                || statement.isForEachStmt()
+                || statement.isDoStmt());
+    }
+
+    public String extractLoopLabel(Statement statement) {
+        if (statement == null) {
+            return null;
+        }
+        if (statement.isWhileStmt()) {
+            WhileStmt whileStmt = statement.asWhileStmt();
+            return "while (" + whileStmt.getCondition() + ")";
+        }
+        if (statement.isForStmt()) {
+            ForStmt forStmt = statement.asForStmt();
+            String initialization = forStmt.getInitialization().stream()
+                    .map(Object::toString)
+                    .collect(Collectors.joining(", "));
+            String compare = forStmt.getCompare().map(Object::toString).orElse("");
+            String update = forStmt.getUpdate().stream()
+                    .map(Object::toString)
+                    .collect(Collectors.joining(", "));
+            return "for (" + initialization + "; " + compare + "; " + update + ")";
+        }
+        if (statement.isForEachStmt()) {
+            ForEachStmt forEachStmt = statement.asForEachStmt();
+            return "for (" + forEachStmt.getVariable() + " : " + forEachStmt.getIterable() + ")";
+        }
+        if (statement.isDoStmt()) {
+            DoStmt doStmt = statement.asDoStmt();
+            return "while (" + doStmt.getCondition() + ")";
+        }
+        return null;
+    }
+
+    public boolean isBreakStatement(Statement statement) {
+        return statement != null && statement.isBreakStmt();
+    }
+
+    public boolean isContinueStatement(Statement statement) {
+        return statement != null && statement.isContinueStmt();
     }
 
     private List<MethodDeclaration> parseCompilationUnitMethods(String sourceCode) {

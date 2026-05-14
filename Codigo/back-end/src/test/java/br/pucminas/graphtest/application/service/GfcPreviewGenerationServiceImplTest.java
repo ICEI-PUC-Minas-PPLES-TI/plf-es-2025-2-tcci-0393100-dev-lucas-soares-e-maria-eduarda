@@ -79,11 +79,16 @@ class GfcPreviewGenerationServiceImplTest {
 
         Gfc graph = service.generate(input);
 
+        assertTrue(graph.getNodes().stream().anyMatch(node -> node.getType() == GfcNodeTypeEnum.LOOP));
+        assertTrue(graph.getNodes().stream().noneMatch(node -> node.getLabel().contains("while (ativo())")
+                && node.getType() == GfcNodeTypeEnum.DECISION));
+        assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getType() == GfcEdgeTypeEnum.LOOP_BODY));
+        assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getType() == GfcEdgeTypeEnum.LOOP_EXIT));
         assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getType() == GfcEdgeTypeEnum.LOOP_BACK));
     }
 
     @Test
-    void shouldKeepSimplifiedSupportForForAndForEachLoops() {
+    void shouldGenerateLoopNodesForForAndForEachLoops() {
         PreviewGfcInput input = new PreviewGfcInput(
                 UUID.randomUUID(),
                 "GFC for",
@@ -106,8 +111,11 @@ class GfcPreviewGenerationServiceImplTest {
 
         Gfc graph = service.generate(input);
 
-        assertTrue(graph.getNodes().stream().anyMatch(node -> node.getLabel().contains("for (i < 10)")));
+        assertTrue(graph.getNodes().stream().anyMatch(node -> node.getLabel().contains("for (int i = 0; i < 10; i++)")));
         assertTrue(graph.getNodes().stream().anyMatch(node -> node.getLabel().contains("for (String item : itens)")));
+        assertEquals(2, graph.getNodes().stream().filter(node -> node.getType() == GfcNodeTypeEnum.LOOP).count());
+        assertEquals(2, graph.getEdges().stream().filter(edge -> edge.getType() == GfcEdgeTypeEnum.LOOP_BODY).count());
+        assertEquals(2, graph.getEdges().stream().filter(edge -> edge.getType() == GfcEdgeTypeEnum.LOOP_EXIT).count());
         assertEquals(2, graph.getEdges().stream().filter(edge -> edge.getType() == GfcEdgeTypeEnum.LOOP_BACK).count());
     }
 
@@ -159,7 +167,7 @@ class GfcPreviewGenerationServiceImplTest {
         Gfc graph = service.generate(input);
 
         assertTrue(graph.getNodes().stream().anyMatch(node -> node.getCode().equals("N1") && node.getLabel().contains("trabalhar")));
-        assertTrue(graph.getNodes().stream().anyMatch(node -> node.getCode().equals("N2") && node.getLabel().contains("do while")));
+        assertTrue(graph.getNodes().stream().anyMatch(node -> node.getCode().equals("N2") && node.getType() == GfcNodeTypeEnum.LOOP));
         assertTrue(graph.getEdges().stream().anyMatch(edge ->
                 edge.getSourceNodeCode().equals("N0")
                         && edge.getTargetNodeCode().equals("N1")
@@ -167,15 +175,122 @@ class GfcPreviewGenerationServiceImplTest {
         assertTrue(graph.getEdges().stream().anyMatch(edge ->
                 edge.getSourceNodeCode().equals("N1")
                         && edge.getTargetNodeCode().equals("N2")
-                        && edge.getType() == GfcEdgeTypeEnum.SEQUENTIAL));
+                        && edge.getType() == GfcEdgeTypeEnum.LOOP_BACK));
         assertTrue(graph.getEdges().stream().anyMatch(edge ->
                 edge.getSourceNodeCode().equals("N2")
                         && edge.getTargetNodeCode().equals("N1")
-                        && edge.getType() == GfcEdgeTypeEnum.TRUE_BRANCH));
+                        && edge.getType() == GfcEdgeTypeEnum.LOOP_BODY));
         assertTrue(graph.getEdges().stream().anyMatch(edge ->
                 edge.getSourceNodeCode().equals("N2")
                         && edge.getTargetNodeCode().equals("N_END")
-                        && edge.getType() == GfcEdgeTypeEnum.FALSE_BRANCH));
+                        && edge.getType() == GfcEdgeTypeEnum.LOOP_EXIT));
+    }
+
+    @Test
+    void shouldGenerateBreakFlowToLoopExit() {
+        PreviewGfcInput input = new PreviewGfcInput(
+                UUID.randomUUID(),
+                "GFC break",
+                null,
+                """
+                        public class Exemplo {
+                            void executar() {
+                                while (ativo()) {
+                                    if (erro()) {
+                                        break;
+                                    }
+                                    trabalhar();
+                                }
+                                finalizar();
+                            }
+                        }
+                        """,
+                null
+        );
+
+        Gfc graph = service.generate(input);
+
+        assertTrue(graph.getNodes().stream().anyMatch(node -> node.getType() == GfcNodeTypeEnum.BREAK));
+        assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getType() == GfcEdgeTypeEnum.BREAK_FLOW
+                && graph.findNode(edge.getTargetNodeCode()).orElseThrow().getLabel().contains("finalizar")));
+        assertTrue(graph.getEdges().stream().noneMatch(edge -> edge.getType() == GfcEdgeTypeEnum.LOOP_BACK
+                && graph.findNode(edge.getSourceNodeCode()).orElseThrow().getType() == GfcNodeTypeEnum.BREAK));
+    }
+
+    @Test
+    void shouldGenerateContinueFlowBackToLoop() {
+        PreviewGfcInput input = new PreviewGfcInput(
+                UUID.randomUUID(),
+                "GFC continue",
+                null,
+                """
+                        public class Exemplo {
+                            void executar() {
+                                while (ativo()) {
+                                    if (ignorar()) {
+                                        continue;
+                                    }
+                                    trabalhar();
+                                }
+                            }
+                        }
+                        """,
+                null
+        );
+
+        Gfc graph = service.generate(input);
+
+        String loopNodeCode = graph.getNodes().stream()
+                .filter(node -> node.getType() == GfcNodeTypeEnum.LOOP)
+                .findFirst()
+                .orElseThrow()
+                .getCode();
+        assertTrue(graph.getNodes().stream().anyMatch(node -> node.getType() == GfcNodeTypeEnum.CONTINUE));
+        assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getType() == GfcEdgeTypeEnum.CONTINUE_FLOW
+                && edge.getTargetNodeCode().equals(loopNodeCode)));
+        assertTrue(graph.getEdges().stream().noneMatch(edge -> edge.getType() == GfcEdgeTypeEnum.LOOP_BACK
+                && graph.findNode(edge.getSourceNodeCode()).orElseThrow().getType() == GfcNodeTypeEnum.CONTINUE));
+    }
+
+    @Test
+    void shouldApplyBreakAndContinueToInnermostLoop() {
+        PreviewGfcInput input = new PreviewGfcInput(
+                UUID.randomUUID(),
+                "GFC nested",
+                null,
+                """
+                        public class Exemplo {
+                            void executar() {
+                                while (externo()) {
+                                    for (int i = 0; i < 10; i++) {
+                                        if (ignorar(i)) {
+                                            continue;
+                                        }
+                                        if (parar(i)) {
+                                            break;
+                                        }
+                                        trabalhar(i);
+                                    }
+                                    depoisInterno();
+                                }
+                            }
+                        }
+                        """,
+                null
+        );
+
+        Gfc graph = service.generate(input);
+
+        String innerLoopCode = graph.getNodes().stream()
+                .filter(node -> node.getType() == GfcNodeTypeEnum.LOOP)
+                .filter(node -> node.getLabel().contains("for (int i = 0; i < 10; i++)"))
+                .findFirst()
+                .orElseThrow()
+                .getCode();
+        assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getType() == GfcEdgeTypeEnum.CONTINUE_FLOW
+                && edge.getTargetNodeCode().equals(innerLoopCode)));
+        assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getType() == GfcEdgeTypeEnum.BREAK_FLOW
+                && graph.findNode(edge.getTargetNodeCode()).orElseThrow().getLabel().contains("depoisInterno")));
     }
 
     @Test

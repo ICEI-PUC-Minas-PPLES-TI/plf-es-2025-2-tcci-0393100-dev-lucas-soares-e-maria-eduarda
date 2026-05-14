@@ -202,4 +202,51 @@ class GfcTest {
         assertEquals(1, gfc.outgoingEdges("N1").size());
         assertEquals(1, gfc.incomingEdges("N1").size());
     }
+
+    @Test
+    void shouldAcceptAdvancedControlFlowNodeTypes() {
+        List<GfcNodeTypeEnum> advancedTypes = List.of(
+                GfcNodeTypeEnum.LOOP,
+                GfcNodeTypeEnum.BREAK,
+                GfcNodeTypeEnum.CONTINUE,
+                GfcNodeTypeEnum.THROW,
+                GfcNodeTypeEnum.SWITCH,
+                GfcNodeTypeEnum.CASE,
+                GfcNodeTypeEnum.TRY,
+                GfcNodeTypeEnum.CATCH,
+                GfcNodeTypeEnum.FINALLY,
+                GfcNodeTypeEnum.TERNARY
+        );
+
+        for (GfcNodeTypeEnum type : advancedTypes) {
+            GfcNode node = new GfcNode(UUID.randomUUID(), "N_" + type.name(), type.name(), type, 10, 12);
+
+            assertEquals(type, node.getType());
+            assertEquals(10, node.getStartLine());
+            assertEquals(12, node.getEndLine());
+        }
+    }
+
+    @Test
+    void shouldAcceptAdvancedControlFlowEdgeTypes() {
+        List<GfcEdgeTypeEnum> advancedTypes = List.of(
+                GfcEdgeTypeEnum.LOOP_BODY,
+                GfcEdgeTypeEnum.LOOP_EXIT,
+                GfcEdgeTypeEnum.CASE_BRANCH,
+                GfcEdgeTypeEnum.DEFAULT_BRANCH,
+                GfcEdgeTypeEnum.TRY_BRANCH,
+                GfcEdgeTypeEnum.CATCH_BRANCH,
+                GfcEdgeTypeEnum.FINALLY_BRANCH,
+                GfcEdgeTypeEnum.BREAK_FLOW,
+                GfcEdgeTypeEnum.CONTINUE_FLOW,
+                GfcEdgeTypeEnum.THROW_FLOW
+        );
+
+        for (GfcEdgeTypeEnum type : advancedTypes) {
+            GfcEdge edge = new GfcEdge(UUID.randomUUID(), "N1", "N2", type, type.name());
+
+            assertEquals(type, edge.getType());
+            assertEquals(type.name(), edge.getLabel());
+        }
+    }
 }

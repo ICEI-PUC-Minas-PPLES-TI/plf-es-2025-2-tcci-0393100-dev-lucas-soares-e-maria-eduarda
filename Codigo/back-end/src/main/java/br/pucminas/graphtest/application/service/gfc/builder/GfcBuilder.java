@@ -22,11 +22,10 @@ import java.util.stream.Collectors;
 /**
  * Builder que transforma statements JavaParser em nos e arestas iniciais do GFC.
  *
- * <p>O suporte a {@code while}, {@code for} e {@code foreach} ainda e simplificado:
- * cada laco vira um no de decisao, o corpo e tratado como ramo verdadeiro, o fim do corpo
- * retorna para a decisao com {@code LOOP_BACK} e o ramo falso segue para o proximo comando.
- * Inicializacao/update de {@code for}, {@code break} e {@code continue} ainda nao sao
- * modelados nesta etapa.</p>
+ * <p>O suporte a lacos modela a estrutura de repeticao como no {@code LOOP} e usa
+ * arestas especificas para entrada no corpo, saida, retorno e fluxos de {@code break}
+ * e {@code continue}. Inicializacao/update de {@code for} ainda permanecem apenas no
+ * rotulo textual do no.</p>
  */
 public class GfcBuilder {
 
@@ -72,7 +71,16 @@ public class GfcBuilder {
     private Collection<PendingEdge> processStatements(Collection<Statement> statements, Collection<PendingEdge> incomingEdges) {
         Collection<PendingEdge> currentExits = incomingEdges;
         for (Statement statement : statements) {
-            currentExits = processStatement(statement, currentExits);
+            Collection<PendingEdge> controlFlowExits = controlFlowExits(currentExits);
+            Collection<PendingEdge> normalExits = normalExits(currentExits);
+            if (normalExits.isEmpty()) {
+                currentExits = controlFlowExits;
+                continue;
+            }
+
+            List<PendingEdge> nextExits = new ArrayList<>(controlFlowExits);
+            nextExits.addAll(processStatement(statement, normalExits));
+            currentExits = nextExits;
         }
         return currentExits;
     }
@@ -98,6 +106,12 @@ public class GfcBuilder {
         }
         if (statement.isReturnStmt()) {
             return processReturn(statement, incomingEdges);
+        }
+        if (statement.isBreakStmt()) {
+            return processBreak(statement, incomingEdges);
+        }
+        if (statement.isContinueStmt()) {
+            return processContinue(statement, incomingEdges);
         }
         return processSimpleStatement(statement, incomingEdges);
     }
@@ -140,28 +154,34 @@ public class GfcBuilder {
         Collection<PendingEdge> bodyExits = processBranchBody(statement.getBody(), incomingEdges);
         String bodyEntryNodeCode = firstCreatedNodeCode(firstBodyNodeIndex);
 
-        GfcNode decision = createNode(GfcNodeTypeEnum.DECISION, labelForDo(statement), statement);
-        connectPendingEdges(bodyExits, decision.getCode());
+        GfcNode loop = createNode(GfcNodeTypeEnum.LOOP, labelForDo(statement), statement);
+        connectPendingEdges(normalExits(bodyExits), loop.getCode(), GfcEdgeTypeEnum.LOOP_BACK, "loop");
+        connectContinueEdges(bodyExits, loop.getCode());
 
-        String trueTargetNodeCode = bodyEntryNodeCode == null ? decision.getCode() : bodyEntryNodeCode;
-        addEdge(decision.getCode(), trueTargetNodeCode, GfcEdgeTypeEnum.TRUE_BRANCH, "true");
+        String loopBodyTargetNodeCode = bodyEntryNodeCode == null ? loop.getCode() : bodyEntryNodeCode;
+        addEdge(loop.getCode(), loopBodyTargetNodeCode, GfcEdgeTypeEnum.LOOP_BODY, "body");
 
-        return List.of(new PendingEdge(decision.getCode(), GfcEdgeTypeEnum.FALSE_BRANCH, "false"));
+        List<PendingEdge> exits = new ArrayList<>();
+        exits.add(new PendingEdge(loop.getCode(), GfcEdgeTypeEnum.LOOP_EXIT, "exit"));
+        exits.addAll(breakExitsAsNormal(bodyExits));
+        return exits;
     }
 
     private Collection<PendingEdge> processLoop(Node source, String label, Statement body, Collection<PendingEdge> incomingEdges) {
-        GfcNode decision = createNode(GfcNodeTypeEnum.DECISION, label, source);
-        connectPendingEdges(incomingEdges, decision.getCode());
+        GfcNode loop = createNode(GfcNodeTypeEnum.LOOP, label, source);
+        connectPendingEdges(incomingEdges, loop.getCode());
 
         Collection<PendingEdge> bodyExits = processBranch(
                 body,
-                new PendingEdge(decision.getCode(), GfcEdgeTypeEnum.TRUE_BRANCH, "true")
+                new PendingEdge(loop.getCode(), GfcEdgeTypeEnum.LOOP_BODY, "body")
         );
-        for (PendingEdge bodyExit : bodyExits) {
-            addEdge(bodyExit.sourceNodeCode(), decision.getCode(), GfcEdgeTypeEnum.LOOP_BACK, "loop");
-        }
+        connectPendingEdges(normalExits(bodyExits), loop.getCode(), GfcEdgeTypeEnum.LOOP_BACK, "loop");
+        connectContinueEdges(bodyExits, loop.getCode());
 
-        return List.of(new PendingEdge(decision.getCode(), GfcEdgeTypeEnum.FALSE_BRANCH, "false"));
+        List<PendingEdge> exits = new ArrayList<>();
+        exits.add(new PendingEdge(loop.getCode(), GfcEdgeTypeEnum.LOOP_EXIT, "exit"));
+        exits.addAll(breakExitsAsNormal(bodyExits));
+        return exits;
     }
 
     private Collection<PendingEdge> processReturn(Statement statement, Collection<PendingEdge> incomingEdges) {
@@ -169,6 +189,18 @@ public class GfcBuilder {
         connectPendingEdges(incomingEdges, node.getCode());
         addEdge(node.getCode(), END_NODE_CODE, GfcEdgeTypeEnum.SEQUENTIAL, null);
         return List.of();
+    }
+
+    private Collection<PendingEdge> processBreak(Statement statement, Collection<PendingEdge> incomingEdges) {
+        GfcNode node = createNode(GfcNodeTypeEnum.BREAK, compactLabel(statement.toString()), statement);
+        connectPendingEdges(incomingEdges, node.getCode());
+        return List.of(new PendingEdge(node.getCode(), GfcEdgeTypeEnum.BREAK_FLOW, "break", PendingEdgeKind.BREAK));
+    }
+
+    private Collection<PendingEdge> processContinue(Statement statement, Collection<PendingEdge> incomingEdges) {
+        GfcNode node = createNode(GfcNodeTypeEnum.CONTINUE, compactLabel(statement.toString()), statement);
+        connectPendingEdges(incomingEdges, node.getCode());
+        return List.of(new PendingEdge(node.getCode(), GfcEdgeTypeEnum.CONTINUE_FLOW, "continue", PendingEdgeKind.CONTINUE));
     }
 
     private Collection<PendingEdge> processSimpleStatement(Statement statement, Collection<PendingEdge> incomingEdges) {
@@ -196,6 +228,42 @@ public class GfcBuilder {
         for (PendingEdge pendingEdge : pendingEdges) {
             addEdge(pendingEdge.sourceNodeCode(), targetNodeCode, pendingEdge.type(), pendingEdge.label());
         }
+    }
+
+    private void connectPendingEdges(Collection<PendingEdge> pendingEdges,
+                                     String targetNodeCode,
+                                     GfcEdgeTypeEnum type,
+                                     String label) {
+        for (PendingEdge pendingEdge : pendingEdges) {
+            addEdge(pendingEdge.sourceNodeCode(), targetNodeCode, type, label);
+        }
+    }
+
+    private void connectContinueEdges(Collection<PendingEdge> pendingEdges, String loopNodeCode) {
+        for (PendingEdge pendingEdge : pendingEdges) {
+            if (pendingEdge.kind() == PendingEdgeKind.CONTINUE) {
+                addEdge(pendingEdge.sourceNodeCode(), loopNodeCode, GfcEdgeTypeEnum.CONTINUE_FLOW, "continue");
+            }
+        }
+    }
+
+    private Collection<PendingEdge> normalExits(Collection<PendingEdge> pendingEdges) {
+        return pendingEdges.stream()
+                .filter(pendingEdge -> pendingEdge.kind() == PendingEdgeKind.NORMAL)
+                .toList();
+    }
+
+    private Collection<PendingEdge> controlFlowExits(Collection<PendingEdge> pendingEdges) {
+        return pendingEdges.stream()
+                .filter(pendingEdge -> pendingEdge.kind() != PendingEdgeKind.NORMAL)
+                .toList();
+    }
+
+    private Collection<PendingEdge> breakExitsAsNormal(Collection<PendingEdge> pendingEdges) {
+        return pendingEdges.stream()
+                .filter(pendingEdge -> pendingEdge.kind() == PendingEdgeKind.BREAK)
+                .map(pendingEdge -> new PendingEdge(pendingEdge.sourceNodeCode(), GfcEdgeTypeEnum.BREAK_FLOW, "break"))
+                .toList();
     }
 
     private void addEdge(String sourceNodeCode, String targetNodeCode, GfcEdgeTypeEnum type, String label) {
@@ -226,8 +294,14 @@ public class GfcBuilder {
     }
 
     private String labelForFor(ForStmt statement) {
-        String compare = statement.getCompare().map(Object::toString).orElse("true");
-        return compactLabel("for (" + compare + ")");
+        String initialization = statement.getInitialization().stream()
+                .map(Object::toString)
+                .collect(Collectors.joining(", "));
+        String compare = statement.getCompare().map(Object::toString).orElse("");
+        String update = statement.getUpdate().stream()
+                .map(Object::toString)
+                .collect(Collectors.joining(", "));
+        return compactLabel("for (" + initialization + "; " + compare + "; " + update + ")");
     }
 
     private String labelForForEach(ForEachStmt statement) {
@@ -235,7 +309,7 @@ public class GfcBuilder {
     }
 
     private String labelForDo(DoStmt statement) {
-        return compactLabel("do while (" + statement.getCondition() + ")");
+        return compactLabel("while (" + statement.getCondition() + ")");
     }
 
     private String compactLabel(String value) {
