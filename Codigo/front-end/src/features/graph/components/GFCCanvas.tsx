@@ -86,7 +86,7 @@ export function GFCCanvas({ gfcId, initialNodes, initialEdges, stats, onNodeSele
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         fitView
-        fitViewOptions={{ padding: 0.2 }}
+        fitViewOptions={{ padding: 0.25, maxZoom: 0.9, minZoom: 0.25 }}
         nodesConnectable={false}
         edgesFocusable={false}
         edgesReconnectable={false}
