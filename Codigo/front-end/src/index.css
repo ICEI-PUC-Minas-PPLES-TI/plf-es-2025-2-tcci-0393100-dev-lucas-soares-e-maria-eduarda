@@ -80,17 +80,17 @@
   --color-gray-800: #e2e8f0;
   --color-gray-900: #f1f5f9;
 
-  /* GFC — tons ajustados para contraste em fundo claro */
+  /* GFC — fundos saturados o suficiente para manter texto branco legível no tema claro */
   --color-gfc-start: #15803d;
-  --color-gfc-start-bg: #bbf7d0;
+  --color-gfc-start-bg: #16a34a;
   --color-gfc-end: #475569;
-  --color-gfc-end-bg: #e2e8f0;
+  --color-gfc-end-bg: #64748b;
   --color-gfc-statement: #1d4ed8;
-  --color-gfc-statement-bg: #dbeafe;
+  --color-gfc-statement-bg: #2563eb;
   --color-gfc-decision: #a16207;
-  --color-gfc-decision-bg: #fef3c7;
+  --color-gfc-decision-bg: #ca8a04;
   --color-gfc-return: #b91c1c;
-  --color-gfc-return-bg: #fee2e2;
+  --color-gfc-return-bg: #dc2626;
   --color-gfc-edge-true: #15803d;
   --color-gfc-edge-false: #b91c1c;
   --color-gfc-edge-loop: #7e22ce;
