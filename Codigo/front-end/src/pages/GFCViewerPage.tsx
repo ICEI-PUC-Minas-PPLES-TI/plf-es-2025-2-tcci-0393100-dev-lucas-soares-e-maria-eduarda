@@ -40,6 +40,7 @@ export function GFCViewerPage() {
   const [generateError, setGenerateError] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showSourceModal, setShowSourceModal] = useState(false);
+  const [sourceHighlight, setSourceHighlight] = useState<{ startLine: number; endLine: number } | null>(null);
   const [methodCodePanelCollapsed, setMethodCodePanelCollapsed] = useState(true);
 
   const [methodPanelCollapsed, setMethodPanelCollapsed] = useState(false);
@@ -168,7 +169,10 @@ export function GFCViewerPage() {
           methodSignature={gfc.methodSignature}
           onDelete={() => setShowDeleteModal(true)}
           canDelete
-          onViewSource={() => setShowSourceModal(true)}
+          onViewSource={() => {
+            setSourceHighlight(null);
+            setShowSourceModal(true);
+          }}
           canViewSource={!!sourceFile}
           onViewMethod={() => setMethodCodePanelCollapsed((v) => !v)}
           canViewMethod={!!sourceFile && !!gfc.methodSignature}
@@ -208,12 +212,23 @@ export function GFCViewerPage() {
             methodSignature={gfc.methodSignature}
             isCollapsed={methodCodePanelCollapsed}
             onToggleCollapse={() => setMethodCodePanelCollapsed((v) => !v)}
+            selectedStartLine={selectedNodeInfo?.startLine ?? null}
+            selectedEndLine={selectedNodeInfo?.endLine ?? null}
           />
 
           <NodeInfoPanel
             node={selectedNodeInfo}
             isCollapsed={nodeInfoCollapsed}
             onToggleCollapse={() => setNodeInfoCollapsed((v) => !v)}
+            canViewInSource={!!sourceFile && selectedNodeInfo?.startLine != null}
+            onViewInSource={() => {
+              if (!selectedNodeInfo?.startLine) return;
+              setSourceHighlight({
+                startLine: selectedNodeInfo.startLine,
+                endLine: selectedNodeInfo.endLine ?? selectedNodeInfo.startLine,
+              });
+              setShowSourceModal(true);
+            }}
           />
         </div>
 
@@ -247,7 +262,11 @@ export function GFCViewerPage() {
             methods={methods}
             existingGfcs={projectGfcs}
             generatingSignature={generatingSignature}
-            onClose={() => setShowSourceModal(false)}
+            initialHighlight={sourceHighlight}
+            onClose={() => {
+              setShowSourceModal(false);
+              setSourceHighlight(null);
+            }}
             onGenerate={async (method) => {
               await handleSelectMethod(method);
               setShowSourceModal(false);

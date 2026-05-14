@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { java } from '@codemirror/lang-java';
 import { EditorView } from '@codemirror/view';
 import { ChevronLeft, ChevronRight, Code2 } from 'lucide-react';
 import { useTheme } from '../../../context/ThemeContext';
 import SourceFileService from '../../../services/GFC/SourceFileService';
+import { highlightField, setHighlightEffect } from '../utils/cmHighlight';
 import type { GFCSourceMethodCodeDTO } from '../types/gfc';
 
 interface MethodCodePanelProps {
@@ -12,6 +13,8 @@ interface MethodCodePanelProps {
   methodSignature: string | null;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
+  selectedStartLine?: number | null;
+  selectedEndLine?: number | null;
 }
 
 export function MethodCodePanel({
@@ -19,11 +22,14 @@ export function MethodCodePanel({
   methodSignature,
   isCollapsed,
   onToggleCollapse,
+  selectedStartLine,
+  selectedEndLine,
 }: MethodCodePanelProps) {
   const { theme } = useTheme();
   const [method, setMethod] = useState<GFCSourceMethodCodeDTO | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const viewRef = useRef<EditorView | null>(null);
 
   useEffect(() => {
     if (isCollapsed || !sourceFileId || !methodSignature) return;
@@ -48,12 +54,40 @@ export function MethodCodePanel({
     };
   }, [sourceFileId, methodSignature, isCollapsed]);
 
+  // Converte linhas absolutas do arquivo para linhas relativas ao método exibido,
+  // dispara o destaque e rola até a primeira linha selecionada.
+  useEffect(() => {
+    const view = viewRef.current;
+    if (!view || !method) return;
+
+    if (selectedStartLine == null) {
+      view.dispatch({ effects: setHighlightEffect.of(null) });
+      return;
+    }
+
+    const relStart = selectedStartLine - method.startLine + 1;
+    const relEnd = (selectedEndLine ?? selectedStartLine) - method.startLine + 1;
+    if (relStart < 1 || relStart > view.state.doc.lines) {
+      view.dispatch({ effects: setHighlightEffect.of(null) });
+      return;
+    }
+
+    const safeEnd = Math.min(view.state.doc.lines, Math.max(relStart, relEnd));
+    view.dispatch({
+      effects: [
+        setHighlightEffect.of({ startLine: relStart, endLine: safeEnd }),
+        EditorView.scrollIntoView(view.state.doc.line(relStart).from, { y: 'center' }),
+      ],
+    });
+  }, [method, selectedStartLine, selectedEndLine]);
+
   const extensions = useMemo(
     () => [
       java(),
       EditorView.editable.of(false),
       EditorView.contentAttributes.of({ tabindex: '0' }),
       EditorView.lineWrapping,
+      highlightField,
     ],
     [],
   );
@@ -129,6 +163,9 @@ export function MethodCodePanel({
             }}
             height="100%"
             className="h-full text-xs"
+            onCreateEditor={(view) => {
+              viewRef.current = view;
+            }}
           />
         )}
       </div>

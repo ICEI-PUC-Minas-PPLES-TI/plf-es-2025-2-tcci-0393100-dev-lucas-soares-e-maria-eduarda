@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { java } from '@codemirror/lang-java';
 import { EditorView, Decoration, WidgetType, type DecorationSet } from '@codemirror/view';
@@ -6,6 +6,7 @@ import { RangeSetBuilder, type Text } from '@codemirror/state';
 import { X, FileCode } from 'lucide-react';
 import { useTheme } from '../../../context/ThemeContext';
 import SourceFileService from '../../../services/GFC/SourceFileService';
+import { highlightField, setHighlightEffect } from '../utils/cmHighlight';
 import type {
   GFCSourceFileDTO,
   GFCSourceMethodDTO,
@@ -20,6 +21,7 @@ interface SourceFileViewerModalProps {
   onClose: () => void;
   onGenerate: (method: GFCSourceMethodDTO) => void;
   onOpenGfc: (gfcId: string) => void;
+  initialHighlight?: { startLine: number; endLine: number } | null;
 }
 
 class MethodActionWidget extends WidgetType {
@@ -92,10 +94,12 @@ export function SourceFileViewerModal({
   onClose,
   onGenerate,
   onOpenGfc,
+  initialHighlight,
 }: SourceFileViewerModalProps) {
   const { theme } = useTheme();
   const [code, setCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const viewRef = useRef<EditorView | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -133,8 +137,32 @@ export function SourceFileViewerModal({
       EditorView.contentAttributes.of({ tabindex: '0' }),
       EditorView.lineWrapping,
       decorationField,
+      highlightField,
     ];
   }, [methods, existingGfcs, generatingSignature, onGenerate, onOpenGfc]);
+
+  // Aplica destaque/scroll quando o código termina de carregar ou o range muda.
+  useEffect(() => {
+    const view = viewRef.current;
+    if (!view || code == null) return;
+
+    if (!initialHighlight) {
+      view.dispatch({ effects: setHighlightEffect.of(null) });
+      return;
+    }
+
+    const doc = view.state.doc;
+    const start = Math.max(1, initialHighlight.startLine);
+    if (start > doc.lines) return;
+    const end = Math.min(doc.lines, Math.max(start, initialHighlight.endLine));
+
+    view.dispatch({
+      effects: [
+        setHighlightEffect.of({ startLine: start, endLine: end }),
+        EditorView.scrollIntoView(doc.line(start).from, { y: 'center' }),
+      ],
+    });
+  }, [code, initialHighlight]);
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -196,6 +224,9 @@ export function SourceFileViewerModal({
               }}
               height="100%"
               className="h-full text-sm"
+              onCreateEditor={(view) => {
+                viewRef.current = view;
+              }}
             />
           )}
         </div>

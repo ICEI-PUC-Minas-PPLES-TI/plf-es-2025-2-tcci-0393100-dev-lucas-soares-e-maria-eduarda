@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Code2, Hash, FileText, Tag } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Code2, FileCode, Hash, FileText, Tag } from 'lucide-react';
 import type { GFCNodeType } from '../types/gfc';
 
 interface NodeInfo {
@@ -13,6 +13,8 @@ interface NodeInfoPanelProps {
   node: NodeInfo | null;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
+  onViewInSource?: () => void;
+  canViewInSource?: boolean;
 }
 
 const TYPE_LABEL: Record<GFCNodeType, string> = {
@@ -31,7 +33,13 @@ const TYPE_BADGE: Record<GFCNodeType, string> = {
   RETURN: 'bg-red-500/15 text-red-400 border-red-500/40',
 };
 
-export function NodeInfoPanel({ node, isCollapsed, onToggleCollapse }: NodeInfoPanelProps) {
+export function NodeInfoPanel({
+  node,
+  isCollapsed,
+  onToggleCollapse,
+  onViewInSource,
+  canViewInSource = false,
+}: NodeInfoPanelProps) {
   if (isCollapsed) {
     return (
       <div className="w-10 bg-surface-card border-l border-edge flex items-start justify-center pt-3 shrink-0">
@@ -93,6 +101,16 @@ export function NodeInfoPanel({ node, isCollapsed, onToggleCollapse }: NodeInfoP
                   : `Linha ${node.startLine ?? '?'} – ${node.endLine}`}
               </div>
             </Field>
+          )}
+
+          {canViewInSource && onViewInSource && node.startLine != null && (
+            <button
+              onClick={onViewInSource}
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm text-primary-light bg-primary/10 hover:bg-primary/20 border border-primary/30 rounded transition-colors"
+            >
+              <FileCode className="w-4 h-4" />
+              Ver no arquivo
+            </button>
           )}
         </div>
       )}
