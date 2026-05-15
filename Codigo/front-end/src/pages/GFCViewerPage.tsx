@@ -10,6 +10,7 @@ import { MethodPanel } from '../features/graph/components/MethodPanel';
 import { NodeInfoPanel } from '../features/graph/components/NodeInfoPanel';
 import { SourceFileViewerModal } from '../features/graph/components/SourceFileViewerModal';
 import { MethodCodePanel } from '../features/graph/components/MethodCodePanel';
+import { GFCViewerSkeleton } from '../features/graph/components/GFCViewerSkeleton';
 import {
   buildFlowGraph,
   computeStats,
@@ -140,11 +141,7 @@ export function GFCViewerPage() {
   };
 
   if (loading && !gfc) {
-    return (
-      <div className="min-h-screen bg-surface flex items-center justify-center">
-        <p className="text-gray-400">Carregando GFC...</p>
-      </div>
-    );
+    return <GFCViewerSkeleton projectName={project.name} projectId={projectId ?? ''} />;
   }
 
   if ((loadError && !gfc) || !gfc) {
