@@ -5,6 +5,8 @@ import { Modal } from '../../../components/Modal';
 import { Button } from '../../../components/Button';
 import SourceFileService from '../../../services/GFC/SourceFileService';
 import GFCService from '../../../services/GFC/GFCService';
+import ProjectService from '../../../services/Project/ProjectService';
+import type { ProjectDTO } from '../../../services/Project/types/project';
 import type {
   GFCSourceFileDTO,
   GFCSourceMethodDTO,
@@ -12,18 +14,22 @@ import type {
 } from '../types/gfc';
 
 interface CreateGFCModalProps {
-  projectId: string;
+  projectId?: string;
   onClose: () => void;
 }
 
 type Step = 'choose-file' | 'choose-method';
 
-export function CreateGFCModal({ projectId, onClose }: CreateGFCModalProps) {
+export function CreateGFCModal({ projectId: initialProjectId, onClose }: CreateGFCModalProps) {
   const navigate = useNavigate();
+
+  const [selectedProjectId, setSelectedProjectId] = useState(initialProjectId ?? '');
+  const [projects, setProjects] = useState<ProjectDTO[]>([]);
+  const [loadingProjects, setLoadingProjects] = useState(!initialProjectId);
 
   const [step, setStep] = useState<Step>('choose-file');
   const [existingFiles, setExistingFiles] = useState<GFCSourceFileDTO[]>([]);
-  const [loadingFiles, setLoadingFiles] = useState(true);
+  const [loadingFiles, setLoadingFiles] = useState(!!initialProjectId);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
 
@@ -37,20 +43,35 @@ export function CreateGFCModal({ projectId, onClose }: CreateGFCModalProps) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    SourceFileService.listarPorProjeto(projectId)
+    if (initialProjectId) return;
+    ProjectService.listarMeus()
+      .then(setProjects)
+      .catch(() => setError('Erro ao carregar projetos.'))
+      .finally(() => setLoadingProjects(false));
+  }, [initialProjectId]);
+
+  useEffect(() => {
+    if (!selectedProjectId) {
+      setExistingFiles([]);
+      setLoadingFiles(false);
+      return;
+    }
+    setLoadingFiles(true);
+    SourceFileService.listarPorProjeto(selectedProjectId)
       .then(setExistingFiles)
       .catch(() => setError('Erro ao carregar arquivos do projeto.'))
       .finally(() => setLoadingFiles(false));
-  }, [projectId]);
+  }, [selectedProjectId]);
 
   const loadMethodsFor = async (sourceFile: GFCSourceFileDTO) => {
+    if (!selectedProjectId) return;
     setActiveSourceFile(sourceFile);
     setLoadingMethods(true);
     setError(null);
     try {
       const [fileMethods, gfcs] = await Promise.all([
         SourceFileService.listarMetodos(sourceFile.id),
-        GFCService.listarPorProjeto(projectId),
+        GFCService.listarPorProjeto(selectedProjectId),
       ]);
       setMethods(fileMethods);
       setExistingGfcs(gfcs);
@@ -64,6 +85,10 @@ export function CreateGFCModal({ projectId, onClose }: CreateGFCModalProps) {
 
   const handleUpload = async (e: SyntheticEvent) => {
     e.preventDefault();
+    if (!selectedProjectId) {
+      setError('Selecione um projeto.');
+      return;
+    }
     if (!selectedFile) {
       setError('Selecione um arquivo .java.');
       return;
@@ -71,7 +96,7 @@ export function CreateGFCModal({ projectId, onClose }: CreateGFCModalProps) {
     setUploading(true);
     setError(null);
     try {
-      const { id } = await SourceFileService.upload(projectId, selectedFile);
+      const { id } = await SourceFileService.upload(selectedProjectId, selectedFile);
       const file = await SourceFileService.buscarPorId(id);
       await loadMethodsFor(file);
     } catch {
@@ -82,14 +107,14 @@ export function CreateGFCModal({ projectId, onClose }: CreateGFCModalProps) {
   };
 
   const handleGenerate = async () => {
-    if (!activeSourceFile || !selectedSignature) return;
+    if (!activeSourceFile || !selectedSignature || !selectedProjectId) return;
     const method = methods.find((m) => m.signature === selectedSignature);
     if (!method) return;
 
     const existing = existingGfcs.find((g) => g.methodSignature === selectedSignature);
     if (existing) {
       onClose();
-      navigate(`/projeto/${projectId}/gfc/${existing.id}`);
+      navigate(`/projeto/${selectedProjectId}/gfc/${existing.id}`);
       return;
     }
 
@@ -97,13 +122,13 @@ export function CreateGFCModal({ projectId, onClose }: CreateGFCModalProps) {
     setError(null);
     try {
       const { id } = await GFCService.criar({
-        projectId,
+        projectId: selectedProjectId,
         sourceFileId: activeSourceFile.id,
         methodSignature: method.signature,
         name: method.name,
       });
       onClose();
-      navigate(`/projeto/${projectId}/gfc/${id}`);
+      navigate(`/projeto/${selectedProjectId}/gfc/${id}`);
     } catch {
       setError('Erro ao gerar o GFC.');
       setGenerating(false);
@@ -118,7 +143,35 @@ export function CreateGFCModal({ projectId, onClose }: CreateGFCModalProps) {
     >
       {step === 'choose-file' && (
         <form onSubmit={handleUpload} className="space-y-4">
-          {!loadingFiles && existingFiles.length > 0 && (
+          {!initialProjectId && (
+            <div>
+              <label htmlFor="gfc-project" className="block text-sm text-gray-300 mb-1.5">
+                Projeto
+              </label>
+              {loadingProjects ? (
+                <p className="text-sm text-gray-500">Carregando projetos...</p>
+              ) : (
+                <select
+                  id="gfc-project"
+                  value={selectedProjectId}
+                  onChange={(e) => {
+                    setSelectedProjectId(e.target.value);
+                    setSelectedFile(null);
+                    setError(null);
+                  }}
+                  required
+                  className="w-full bg-surface border border-edge rounded-lg px-4 py-2.5 text-gray-100 focus:border-primary focus:outline-none transition-colors"
+                >
+                  <option value="">Selecione um projeto...</option>
+                  {projects.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+              )}
+            </div>
+          )}
+
+          {selectedProjectId && !loadingFiles && existingFiles.length > 0 && (
             <div>
               <p className="text-sm text-gray-300 mb-2">Arquivos já enviados</p>
               <div className="border border-edge rounded-lg divide-y divide-edge max-h-44 overflow-y-auto">
@@ -144,6 +197,7 @@ export function CreateGFCModal({ projectId, onClose }: CreateGFCModalProps) {
             </div>
           )}
 
+          {selectedProjectId && (
           <div>
             <p className="text-sm text-gray-300 mb-2">
               {existingFiles.length > 0 ? 'Ou envie um novo arquivo .java' : 'Envie um arquivo .java'}
@@ -166,6 +220,7 @@ export function CreateGFCModal({ projectId, onClose }: CreateGFCModalProps) {
               />
             </label>
           </div>
+          )}
 
           {error && <p className="text-sm text-red-400 text-center">{error}</p>}
 

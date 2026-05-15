@@ -8,12 +8,14 @@ import { QuickActionsSection } from '../features/home/components/QuickActionsSec
 import { RecentArtifactsSection } from '../features/home/components/RecentArtifactsSection';
 import { ProjectFormModal } from '../features/projects/components/ProjectFormModal';
 import { GCEFormModal } from '../features/gce/components/GCEFormModal';
+import { CreateGFCModal } from '../features/graph/components/CreateGFCModal';
 import { SelectGCEForTableModal } from '../features/decision-table/components/SelectGCEForTableModal';
 
 export function HomePage() {
   const navigate = useNavigate();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showCreateGCEModal, setShowCreateGCEModal] = useState(false);
+  const [showCreateGFCModal, setShowCreateGFCModal] = useState(false);
   const [showSelectGCEModal, setShowSelectGCEModal] = useState(false);
 
   return (
@@ -22,7 +24,11 @@ export function HomePage() {
 
       <main className="flex-1">
         <HeroSection onCreateProject={() => setShowCreateModal(true)} />
-        <QuickActionsSection onCreateGCE={() => setShowCreateGCEModal(true)} onGenerateTable={() => setShowSelectGCEModal(true)} />
+        <QuickActionsSection
+          onCreateGFC={() => setShowCreateGFCModal(true)}
+          onCreateGCE={() => setShowCreateGCEModal(true)}
+          onGenerateTable={() => setShowSelectGCEModal(true)}
+        />
         <ProjectsSection />
         <RecentArtifactsSection />
       </main>
@@ -36,6 +42,12 @@ export function HomePage() {
             setShowCreateModal(false);
             navigate(`/projeto/${created.id}`);
           }}
+        />
+      )}
+
+      {showCreateGFCModal && (
+        <CreateGFCModal
+          onClose={() => setShowCreateGFCModal(false)}
         />
       )}
 
