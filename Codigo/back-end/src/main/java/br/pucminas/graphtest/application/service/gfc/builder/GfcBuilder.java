@@ -6,27 +6,35 @@ import br.pucminas.graphtest.application.domain.gfc.model.GfcEdge;
 import br.pucminas.graphtest.application.domain.gfc.model.GfcNode;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.comments.Comment;
+import com.github.javaparser.ast.expr.ConditionalExpr;
+import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.stmt.DoStmt;
 import com.github.javaparser.ast.stmt.ForEachStmt;
 import com.github.javaparser.ast.stmt.ForStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.Statement;
+import com.github.javaparser.ast.stmt.SwitchEntry;
+import com.github.javaparser.ast.stmt.SwitchStmt;
+import com.github.javaparser.ast.stmt.TryStmt;
 import com.github.javaparser.ast.stmt.WhileStmt;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
  * Builder que transforma statements JavaParser em nos e arestas iniciais do GFC.
  *
- * <p>O suporte a {@code while}, {@code for} e {@code foreach} ainda e simplificado:
- * cada laco vira um no de decisao, o corpo e tratado como ramo verdadeiro, o fim do corpo
- * retorna para a decisao com {@code LOOP_BACK} e o ramo falso segue para o proximo comando.
- * Inicializacao/update de {@code for}, {@code break} e {@code continue} ainda nao sao
- * modelados nesta etapa.</p>
+ * <p>O suporte a lacos modela a estrutura de repeticao como no {@code LOOP} e usa
+ * arestas especificas para entrada no corpo, saida, retorno e fluxos de {@code break}
+ * e {@code continue}. Inicializacao/update de {@code for} ainda permanecem apenas no
+ * rotulo textual do no.</p>
  */
 public class GfcBuilder {
 
@@ -36,6 +44,7 @@ public class GfcBuilder {
 
     private final List<GfcNode> nodes = new ArrayList<>();
     private final List<GfcEdge> edges = new ArrayList<>();
+    private final Deque<ExceptionFlowContext> exceptionContexts = new ArrayDeque<>();
     private int nodeCounter = 1;
 
     /**
@@ -62,6 +71,7 @@ public class GfcBuilder {
     private void reset() {
         nodes.clear();
         edges.clear();
+        exceptionContexts.clear();
         nodeCounter = 1;
     }
 
@@ -72,7 +82,16 @@ public class GfcBuilder {
     private Collection<PendingEdge> processStatements(Collection<Statement> statements, Collection<PendingEdge> incomingEdges) {
         Collection<PendingEdge> currentExits = incomingEdges;
         for (Statement statement : statements) {
-            currentExits = processStatement(statement, currentExits);
+            Collection<PendingEdge> controlFlowExits = controlFlowExits(currentExits);
+            Collection<PendingEdge> normalExits = normalExits(currentExits);
+            if (normalExits.isEmpty()) {
+                currentExits = controlFlowExits;
+                continue;
+            }
+
+            List<PendingEdge> nextExits = new ArrayList<>(controlFlowExits);
+            nextExits.addAll(processStatement(statement, normalExits));
+            currentExits = nextExits;
         }
         return currentExits;
     }
@@ -96,8 +115,26 @@ public class GfcBuilder {
         if (statement.isDoStmt()) {
             return processDo(statement.asDoStmt(), incomingEdges);
         }
+        if (statement.isSwitchStmt()) {
+            return processSwitch(statement.asSwitchStmt(), incomingEdges);
+        }
+        if (statement.isTryStmt()) {
+            return processTry(statement.asTryStmt(), incomingEdges);
+        }
+        if (containsTernary(statement)) {
+            return processTernaryStatement(statement, incomingEdges);
+        }
         if (statement.isReturnStmt()) {
             return processReturn(statement, incomingEdges);
+        }
+        if (statement.isThrowStmt()) {
+            return processThrow(statement, incomingEdges);
+        }
+        if (statement.isBreakStmt()) {
+            return processBreak(statement, incomingEdges);
+        }
+        if (statement.isContinueStmt()) {
+            return processContinue(statement, incomingEdges);
         }
         return processSimpleStatement(statement, incomingEdges);
     }
@@ -140,41 +177,291 @@ public class GfcBuilder {
         Collection<PendingEdge> bodyExits = processBranchBody(statement.getBody(), incomingEdges);
         String bodyEntryNodeCode = firstCreatedNodeCode(firstBodyNodeIndex);
 
-        GfcNode decision = createNode(GfcNodeTypeEnum.DECISION, labelForDo(statement), statement);
-        connectPendingEdges(bodyExits, decision.getCode());
+        GfcNode loop = createNode(GfcNodeTypeEnum.LOOP, labelForDo(statement), statement);
+        connectLoopBackEdges(normalExits(bodyExits), loop.getCode());
+        connectContinueEdges(bodyExits, loop.getCode());
 
-        String trueTargetNodeCode = bodyEntryNodeCode == null ? decision.getCode() : bodyEntryNodeCode;
-        addEdge(decision.getCode(), trueTargetNodeCode, GfcEdgeTypeEnum.TRUE_BRANCH, "true");
+        String loopBodyTargetNodeCode = bodyEntryNodeCode == null ? loop.getCode() : bodyEntryNodeCode;
+        addEdge(loop.getCode(), loopBodyTargetNodeCode, GfcEdgeTypeEnum.LOOP_BODY, "body");
 
-        return List.of(new PendingEdge(decision.getCode(), GfcEdgeTypeEnum.FALSE_BRANCH, "false"));
+        List<PendingEdge> exits = new ArrayList<>();
+        exits.add(new PendingEdge(loop.getCode(), GfcEdgeTypeEnum.LOOP_EXIT, "exit"));
+        exits.addAll(breakExitsAsNormal(bodyExits));
+        return exits;
     }
 
     private Collection<PendingEdge> processLoop(Node source, String label, Statement body, Collection<PendingEdge> incomingEdges) {
-        GfcNode decision = createNode(GfcNodeTypeEnum.DECISION, label, source);
-        connectPendingEdges(incomingEdges, decision.getCode());
+        GfcNode loop = createNode(GfcNodeTypeEnum.LOOP, label, source);
+        connectPendingEdges(incomingEdges, loop.getCode());
 
         Collection<PendingEdge> bodyExits = processBranch(
                 body,
-                new PendingEdge(decision.getCode(), GfcEdgeTypeEnum.TRUE_BRANCH, "true")
+                new PendingEdge(loop.getCode(), GfcEdgeTypeEnum.LOOP_BODY, "body")
         );
-        for (PendingEdge bodyExit : bodyExits) {
-            addEdge(bodyExit.sourceNodeCode(), decision.getCode(), GfcEdgeTypeEnum.LOOP_BACK, "loop");
+        connectLoopBackEdges(normalExits(bodyExits), loop.getCode());
+        connectContinueEdges(bodyExits, loop.getCode());
+
+        List<PendingEdge> exits = new ArrayList<>();
+        exits.add(new PendingEdge(loop.getCode(), GfcEdgeTypeEnum.LOOP_EXIT, "exit"));
+        exits.addAll(breakExitsAsNormal(bodyExits));
+        return exits;
+    }
+
+    private Collection<PendingEdge> processSwitch(SwitchStmt statement, Collection<PendingEdge> incomingEdges) {
+        GfcNode switchNode = createNode(GfcNodeTypeEnum.SWITCH, labelForSwitch(statement), statement);
+        connectPendingEdges(incomingEdges, switchNode.getCode());
+
+        List<PendingEdge> breaks = new ArrayList<>();
+        List<PendingEdge> propagatedControlExits = new ArrayList<>();
+        Collection<PendingEdge> fallThroughExits = List.of();
+        boolean hasDefault = false;
+
+        for (SwitchEntry entry : statement.getEntries()) {
+            GfcNode caseNode = createNode(GfcNodeTypeEnum.CASE, labelForSwitchEntry(entry), entry);
+            boolean defaultEntry = entry.getLabels().isEmpty();
+            hasDefault = hasDefault || defaultEntry;
+            addEdge(
+                    switchNode.getCode(),
+                    caseNode.getCode(),
+                    defaultEntry ? GfcEdgeTypeEnum.DEFAULT_BRANCH : GfcEdgeTypeEnum.CASE_BRANCH,
+                    caseNode.getLabel()
+            );
+            connectPendingEdges(normalExits(fallThroughExits), caseNode.getCode());
+
+            Collection<PendingEdge> caseExits = processStatements(
+                    entry.getStatements(),
+                    List.of(new PendingEdge(caseNode.getCode(), GfcEdgeTypeEnum.SEQUENTIAL, null))
+            );
+            breaks.addAll(breakExits(caseExits));
+            propagatedControlExits.addAll(nonBreakControlFlowExits(caseExits));
+            fallThroughExits = normalExits(caseExits);
         }
 
-        return List.of(new PendingEdge(decision.getCode(), GfcEdgeTypeEnum.FALSE_BRANCH, "false"));
+        List<PendingEdge> exits = new ArrayList<>();
+        if (!hasDefault) {
+            exits.add(new PendingEdge(switchNode.getCode(), GfcEdgeTypeEnum.SEQUENTIAL, null));
+        }
+        exits.addAll(normalExits(fallThroughExits));
+        exits.addAll(breakExitsAsNormal(breaks));
+        exits.addAll(propagatedControlExits);
+        return exits;
+    }
+
+    private Collection<PendingEdge> processTry(TryStmt statement, Collection<PendingEdge> incomingEdges) {
+        GfcNode tryNode = createNode(GfcNodeTypeEnum.TRY, labelForTry(), statement);
+        connectPendingEdges(incomingEdges, tryNode.getCode());
+
+        List<GfcNode> catchNodes = statement.getCatchClauses().stream()
+                .map(catchClause -> createNode(GfcNodeTypeEnum.CATCH, labelForCatch(catchClause), catchClause))
+                .toList();
+        for (GfcNode catchNode : catchNodes) {
+            addEdge(tryNode.getCode(), catchNode.getCode(), GfcEdgeTypeEnum.CATCH_BRANCH, catchNode.getLabel());
+        }
+
+        GfcNode finallyNode = statement.getFinallyBlock()
+                .map(finallyBlock -> createNode(GfcNodeTypeEnum.FINALLY, labelForFinally(), finallyBlock))
+                .orElse(null);
+        if (finallyNode != null) {
+            addEdge(tryNode.getCode(), finallyNode.getCode(), GfcEdgeTypeEnum.FINALLY_BRANCH, "finally");
+        }
+
+        ExceptionFlowContext context = new ExceptionFlowContext(
+                catchNodes.isEmpty() ? null : catchNodes.getFirst().getCode(),
+                finallyNode == null ? null : finallyNode.getCode()
+        );
+        exceptionContexts.push(context);
+        Collection<PendingEdge> tryExits = processStatements(
+                statement.getTryBlock().getStatements(),
+                List.of(new PendingEdge(tryNode.getCode(), GfcEdgeTypeEnum.TRY_BRANCH, "try"))
+        );
+        exceptionContexts.pop();
+
+        List<PendingEdge> catchExits = new ArrayList<>();
+        for (int index = 0; index < statement.getCatchClauses().size(); index++) {
+            GfcNode catchNode = catchNodes.get(index);
+            ExceptionFlowContext catchContext = new ExceptionFlowContext(
+                    null,
+                    finallyNode == null ? null : finallyNode.getCode()
+            );
+            exceptionContexts.push(catchContext);
+            catchExits.addAll(processStatements(
+                    statement.getCatchClauses().get(index).getBody().getStatements(),
+                    List.of(new PendingEdge(catchNode.getCode(), GfcEdgeTypeEnum.SEQUENTIAL, null))
+            ));
+            exceptionContexts.pop();
+            if (catchContext.hasExceptionalFlowToFinally()) {
+                context.markExceptionalFlowToFinally();
+            }
+        }
+
+        List<PendingEdge> exits = new ArrayList<>();
+        if (finallyNode == null) {
+            exits.addAll(tryExits);
+            exits.addAll(catchExits);
+            return exits;
+        }
+
+        List<PendingEdge> normalFinallyIncoming = new ArrayList<>();
+        normalFinallyIncoming.addAll(normalExits(tryExits));
+        normalFinallyIncoming.addAll(normalExits(catchExits));
+        connectPendingEdges(normalFinallyIncoming, finallyNode.getCode(), GfcEdgeTypeEnum.FINALLY_BRANCH, "finally");
+
+        if (!normalFinallyIncoming.isEmpty()) {
+            Collection<PendingEdge> finallyExits = processStatements(
+                    statement.getFinallyBlock().orElseThrow().getStatements(),
+                    List.of(new PendingEdge(finallyNode.getCode(), GfcEdgeTypeEnum.SEQUENTIAL, null))
+            );
+            if (context.hasExceptionalFlowToFinally()) {
+                connectPendingEdges(normalExits(finallyExits), END_NODE_CODE, GfcEdgeTypeEnum.SEQUENTIAL, null);
+            }
+            exits.addAll(finallyExits);
+        } else if (context.hasExceptionalFlowToFinally()) {
+            processExceptionalFinally(statement, finallyNode.getCode());
+        }
+        exits.addAll(controlFlowExits(tryExits));
+        exits.addAll(controlFlowExits(catchExits));
+        return exits;
+    }
+
+    private void processExceptionalFinally(TryStmt statement, String exceptionalFinallyNodeCode) {
+        Collection<PendingEdge> exceptionalFinallyExits = processStatements(
+                statement.getFinallyBlock().orElseThrow().getStatements(),
+                List.of(new PendingEdge(exceptionalFinallyNodeCode, GfcEdgeTypeEnum.SEQUENTIAL, null))
+        );
+        connectPendingEdges(normalExits(exceptionalFinallyExits), END_NODE_CODE, GfcEdgeTypeEnum.SEQUENTIAL, null);
     }
 
     private Collection<PendingEdge> processReturn(Statement statement, Collection<PendingEdge> incomingEdges) {
-        GfcNode node = createNode(GfcNodeTypeEnum.RETURN, compactLabel(statement.toString()), statement);
+        GfcNode node = createNode(GfcNodeTypeEnum.RETURN, labelWithoutComments(statement), statement);
         connectPendingEdges(incomingEdges, node.getCode());
         addEdge(node.getCode(), END_NODE_CODE, GfcEdgeTypeEnum.SEQUENTIAL, null);
         return List.of();
     }
 
+    private Collection<PendingEdge> processTernaryStatement(Statement statement, Collection<PendingEdge> incomingEdges) {
+        ConditionalExpr ternary = firstTernary(statement);
+        if (statement.isReturnStmt()) {
+            return processTernaryExpression(
+                    ternary,
+                    incomingEdges,
+                    branchExpression -> "return " + branchExpression + ";",
+                    true
+            );
+        }
+
+        String statementLabel = codeWithoutComments(statement);
+        String ternaryLabel = codeWithoutComments(ternary);
+        return processTernaryExpression(
+                ternary,
+                incomingEdges,
+                branchExpression -> replaceFirstExpression(statementLabel, ternaryLabel, branchExpression),
+                false
+        );
+    }
+
+    private Collection<PendingEdge> processTernaryExpression(ConditionalExpr expression,
+                                                             Collection<PendingEdge> incomingEdges,
+                                                             Function<String, String> branchLabelFactory,
+                                                             boolean terminalReturn) {
+        GfcNode ternaryNode = createNode(GfcNodeTypeEnum.TERNARY, labelWithoutComments(expression.getCondition()), expression);
+        connectPendingEdges(incomingEdges, ternaryNode.getCode());
+
+        List<PendingEdge> exits = new ArrayList<>();
+        exits.addAll(processTernaryBranch(
+                expression.getThenExpr(),
+                new PendingEdge(ternaryNode.getCode(), GfcEdgeTypeEnum.TRUE_BRANCH, "true"),
+                branchLabelFactory,
+                terminalReturn
+        ));
+        exits.addAll(processTernaryBranch(
+                expression.getElseExpr(),
+                new PendingEdge(ternaryNode.getCode(), GfcEdgeTypeEnum.FALSE_BRANCH, "false"),
+                branchLabelFactory,
+                terminalReturn
+        ));
+        return exits;
+    }
+
+    private Collection<PendingEdge> processTernaryBranch(Expression branchExpression,
+                                                         PendingEdge incomingEdge,
+                                                         Function<String, String> branchLabelFactory,
+                                                         boolean terminalReturn) {
+        if (branchExpression.isConditionalExpr()) {
+            return processTernaryExpression(
+                    branchExpression.asConditionalExpr(),
+                    List.of(incomingEdge),
+                    branchLabelFactory,
+                    terminalReturn
+            );
+        }
+
+        GfcNodeTypeEnum nodeType = terminalReturn ? GfcNodeTypeEnum.RETURN : GfcNodeTypeEnum.STATEMENT;
+        GfcNode branchNode = createNode(nodeType, compactLabel(branchLabelFactory.apply(codeWithoutComments(branchExpression))), branchExpression);
+        connectPendingEdges(List.of(incomingEdge), branchNode.getCode());
+        if (terminalReturn) {
+            addEdge(branchNode.getCode(), END_NODE_CODE, GfcEdgeTypeEnum.SEQUENTIAL, null);
+            return List.of();
+        }
+        return List.of(new PendingEdge(branchNode.getCode(), GfcEdgeTypeEnum.SEQUENTIAL, null));
+    }
+
+    private Collection<PendingEdge> processThrow(Statement statement, Collection<PendingEdge> incomingEdges) {
+        GfcNode node = createNode(GfcNodeTypeEnum.THROW, labelWithoutComments(statement), statement);
+        connectPendingEdges(incomingEdges, node.getCode());
+        addEdge(node.getCode(), targetForThrow(), GfcEdgeTypeEnum.THROW_FLOW, "throw");
+        return List.of();
+    }
+
+    private String targetForThrow() {
+        if (exceptionContexts.isEmpty()) {
+            return END_NODE_CODE;
+        }
+
+        ExceptionFlowContext context = exceptionContexts.peek();
+        if (context.hasCatch()) {
+            return context.catchNodeCode();
+        }
+        if (context.hasFinally()) {
+            context.markExceptionalFlowToFinally();
+            return context.finallyNodeCode();
+        }
+        return END_NODE_CODE;
+    }
+
+    private Collection<PendingEdge> processBreak(Statement statement, Collection<PendingEdge> incomingEdges) {
+        GfcNode node = createNode(GfcNodeTypeEnum.BREAK, labelWithoutComments(statement), statement);
+        connectPendingEdges(incomingEdges, node.getCode());
+        return List.of(new PendingEdge(node.getCode(), GfcEdgeTypeEnum.BREAK_FLOW, "break", PendingEdgeKind.BREAK));
+    }
+
+    private Collection<PendingEdge> processContinue(Statement statement, Collection<PendingEdge> incomingEdges) {
+        GfcNode node = createNode(GfcNodeTypeEnum.CONTINUE, labelWithoutComments(statement), statement);
+        connectPendingEdges(incomingEdges, node.getCode());
+        return List.of(new PendingEdge(node.getCode(), GfcEdgeTypeEnum.CONTINUE_FLOW, "continue", PendingEdgeKind.CONTINUE));
+    }
+
     private Collection<PendingEdge> processSimpleStatement(Statement statement, Collection<PendingEdge> incomingEdges) {
-        GfcNode node = createNode(GfcNodeTypeEnum.STATEMENT, compactLabel(statement.toString()), statement);
+        GfcNode node = createNode(GfcNodeTypeEnum.STATEMENT, labelWithoutComments(statement), statement);
         connectPendingEdges(incomingEdges, node.getCode());
         return List.of(new PendingEdge(node.getCode(), GfcEdgeTypeEnum.SEQUENTIAL, null));
+    }
+
+    private boolean containsTernary(Node node) {
+        return node.findFirst(ConditionalExpr.class).isPresent();
+    }
+
+    private ConditionalExpr firstTernary(Node node) {
+        return node.findFirst(ConditionalExpr.class).orElseThrow();
+    }
+
+    private String replaceFirstExpression(String source, String targetExpression, String replacementExpression) {
+        int index = source.indexOf(targetExpression);
+        if (index < 0) {
+            return source;
+        }
+        return source.substring(0, index)
+                + replacementExpression
+                + source.substring(index + targetExpression.length());
     }
 
     private Collection<PendingEdge> processBranch(Statement statement, PendingEdge incomingEdge) {
@@ -198,6 +485,65 @@ public class GfcBuilder {
         }
     }
 
+    private void connectPendingEdges(Collection<PendingEdge> pendingEdges,
+                                     String targetNodeCode,
+                                     GfcEdgeTypeEnum type,
+                                     String label) {
+        for (PendingEdge pendingEdge : pendingEdges) {
+            addEdge(pendingEdge.sourceNodeCode(), targetNodeCode, type, label);
+        }
+    }
+
+    private void connectLoopBackEdges(Collection<PendingEdge> pendingEdges, String loopNodeCode) {
+        for (PendingEdge pendingEdge : pendingEdges) {
+            if (pendingEdge.type() == GfcEdgeTypeEnum.BREAK_FLOW) {
+                addEdge(pendingEdge.sourceNodeCode(), loopNodeCode, GfcEdgeTypeEnum.BREAK_FLOW, pendingEdge.label());
+                continue;
+            }
+            addEdge(pendingEdge.sourceNodeCode(), loopNodeCode, GfcEdgeTypeEnum.LOOP_BACK, "loop");
+        }
+    }
+
+    private void connectContinueEdges(Collection<PendingEdge> pendingEdges, String loopNodeCode) {
+        for (PendingEdge pendingEdge : pendingEdges) {
+            if (pendingEdge.kind() == PendingEdgeKind.CONTINUE) {
+                addEdge(pendingEdge.sourceNodeCode(), loopNodeCode, GfcEdgeTypeEnum.CONTINUE_FLOW, "continue");
+            }
+        }
+    }
+
+    private Collection<PendingEdge> normalExits(Collection<PendingEdge> pendingEdges) {
+        return pendingEdges.stream()
+                .filter(pendingEdge -> pendingEdge.kind() == PendingEdgeKind.NORMAL)
+                .toList();
+    }
+
+    private Collection<PendingEdge> controlFlowExits(Collection<PendingEdge> pendingEdges) {
+        return pendingEdges.stream()
+                .filter(pendingEdge -> pendingEdge.kind() != PendingEdgeKind.NORMAL)
+                .toList();
+    }
+
+    private Collection<PendingEdge> nonBreakControlFlowExits(Collection<PendingEdge> pendingEdges) {
+        return pendingEdges.stream()
+                .filter(pendingEdge -> pendingEdge.kind() != PendingEdgeKind.NORMAL)
+                .filter(pendingEdge -> pendingEdge.kind() != PendingEdgeKind.BREAK)
+                .toList();
+    }
+
+    private Collection<PendingEdge> breakExits(Collection<PendingEdge> pendingEdges) {
+        return pendingEdges.stream()
+                .filter(pendingEdge -> pendingEdge.kind() == PendingEdgeKind.BREAK)
+                .toList();
+    }
+
+    private Collection<PendingEdge> breakExitsAsNormal(Collection<PendingEdge> pendingEdges) {
+        return pendingEdges.stream()
+                .filter(pendingEdge -> pendingEdge.kind() == PendingEdgeKind.BREAK)
+                .map(pendingEdge -> new PendingEdge(pendingEdge.sourceNodeCode(), GfcEdgeTypeEnum.BREAK_FLOW, "break"))
+                .toList();
+    }
+
     private void addEdge(String sourceNodeCode, String targetNodeCode, GfcEdgeTypeEnum type, String label) {
         edges.add(new GfcEdge(UUID.randomUUID(), sourceNodeCode, targetNodeCode, type, label));
     }
@@ -218,24 +564,55 @@ public class GfcBuilder {
     }
 
     private String labelForIf(IfStmt statement) {
-        return compactLabel("if (" + statement.getCondition() + ")");
+        return compactLabel("if (" + codeWithoutComments(statement.getCondition()) + ")");
     }
 
     private String labelForWhile(WhileStmt statement) {
-        return compactLabel("while (" + statement.getCondition() + ")");
+        return compactLabel("while (" + codeWithoutComments(statement.getCondition()) + ")");
     }
 
     private String labelForFor(ForStmt statement) {
-        String compare = statement.getCompare().map(Object::toString).orElse("true");
-        return compactLabel("for (" + compare + ")");
+        String initialization = statement.getInitialization().stream()
+                .map(this::codeWithoutComments)
+                .collect(Collectors.joining(", "));
+        String compare = statement.getCompare().map(this::codeWithoutComments).orElse("");
+        String update = statement.getUpdate().stream()
+                .map(this::codeWithoutComments)
+                .collect(Collectors.joining(", "));
+        return compactLabel("for (" + initialization + "; " + compare + "; " + update + ")");
     }
 
     private String labelForForEach(ForEachStmt statement) {
-        return compactLabel("for (" + statement.getVariable() + " : " + statement.getIterable() + ")");
+        return compactLabel("for (" + codeWithoutComments(statement.getVariable()) + " : " + codeWithoutComments(statement.getIterable()) + ")");
     }
 
     private String labelForDo(DoStmt statement) {
-        return compactLabel("do while (" + statement.getCondition() + ")");
+        return compactLabel("while (" + codeWithoutComments(statement.getCondition()) + ")");
+    }
+
+    private String labelForSwitch(SwitchStmt statement) {
+        return compactLabel("switch (" + codeWithoutComments(statement.getSelector()) + ")");
+    }
+
+    private String labelForSwitchEntry(SwitchEntry entry) {
+        if (entry.getLabels().isEmpty()) {
+            return "default";
+        }
+        return compactLabel("case " + entry.getLabels().stream()
+                .map(this::codeWithoutComments)
+                .collect(Collectors.joining(", ")));
+    }
+
+    private String labelForTry() {
+        return "try";
+    }
+
+    private String labelForCatch(com.github.javaparser.ast.stmt.CatchClause catchClause) {
+        return compactLabel("catch (" + codeWithoutComments(catchClause.getParameter()) + ")");
+    }
+
+    private String labelForFinally() {
+        return "finally";
     }
 
     private String compactLabel(String value) {
@@ -248,5 +625,16 @@ public class GfcBuilder {
             return compacted;
         }
         return compacted.substring(0, MAX_LABEL_LENGTH - 3) + "...";
+    }
+
+    private String labelWithoutComments(Node node) {
+        return compactLabel(codeWithoutComments(node));
+    }
+
+    private String codeWithoutComments(Node node) {
+        Node clone = node.clone();
+        clone.getAllContainedComments().forEach(Comment::remove);
+        clone.removeComment();
+        return clone.toString();
     }
 }

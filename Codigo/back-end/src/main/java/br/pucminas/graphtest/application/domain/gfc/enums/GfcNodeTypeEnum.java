@@ -9,6 +9,16 @@ public enum GfcNodeTypeEnum {
     END,
     STATEMENT,
     DECISION,
-    RETURN;
+    LOOP,
+    RETURN,
+    BREAK,
+    CONTINUE,
+    THROW,
+    SWITCH,
+    CASE,
+    TRY,
+    CATCH,
+    FINALLY,
+    TERNARY;
 
 }

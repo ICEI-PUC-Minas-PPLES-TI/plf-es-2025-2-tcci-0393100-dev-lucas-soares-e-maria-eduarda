@@ -12,6 +12,11 @@ import br.pucminas.graphtest.application.domain.gfc.enums.GfcEdgeTypeEnum;
 public record PendingEdge(
         String sourceNodeCode,
         GfcEdgeTypeEnum type,
-        String label
+        String label,
+        PendingEdgeKind kind
 ) {
+
+    public PendingEdge(String sourceNodeCode, GfcEdgeTypeEnum type, String label) {
+        this(sourceNodeCode, type, label, PendingEdgeKind.NORMAL);
+    }
 }

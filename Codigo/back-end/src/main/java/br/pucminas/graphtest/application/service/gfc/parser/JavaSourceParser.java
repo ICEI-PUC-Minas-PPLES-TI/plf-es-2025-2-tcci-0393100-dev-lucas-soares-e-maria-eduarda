@@ -7,8 +7,19 @@ import br.pucminas.graphtest.application.port.input.gfc.records.GfcSourceMethodO
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseResult;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
+import com.github.javaparser.ast.expr.ConditionalExpr;
+import com.github.javaparser.ast.stmt.CatchClause;
+import com.github.javaparser.ast.stmt.DoStmt;
+import com.github.javaparser.ast.stmt.ForEachStmt;
+import com.github.javaparser.ast.stmt.ForStmt;
+import com.github.javaparser.ast.stmt.Statement;
+import com.github.javaparser.ast.stmt.SwitchEntry;
+import com.github.javaparser.ast.stmt.SwitchStmt;
+import com.github.javaparser.ast.stmt.TryStmt;
+import com.github.javaparser.ast.stmt.WhileStmt;
 
 import java.util.Comparator;
 import java.util.List;
@@ -95,6 +106,133 @@ public class JavaSourceParser {
                         endLine(method)
                 ))
                 .toList();
+    }
+
+    public boolean isLoopStatement(Statement statement) {
+        return statement != null
+                && (statement.isWhileStmt()
+                || statement.isForStmt()
+                || statement.isForEachStmt()
+                || statement.isDoStmt());
+    }
+
+    public String extractLoopLabel(Statement statement) {
+        if (statement == null) {
+            return null;
+        }
+        if (statement.isWhileStmt()) {
+            WhileStmt whileStmt = statement.asWhileStmt();
+            return "while (" + whileStmt.getCondition() + ")";
+        }
+        if (statement.isForStmt()) {
+            ForStmt forStmt = statement.asForStmt();
+            String initialization = forStmt.getInitialization().stream()
+                    .map(Object::toString)
+                    .collect(Collectors.joining(", "));
+            String compare = forStmt.getCompare().map(Object::toString).orElse("");
+            String update = forStmt.getUpdate().stream()
+                    .map(Object::toString)
+                    .collect(Collectors.joining(", "));
+            return "for (" + initialization + "; " + compare + "; " + update + ")";
+        }
+        if (statement.isForEachStmt()) {
+            ForEachStmt forEachStmt = statement.asForEachStmt();
+            return "for (" + forEachStmt.getVariable() + " : " + forEachStmt.getIterable() + ")";
+        }
+        if (statement.isDoStmt()) {
+            DoStmt doStmt = statement.asDoStmt();
+            return "while (" + doStmt.getCondition() + ")";
+        }
+        return null;
+    }
+
+    public boolean isBreakStatement(Statement statement) {
+        return statement != null && statement.isBreakStmt();
+    }
+
+    public boolean isContinueStatement(Statement statement) {
+        return statement != null && statement.isContinueStmt();
+    }
+
+    public boolean isSwitchStatement(Statement statement) {
+        return statement != null && statement.isSwitchStmt();
+    }
+
+    public boolean isThrowStatement(Statement statement) {
+        return statement != null && statement.isThrowStmt();
+    }
+
+    public String extractSwitchLabel(SwitchStmt statement) {
+        if (statement == null) {
+            return null;
+        }
+        return "switch (" + statement.getSelector() + ")";
+    }
+
+    public String extractCaseLabel(SwitchEntry entry) {
+        if (entry == null) {
+            return null;
+        }
+        if (entry.getLabels().isEmpty()) {
+            return "default";
+        }
+        return "case " + entry.getLabels().stream()
+                .map(Object::toString)
+                .collect(Collectors.joining(", "));
+    }
+
+    public boolean isTryStatement(Statement statement) {
+        return statement != null && statement.isTryStmt();
+    }
+
+    public String extractTryLabel(TryStmt statement) {
+        if (statement == null) {
+            return null;
+        }
+        return "try";
+    }
+
+    public String extractCatchLabel(CatchClause catchClause) {
+        if (catchClause == null) {
+            return null;
+        }
+        return "catch (" + catchClause.getParameter() + ")";
+    }
+
+    public boolean hasFinally(TryStmt statement) {
+        return statement != null && statement.getFinallyBlock().isPresent();
+    }
+
+    public boolean containsTernary(Node node) {
+        return node != null && node.findFirst(ConditionalExpr.class).isPresent();
+    }
+
+    public ConditionalExpr extractTernary(Node node) {
+        if (node == null) {
+            return null;
+        }
+        return node.findFirst(ConditionalExpr.class).orElse(null);
+    }
+
+    public String extractTernaryCondition(ConditionalExpr expression) {
+        if (expression == null) {
+            return null;
+        }
+        return expression.getCondition().toString();
+    }
+
+    public String extractTernaryThenExpression(ConditionalExpr expression) {
+        if (expression == null) {
+            return null;
+        }
+        return expression.getThenExpr().toString();
+    }
+
+    public String extractTernaryElseExpression(ConditionalExpr expression) {
+        if (expression == null) {
+            return null;
+        }
+        return expression.getElseExpr().toString();
     }
 
     private List<MethodDeclaration> parseCompilationUnitMethods(String sourceCode) {
