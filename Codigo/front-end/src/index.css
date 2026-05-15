@@ -192,6 +192,35 @@ button {
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15);
 }
 
+/* Scrollbar fininha temática (usar adicionando a classe .thin-scrollbar) */
+.thin-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--color-edge-hover) 60%, transparent) transparent;
+}
+
+.thin-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-edge-hover) 50%, transparent);
+  border-radius: 999px;
+  transition: background 0.15s ease;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--color-edge-hover);
+}
+
+.thin-scrollbar::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
 /* Destaque de linhas no CodeMirror ao selecionar um nó do GFC */
 .gfc-highlight-line {
   background: color-mix(in srgb, var(--color-primary) 22%, transparent);

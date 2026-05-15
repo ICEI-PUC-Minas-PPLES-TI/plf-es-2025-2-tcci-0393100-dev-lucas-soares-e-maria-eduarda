@@ -41,15 +41,15 @@ export function GFCLegend() {
   const edges = expanded ? EDGE_ITEMS : EDGE_ITEMS.slice(0, 3);
 
   return (
-    <div className="bg-surface-card border border-edge rounded-lg p-3 shadow-lg w-44">
+    <div className="bg-surface-card border border-edge rounded-lg p-3 shadow-lg w-44 flex flex-col max-h-[70vh]">
       <button
         onClick={() => setExpanded((v) => !v)}
-        className="w-full flex items-center justify-between text-xs text-gray-400 mb-2 font-medium hover:text-gray-200 transition-colors"
+        className="w-full flex items-center justify-between text-xs text-gray-400 mb-2 font-medium hover:text-gray-200 transition-colors shrink-0"
       >
         <span>Legenda</span>
         {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
       </button>
-      <div className="space-y-1.5">
+      <div className="space-y-1.5 overflow-y-auto pr-1 -mr-1 thin-scrollbar">
         {nodes.map((item) => (
           <div key={item.label} className="flex items-center gap-2">
             <Shape kind={item.shape} color={item.color} />
