@@ -31,11 +31,41 @@
   --color-gfc-statement-bg: #1f4e8a;
   --color-gfc-decision: #eab308;
   --color-gfc-decision-bg: #a16207;
+  --color-gfc-loop: #c084fc;
+  --color-gfc-loop-bg: #5b21b6;
+  --color-gfc-ternary: #f0abfc;
+  --color-gfc-ternary-bg: #86198f;
+  --color-gfc-switch: #fb923c;
+  --color-gfc-switch-bg: #9a3412;
+  --color-gfc-case: #fdba74;
+  --color-gfc-case-bg: #7c2d12;
+  --color-gfc-try: #2dd4bf;
+  --color-gfc-try-bg: #115e59;
+  --color-gfc-catch: #fbbf24;
+  --color-gfc-catch-bg: #92400e;
+  --color-gfc-finally: #94a3b8;
+  --color-gfc-finally-bg: #334155;
   --color-gfc-return: #f85149;
   --color-gfc-return-bg: #a52821;
+  --color-gfc-break: #fb923c;
+  --color-gfc-break-bg: #9a3412;
+  --color-gfc-continue: #c084fc;
+  --color-gfc-continue-bg: #5b21b6;
+  --color-gfc-throw: #f87171;
+  --color-gfc-throw-bg: #7f1d1d;
   --color-gfc-edge-true: #3fb950;
   --color-gfc-edge-false: #f85149;
   --color-gfc-edge-loop: #a855f7;
+  --color-gfc-edge-body: #c084fc;
+  --color-gfc-edge-exit: #fb923c;
+  --color-gfc-edge-case: #fb923c;
+  --color-gfc-edge-default: #fbbf24;
+  --color-gfc-edge-try: #2dd4bf;
+  --color-gfc-edge-catch: #fbbf24;
+  --color-gfc-edge-finally: #94a3b8;
+  --color-gfc-edge-break: #fb923c;
+  --color-gfc-edge-continue: #c084fc;
+  --color-gfc-edge-throw: #f87171;
 }
 
 :root {
@@ -89,11 +119,41 @@
   --color-gfc-statement-bg: #2563eb;
   --color-gfc-decision: #a16207;
   --color-gfc-decision-bg: #ca8a04;
+  --color-gfc-loop: #6b21a8;
+  --color-gfc-loop-bg: #7e22ce;
+  --color-gfc-ternary: #86198f;
+  --color-gfc-ternary-bg: #a21caf;
+  --color-gfc-switch: #9a3412;
+  --color-gfc-switch-bg: #ea580c;
+  --color-gfc-case: #7c2d12;
+  --color-gfc-case-bg: #f97316;
+  --color-gfc-try: #115e59;
+  --color-gfc-try-bg: #0d9488;
+  --color-gfc-catch: #92400e;
+  --color-gfc-catch-bg: #d97706;
+  --color-gfc-finally: #334155;
+  --color-gfc-finally-bg: #64748b;
   --color-gfc-return: #b91c1c;
   --color-gfc-return-bg: #dc2626;
+  --color-gfc-break: #9a3412;
+  --color-gfc-break-bg: #ea580c;
+  --color-gfc-continue: #6b21a8;
+  --color-gfc-continue-bg: #7e22ce;
+  --color-gfc-throw: #7f1d1d;
+  --color-gfc-throw-bg: #b91c1c;
   --color-gfc-edge-true: #15803d;
   --color-gfc-edge-false: #b91c1c;
   --color-gfc-edge-loop: #7e22ce;
+  --color-gfc-edge-body: #7e22ce;
+  --color-gfc-edge-exit: #ea580c;
+  --color-gfc-edge-case: #ea580c;
+  --color-gfc-edge-default: #d97706;
+  --color-gfc-edge-try: #0d9488;
+  --color-gfc-edge-catch: #d97706;
+  --color-gfc-edge-finally: #64748b;
+  --color-gfc-edge-break: #ea580c;
+  --color-gfc-edge-continue: #7e22ce;
+  --color-gfc-edge-throw: #b91c1c;
 }
 
 :root.light .react-flow__handle.react-flow__handle-connecting,

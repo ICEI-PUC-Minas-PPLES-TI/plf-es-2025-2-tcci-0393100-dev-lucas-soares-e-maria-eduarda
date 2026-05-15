@@ -22,7 +22,17 @@ const TYPE_LABEL: Record<GFCNodeType, string> = {
   END: 'Fim',
   STATEMENT: 'Comando',
   DECISION: 'Decisão',
+  LOOP: 'Loop',
   RETURN: 'Retorno',
+  BREAK: 'Break',
+  CONTINUE: 'Continue',
+  THROW: 'Throw',
+  SWITCH: 'Switch',
+  CASE: 'Case',
+  TRY: 'Try',
+  CATCH: 'Catch',
+  FINALLY: 'Finally',
+  TERNARY: 'Ternário',
 };
 
 const TYPE_BADGE: Record<GFCNodeType, string> = {
@@ -30,7 +40,17 @@ const TYPE_BADGE: Record<GFCNodeType, string> = {
   END: 'bg-slate-500/15 text-slate-400 border-slate-500/40',
   STATEMENT: 'bg-blue-500/15 text-blue-400 border-blue-500/40',
   DECISION: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/40',
+  LOOP: 'bg-purple-500/15 text-purple-400 border-purple-500/40',
   RETURN: 'bg-red-500/15 text-red-400 border-red-500/40',
+  BREAK: 'bg-orange-500/15 text-orange-400 border-orange-500/40',
+  CONTINUE: 'bg-purple-500/15 text-purple-400 border-purple-500/40',
+  THROW: 'bg-red-500/15 text-red-400 border-red-500/40',
+  SWITCH: 'bg-orange-500/15 text-orange-400 border-orange-500/40',
+  CASE: 'bg-orange-500/15 text-orange-300 border-orange-500/30',
+  TRY: 'bg-teal-500/15 text-teal-400 border-teal-500/40',
+  CATCH: 'bg-amber-500/15 text-amber-400 border-amber-500/40',
+  FINALLY: 'bg-slate-500/15 text-slate-400 border-slate-500/40',
+  TERNARY: 'bg-fuchsia-500/15 text-fuchsia-400 border-fuchsia-500/40',
 };
 
 export function NodeInfoPanel({

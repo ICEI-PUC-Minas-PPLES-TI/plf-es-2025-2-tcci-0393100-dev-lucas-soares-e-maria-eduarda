@@ -66,7 +66,12 @@ export function computeDagreLayout(dto: GFCDTO): Record<string, Position> {
   dto.nodes.forEach((n) => {
     g.setNode(n.code, { width: NODE_WIDTH, height: NODE_HEIGHT });
   });
+  // Back-edges (loops/continue) confundem o Dagre mesmo com acyclicer — o ciclo
+  // empurra os nós do corpo do loop para cima do nó LOOP. Mantemos só o forward DAG;
+  // o React Flow renderiza essas arestas independentemente do layout.
+  const BACK_EDGES: ReadonlySet<GFCEdgeType> = new Set(['LOOP_BACK', 'CONTINUE_FLOW']);
   dto.edges.forEach((e) => {
+    if (BACK_EDGES.has(e.type)) return;
     g.setEdge(e.sourceNodeCode, e.targetNodeCode);
   });
 
@@ -96,7 +101,17 @@ const NODE_TYPE_TO_KIND: Record<GFCNodeType, GFCFlowNodeKind> = {
   END: 'end',
   STATEMENT: 'statement',
   DECISION: 'decision',
+  LOOP: 'loop',
   RETURN: 'return',
+  BREAK: 'break',
+  CONTINUE: 'continue',
+  THROW: 'throw',
+  SWITCH: 'switch',
+  CASE: 'case',
+  TRY: 'try',
+  CATCH: 'catch',
+  FINALLY: 'finally',
+  TERNARY: 'ternary',
 };
 
 export function dtoToFlowNodes(dto: GFCDTO): GFCFlowNode[] {
@@ -122,7 +137,7 @@ export function dtoToFlowEdges(dto: GFCDTO): GFCFlowEdge[] {
     source: edge.sourceNodeCode,
     target: edge.targetNodeCode,
     sourceHandle: sourceHandleFor(edge.type),
-    targetHandle: 'top',
+    targetHandle: targetHandleFor(edge.type),
     type: 'smoothstep',
     label: edgeLabel(edge.type, edge.label),
     data: {
@@ -133,6 +148,13 @@ export function dtoToFlowEdges(dto: GFCDTO): GFCFlowEdge[] {
   }));
 }
 
+function targetHandleFor(type: GFCEdgeType): string {
+  // Back-edges entram pelo handle dedicado do LoopNode para curvar pelo lado,
+  // em vez de empilhar no `top` junto da entrada principal do loop.
+  if (type === 'LOOP_BACK' || type === 'CONTINUE_FLOW') return 'loopback';
+  return 'top';
+}
+
 /**
  * Para o nó DECISÃO, escolhe o handle de saída com base no tipo de aresta.
  * - TRUE_BRANCH → handle esquerdo (verde)
@@ -141,18 +163,38 @@ export function dtoToFlowEdges(dto: GFCDTO): GFCFlowEdge[] {
  * - SEQUENTIAL e demais → handle inferior (default)
  */
 function sourceHandleFor(type: GFCEdgeType): string {
-  if (type === 'TRUE_BRANCH') return 'left';
-  if (type === 'FALSE_BRANCH') return 'right';
-  if (type === 'LOOP_BACK') return 'right';
-  return 'bottom';
+  switch (type) {
+    case 'TRUE_BRANCH': return 'left';
+    case 'FALSE_BRANCH': return 'right';
+    case 'LOOP_BACK': return 'bottom';
+    case 'LOOP_BODY': return 'bottom';
+    case 'LOOP_EXIT': return 'bottom';
+    case 'CATCH_BRANCH': return 'right';
+    case 'FINALLY_BRANCH': return 'bottom';
+    case 'THROW_FLOW': return 'right';
+    case 'BREAK_FLOW': return 'right';
+    case 'CONTINUE_FLOW': return 'left';
+    default: return 'bottom';
+  }
 }
 
 function edgeLabel(type: GFCEdgeType, raw: string | null): string {
   if (raw && raw.length > 0) return raw;
-  if (type === 'TRUE_BRANCH') return 'true';
-  if (type === 'FALSE_BRANCH') return 'false';
-  if (type === 'LOOP_BACK') return 'loop';
-  return '';
+  switch (type) {
+    case 'TRUE_BRANCH': return 'true';
+    case 'FALSE_BRANCH': return 'false';
+    case 'LOOP_BACK': return 'loop';
+    case 'LOOP_BODY': return 'body';
+    case 'LOOP_EXIT': return 'exit';
+    case 'DEFAULT_BRANCH': return 'default';
+    case 'TRY_BRANCH': return 'try';
+    case 'CATCH_BRANCH': return 'catch';
+    case 'FINALLY_BRANCH': return 'finally';
+    case 'BREAK_FLOW': return 'break';
+    case 'CONTINUE_FLOW': return 'continue';
+    case 'THROW_FLOW': return 'throw';
+    default: return '';
+  }
 }
 
 // ──────────────────────────────────────────────

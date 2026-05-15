@@ -4,8 +4,38 @@ import type { Node, Edge } from '@xyflow/react';
 // Backend enums (espelho de GfcNodeTypeEnum/GfcEdgeTypeEnum)
 // ──────────────────────────────────────────────
 
-export type GFCNodeType = 'START' | 'END' | 'STATEMENT' | 'DECISION' | 'RETURN';
-export type GFCEdgeType = 'SEQUENTIAL' | 'TRUE_BRANCH' | 'FALSE_BRANCH' | 'LOOP_BACK';
+export type GFCNodeType =
+  | 'START'
+  | 'END'
+  | 'STATEMENT'
+  | 'DECISION'
+  | 'LOOP'
+  | 'RETURN'
+  | 'BREAK'
+  | 'CONTINUE'
+  | 'THROW'
+  | 'SWITCH'
+  | 'CASE'
+  | 'TRY'
+  | 'CATCH'
+  | 'FINALLY'
+  | 'TERNARY';
+
+export type GFCEdgeType =
+  | 'SEQUENTIAL'
+  | 'TRUE_BRANCH'
+  | 'FALSE_BRANCH'
+  | 'LOOP_BACK'
+  | 'LOOP_BODY'
+  | 'LOOP_EXIT'
+  | 'CASE_BRANCH'
+  | 'DEFAULT_BRANCH'
+  | 'TRY_BRANCH'
+  | 'CATCH_BRANCH'
+  | 'FINALLY_BRANCH'
+  | 'BREAK_FLOW'
+  | 'CONTINUE_FLOW'
+  | 'THROW_FLOW';
 
 // ──────────────────────────────────────────────
 // Backend DTOs
@@ -120,7 +150,22 @@ export interface GFCFlowEdgeData extends Record<string, unknown> {
   label: string | null;
 }
 
-export type GFCFlowNodeKind = 'start' | 'end' | 'statement' | 'decision' | 'return';
+export type GFCFlowNodeKind =
+  | 'start'
+  | 'end'
+  | 'statement'
+  | 'decision'
+  | 'loop'
+  | 'return'
+  | 'break'
+  | 'continue'
+  | 'throw'
+  | 'switch'
+  | 'case'
+  | 'try'
+  | 'catch'
+  | 'finally'
+  | 'ternary';
 
 export type GFCFlowNode = Node<GFCFlowNodeData, GFCFlowNodeKind>;
 export type GFCFlowEdge = Edge<GFCFlowEdgeData>;
