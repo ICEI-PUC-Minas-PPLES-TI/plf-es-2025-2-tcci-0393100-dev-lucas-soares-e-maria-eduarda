@@ -192,7 +192,7 @@ button {
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15);
 }
 
-/* Scrollbar fininha temática (usar adicionando a classe .thin-scrollbar) */
+/* Scrollbar (usar adicionando a classe .thin-scrollbar) */
 .thin-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: color-mix(in srgb, var(--color-edge-hover) 60%, transparent) transparent;
@@ -237,7 +237,7 @@ button {
   100% { left: 100%; }
 }
 
-/* Botão inline de ação sobre métodos no SourceFileViewerModal */
+/* Botão inline de ação sobre métodos no SourceFileViewerModal. */
 .gfc-inline-action {
   display: inline-flex;
   align-items: center;
@@ -249,27 +249,39 @@ button {
   font-weight: 500;
   line-height: 1.4;
   color: var(--color-primary-light);
-  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-primary) 40%, transparent);
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 35%, transparent);
   border-radius: 0.25rem;
-  opacity: 0;
-  transition: opacity 0.15s ease, background 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
   vertical-align: middle;
   cursor: pointer;
 }
 
-.cm-line:hover .gfc-inline-action,
-.gfc-inline-action:focus-visible,
-.gfc-inline-action:hover {
-  opacity: 1;
-}
-
 .gfc-inline-action:hover:not(:disabled) {
   background: color-mix(in srgb, var(--color-primary) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-primary) 55%, transparent);
+}
+
+.gfc-inline-action:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
 .gfc-inline-action:disabled {
   cursor: wait;
-  opacity: 1;
   color: var(--color-edge-hover);
+  border-color: var(--color-edge);
+  background: transparent;
+}
+
+.gfc-inline-action__icon {
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.gfc-inline-action__icon--spin {
+  animation: gfc-spin 0.9s linear infinite;
+}
+
+@keyframes gfc-spin {
+  to { transform: rotate(360deg); }
 }

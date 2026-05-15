@@ -28,45 +28,55 @@ export function MethodCodePanel({
   const { theme } = useTheme();
   const [method, setMethod] = useState<GFCSourceMethodCodeDTO | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loadedKey, setLoadedKey] = useState<string | null>(null);
   const viewRef = useRef<EditorView | null>(null);
 
+  const fetchKey =
+    !isCollapsed && sourceFileId && methodSignature
+      ? `${sourceFileId}::${methodSignature}`
+      : null;
+
   useEffect(() => {
-    if (isCollapsed || !sourceFileId || !methodSignature) return;
+    if (!fetchKey || !sourceFileId || !methodSignature) return;
     let cancelled = false;
-    setLoading(true);
-    setMethod(null);
-    setError(null);
 
     SourceFileService.obterMetodo(sourceFileId, methodSignature)
       .then((data) => {
-        if (!cancelled) setMethod(data);
+        if (cancelled) return;
+        setMethod(data);
+        setError(null);
+        setLoadedKey(fetchKey);
       })
       .catch(() => {
-        if (!cancelled) setError('Erro ao carregar o código do método.');
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (cancelled) return;
+        setMethod(null);
+        setError('Erro ao carregar o código do método.');
+        setLoadedKey(fetchKey);
       });
 
     return () => {
       cancelled = true;
     };
-  }, [sourceFileId, methodSignature, isCollapsed]);
+  }, [fetchKey, sourceFileId, methodSignature]);
+
+  const isStale = fetchKey !== null && fetchKey !== loadedKey;
+  const displayMethod = isStale ? null : method;
+  const displayError = isStale ? null : error;
+  const loading = isStale;
 
   // Converte linhas absolutas do arquivo para linhas relativas ao método exibido,
   // dispara o destaque e rola até a primeira linha selecionada.
   useEffect(() => {
     const view = viewRef.current;
-    if (!view || !method) return;
+    if (!view || !displayMethod) return;
 
     if (selectedStartLine == null) {
       view.dispatch({ effects: setHighlightEffect.of(null) });
       return;
     }
 
-    const relStart = selectedStartLine - method.startLine + 1;
-    const relEnd = (selectedEndLine ?? selectedStartLine) - method.startLine + 1;
+    const relStart = selectedStartLine - displayMethod.startLine + 1;
+    const relEnd = (selectedEndLine ?? selectedStartLine) - displayMethod.startLine + 1;
     if (relStart < 1 || relStart > view.state.doc.lines) {
       view.dispatch({ effects: setHighlightEffect.of(null) });
       return;
@@ -79,7 +89,7 @@ export function MethodCodePanel({
         EditorView.scrollIntoView(view.state.doc.line(relStart).from, { y: 'center' }),
       ],
     });
-  }, [method, selectedStartLine, selectedEndLine]);
+  }, [displayMethod, selectedStartLine, selectedEndLine]);
 
   const extensions = useMemo(
     () => [
@@ -113,11 +123,11 @@ export function MethodCodePanel({
           <Code2 className="w-4 h-4 text-primary-light shrink-0" />
           <div className="min-w-0">
             <h2 className="text-sm text-gray-200 font-medium truncate">
-              {method?.name ?? 'Código do método'}
+              {displayMethod?.name ?? 'Código do método'}
             </h2>
-            {method && (
+            {displayMethod && (
               <p className="text-xs text-gray-500 truncate">
-                linhas {method.startLine}–{method.endLine}
+                linhas {displayMethod.startLine}–{displayMethod.endLine}
               </p>
             )}
           </div>
@@ -138,17 +148,17 @@ export function MethodCodePanel({
               Nenhum método associado a este GFC.
             </p>
           </div>
-        ) : error ? (
+        ) : displayError ? (
           <div className="h-full flex items-center justify-center p-4">
-            <p className="text-sm text-red-400 text-center">{error}</p>
+            <p className="text-sm text-red-400 text-center">{displayError}</p>
           </div>
-        ) : loading || method == null ? (
+        ) : loading || displayMethod == null ? (
           <div className="h-full flex items-center justify-center">
             <p className="text-gray-400 text-sm">Carregando código...</p>
           </div>
         ) : (
           <CodeMirror
-            value={method.sourceCode}
+            value={displayMethod.sourceCode}
             extensions={extensions}
             editable={false}
             readOnly
