@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlertTriangle, Plus, Trash2 } from 'lucide-react';
+import { AlertTriangle, FileCode, Plus, Trash2 } from 'lucide-react';
 import { Button } from '../../../components/Button';
 import { ConfirmModal } from '../../../components/ConfirmModal';
 import { ARTIFACT_TYPES } from '../../../shared/artifactTypes';
 import GFCService from '../../../services/GFC/GFCService';
-import type { GFCSummaryDTO } from '../types/gfc';
+import SourceFileService from '../../../services/GFC/SourceFileService';
+import type { GFCSourceFileDTO, GFCSummaryDTO } from '../types/gfc';
 
 interface GFCListProps {
   projectId: string;
@@ -15,14 +16,34 @@ interface GFCListProps {
 export function GFCList({ projectId, onCreateGFC }: GFCListProps) {
   const navigate = useNavigate();
   const [gfcs, setGfcs] = useState<GFCSummaryDTO[]>([]);
+  const [sourceFiles, setSourceFiles] = useState<GFCSourceFileDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<GFCSummaryDTO | null>(null);
 
   useEffect(() => {
-    GFCService.listarPorProjeto(projectId)
-      .then(setGfcs)
-      .finally(() => setLoading(false));
+    let cancelled = false;
+    Promise.all([
+      GFCService.listarPorProjeto(projectId),
+      SourceFileService.listarPorProjeto(projectId),
+    ])
+      .then(([gfcList, files]) => {
+        if (cancelled) return;
+        setGfcs(gfcList);
+        setSourceFiles(files);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [projectId]);
+
+  const fileNameById = useMemo(() => {
+    const map = new Map<string, string>();
+    sourceFiles.forEach((f) => map.set(f.id, f.fileName));
+    return map;
+  }, [sourceFiles]);
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
@@ -87,6 +108,15 @@ export function GFCList({ projectId, onCreateGFC }: GFCListProps) {
                 <p className="text-xs text-gray-500 mt-0.5 font-mono truncate" title={gfc.methodSignature}>
                   {gfc.methodSignature}
                 </p>
+                {fileNameById.get(gfc.sourceFileId) && (
+                  <p
+                    className="text-xs text-gray-500 mt-1.5 flex items-center gap-1 truncate font-mono"
+                    title={fileNameById.get(gfc.sourceFileId)}
+                  >
+                    <FileCode className="w-3 h-3 shrink-0 text-blue-400" />
+                    <span className="truncate">{fileNameById.get(gfc.sourceFileId)}</span>
+                  </p>
+                )}
                 {gfc.language && (
                   <p className="text-xs text-gray-600 mt-1">{gfc.language}</p>
                 )}
