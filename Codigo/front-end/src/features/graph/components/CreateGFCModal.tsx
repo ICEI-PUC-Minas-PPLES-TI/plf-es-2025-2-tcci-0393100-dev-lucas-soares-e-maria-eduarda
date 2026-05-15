@@ -6,6 +6,7 @@ import { Button } from '../../../components/Button';
 import SourceFileService from '../../../services/GFC/SourceFileService';
 import GFCService from '../../../services/GFC/GFCService';
 import ProjectService from '../../../services/Project/ProjectService';
+import { extractApiErrorMessage } from '../../../utils/apiError';
 import type { ProjectDTO } from '../../../services/Project/types/project';
 import type {
   GFCSourceFileDTO,
@@ -99,8 +100,8 @@ export function CreateGFCModal({ projectId: initialProjectId, onClose }: CreateG
       const { id } = await SourceFileService.upload(selectedProjectId, selectedFile);
       const file = await SourceFileService.buscarPorId(id);
       await loadMethodsFor(file);
-    } catch {
-      setError('Erro ao enviar o arquivo.');
+    } catch (err) {
+      setError(extractApiErrorMessage(err, 'Erro ao enviar o arquivo.'));
     } finally {
       setUploading(false);
     }
@@ -129,8 +130,8 @@ export function CreateGFCModal({ projectId: initialProjectId, onClose }: CreateG
       });
       onClose();
       navigate(`/projeto/${selectedProjectId}/gfc/${id}`);
-    } catch {
-      setError('Erro ao gerar o GFC.');
+    } catch (err) {
+      setError(extractApiErrorMessage(err, 'Erro ao gerar o GFC.'));
       setGenerating(false);
     }
   };
