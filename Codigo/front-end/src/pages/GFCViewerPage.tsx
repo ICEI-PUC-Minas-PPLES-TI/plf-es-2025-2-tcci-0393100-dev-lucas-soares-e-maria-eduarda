@@ -11,8 +11,7 @@ import { NodeInfoPanel } from '../features/graph/components/NodeInfoPanel';
 import { SourceFileViewerModal } from '../features/graph/components/SourceFileViewerModal';
 import { MethodCodePanel } from '../features/graph/components/MethodCodePanel';
 import {
-  dtoToFlowNodes,
-  dtoToFlowEdges,
+  buildFlowGraph,
   computeStats,
 } from '../features/graph/utils/gfcConverters';
 import GFCService from '../services/GFC/GFCService';
@@ -22,6 +21,8 @@ import type {
   GFCSummaryDTO,
   GFCSourceMethodDTO,
   GFCSourceFileDTO,
+  GFCFlowNode,
+  GFCFlowEdge,
 } from '../features/graph/types/gfc';
 import type { ProjectLayoutContext } from './ProjectLayout';
 
@@ -31,6 +32,8 @@ export function GFCViewerPage() {
   const navigate = useNavigate();
 
   const [gfc, setGfc] = useState<GFCDTO | null>(null);
+  const [flowNodes, setFlowNodes] = useState<GFCFlowNode[]>([]);
+  const [flowEdges, setFlowEdges] = useState<GFCFlowEdge[]>([]);
   const [sourceFile, setSourceFile] = useState<GFCSourceFileDTO | null>(null);
   const [methods, setMethods] = useState<GFCSourceMethodDTO[]>([]);
   const [projectGfcs, setProjectGfcs] = useState<GFCSummaryDTO[]>([]);
@@ -56,13 +59,16 @@ export function GFCViewerPage() {
     GFCService.buscarPorId(gfcId)
       .then(async (g) => {
         if (cancelled) return;
-        setGfc(g);
-        const [file, fileMethods, gfcs] = await Promise.all([
+        const [file, fileMethods, gfcs, graph] = await Promise.all([
           SourceFileService.buscarPorId(g.sourceFileId),
           SourceFileService.listarMetodos(g.sourceFileId),
           GFCService.listarPorProjeto(g.projectId),
+          buildFlowGraph(g),
         ]);
         if (cancelled) return;
+        setGfc(g);
+        setFlowNodes(graph.nodes);
+        setFlowEdges(graph.edges);
         setSourceFile(file);
         setMethods(fileMethods);
         setProjectGfcs(gfcs);
@@ -79,8 +85,6 @@ export function GFCViewerPage() {
     };
   }, [gfcId]);
 
-  const flowNodes = useMemo(() => (gfc ? dtoToFlowNodes(gfc) : []), [gfc]);
-  const flowEdges = useMemo(() => (gfc ? dtoToFlowEdges(gfc) : []), [gfc]);
   const stats = useMemo(
     () => (gfc ? computeStats(gfc) : { nodeCount: 0, edgeCount: 0, cyclomaticComplexity: 0 }),
     [gfc],
