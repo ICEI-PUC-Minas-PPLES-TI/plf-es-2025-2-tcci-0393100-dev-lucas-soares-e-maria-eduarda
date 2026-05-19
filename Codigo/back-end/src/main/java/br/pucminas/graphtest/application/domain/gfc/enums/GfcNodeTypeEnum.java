@@ -16,6 +16,7 @@ public enum GfcNodeTypeEnum {
     THROW,
     SWITCH,
     CASE,
+    CASE_BLOCK,
     TRY,
     CATCH,
     FINALLY,

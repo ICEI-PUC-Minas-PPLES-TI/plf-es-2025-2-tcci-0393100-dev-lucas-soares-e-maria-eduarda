@@ -407,9 +407,16 @@ class GfcPreviewGenerationServiceImplTest {
 
         assertTrue(graph.getNodes().stream().anyMatch(node -> node.getType() == GfcNodeTypeEnum.SWITCH
                 && node.getLabel().contains("switch (tipo)")));
-        assertEquals(3, graph.getNodes().stream().filter(node -> node.getType() == GfcNodeTypeEnum.CASE).count());
+        assertEquals(0, graph.getNodes().stream().filter(node -> node.getType() == GfcNodeTypeEnum.CASE).count());
+        assertEquals(3, graph.getNodes().stream().filter(node -> node.getType() == GfcNodeTypeEnum.CASE_BLOCK).count());
         assertEquals(2, graph.getEdges().stream().filter(edge -> edge.getType() == GfcEdgeTypeEnum.CASE_BRANCH).count());
         assertEquals(1, graph.getEdges().stream().filter(edge -> edge.getType() == GfcEdgeTypeEnum.DEFAULT_BRANCH).count());
+        assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getType() == GfcEdgeTypeEnum.CASE_BRANCH
+                && edge.getLabel().contains("case 1")
+                && graph.findNode(edge.getTargetNodeCode()).orElseThrow().getLabel().contains("executarA()")));
+        assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getType() == GfcEdgeTypeEnum.DEFAULT_BRANCH
+                && edge.getLabel().contains("default")
+                && graph.findNode(edge.getTargetNodeCode()).orElseThrow().getLabel().contains("executarPadrao()")));
         assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getType() == GfcEdgeTypeEnum.BREAK_FLOW
                 && graph.findNode(edge.getTargetNodeCode()).orElseThrow().getLabel().contains("proximo")));
     }
@@ -442,6 +449,11 @@ class GfcPreviewGenerationServiceImplTest {
                 .findFirst()
                 .orElseThrow()
                 .getCode();
+        assertEquals(0, graph.getNodes().stream().filter(node -> node.getType() == GfcNodeTypeEnum.CASE).count());
+        assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getSourceNodeCode().equals(switchCode)
+                && edge.getType() == GfcEdgeTypeEnum.CASE_BRANCH
+                && edge.getLabel().contains("case 1")
+                && graph.findNode(edge.getTargetNodeCode()).orElseThrow().getType() == GfcNodeTypeEnum.CASE_BLOCK));
         assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getSourceNodeCode().equals(switchCode)
                 && edge.getType() == GfcEdgeTypeEnum.SEQUENTIAL
                 && graph.findNode(edge.getTargetNodeCode()).orElseThrow().getLabel().contains("proximo")));
@@ -472,20 +484,68 @@ class GfcPreviewGenerationServiceImplTest {
 
         Gfc graph = service.generate(input);
 
-        String executarACode = graph.getNodes().stream()
+        String caseOneBlockCode = graph.getNodes().stream()
+                .filter(node -> node.getType() == GfcNodeTypeEnum.CASE_BLOCK)
                 .filter(node -> node.getLabel().contains("executarA"))
                 .findFirst()
                 .orElseThrow()
                 .getCode();
-        String caseTwoCode = graph.getNodes().stream()
-                .filter(node -> node.getType() == GfcNodeTypeEnum.CASE)
-                .filter(node -> node.getLabel().contains("case 2"))
+        String caseTwoBlockCode = graph.getNodes().stream()
+                .filter(node -> node.getType() == GfcNodeTypeEnum.CASE_BLOCK)
+                .filter(node -> node.getLabel().contains("executarB"))
                 .findFirst()
                 .orElseThrow()
                 .getCode();
-        assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getSourceNodeCode().equals(executarACode)
-                && edge.getTargetNodeCode().equals(caseTwoCode)
+        assertEquals(0, graph.getNodes().stream().filter(node -> node.getType() == GfcNodeTypeEnum.CASE).count());
+        assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getType() == GfcEdgeTypeEnum.CASE_BRANCH
+                && edge.getLabel().contains("case 1")
+                && edge.getTargetNodeCode().equals(caseOneBlockCode)));
+        assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getType() == GfcEdgeTypeEnum.CASE_BRANCH
+                && edge.getLabel().contains("case 2")
+                && edge.getTargetNodeCode().equals(caseTwoBlockCode)));
+        assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getSourceNodeCode().equals(caseOneBlockCode)
+                && edge.getTargetNodeCode().equals(caseTwoBlockCode)
                 && edge.getType() == GfcEdgeTypeEnum.SEQUENTIAL));
+    }
+
+    @Test
+    void shouldRouteGroupedEmptyCasesToSameCaseBlock() {
+        PreviewGfcInput input = new PreviewGfcInput(
+                UUID.randomUUID(),
+                "GFC grouped cases",
+                null,
+                """
+                        public class Exemplo {
+                            void executar(int tipo) {
+                                switch (tipo) {
+                                    case 1:
+                                    case 2:
+                                        executar();
+                                        break;
+                                }
+                                proximo();
+                            }
+                        }
+                        """,
+                null
+        );
+
+        Gfc graph = service.generate(input);
+
+        String caseBlockCode = graph.getNodes().stream()
+                .filter(node -> node.getType() == GfcNodeTypeEnum.CASE_BLOCK)
+                .filter(node -> node.getLabel().contains("executar()"))
+                .findFirst()
+                .orElseThrow()
+                .getCode();
+        assertEquals(1, graph.getNodes().stream().filter(node -> node.getType() == GfcNodeTypeEnum.CASE_BLOCK).count());
+        assertEquals(0, graph.getNodes().stream().filter(node -> node.getType() == GfcNodeTypeEnum.CASE).count());
+        assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getType() == GfcEdgeTypeEnum.CASE_BRANCH
+                && edge.getLabel().contains("case 1")
+                && edge.getTargetNodeCode().equals(caseBlockCode)));
+        assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getType() == GfcEdgeTypeEnum.CASE_BRANCH
+                && edge.getLabel().contains("case 2")
+                && edge.getTargetNodeCode().equals(caseBlockCode)));
     }
 
     @Test

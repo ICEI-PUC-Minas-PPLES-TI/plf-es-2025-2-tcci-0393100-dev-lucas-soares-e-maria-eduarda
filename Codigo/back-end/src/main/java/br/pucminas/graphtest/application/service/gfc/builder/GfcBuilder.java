@@ -23,7 +23,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -215,23 +217,25 @@ public class GfcBuilder {
         List<PendingEdge> propagatedControlExits = new ArrayList<>();
         Collection<PendingEdge> fallThroughExits = List.of();
         boolean hasDefault = false;
+        List<SwitchEntry> pendingEmptyEntries = new ArrayList<>();
 
         for (SwitchEntry entry : statement.getEntries()) {
-            GfcNode caseNode = createNode(GfcNodeTypeEnum.CASE, labelForSwitchEntry(entry), entry);
-            boolean defaultEntry = entry.getLabels().isEmpty();
-            hasDefault = hasDefault || defaultEntry;
-            addEdge(
-                    switchNode.getCode(),
-                    caseNode.getCode(),
-                    defaultEntry ? GfcEdgeTypeEnum.DEFAULT_BRANCH : GfcEdgeTypeEnum.CASE_BRANCH,
-                    caseNode.getLabel()
-            );
-            connectPendingEdges(normalExits(fallThroughExits), caseNode.getCode());
+            hasDefault = hasDefault || entry.getLabels().isEmpty();
+            if (entry.getStatements().isEmpty()) {
+                pendingEmptyEntries.add(entry);
+                continue;
+            }
 
-            Collection<PendingEdge> caseExits = processStatements(
-                    entry.getStatements(),
-                    List.of(new PendingEdge(caseNode.getCode(), GfcEdgeTypeEnum.SEQUENTIAL, null))
-            );
+            GfcNode caseBlockNode = createNode(GfcNodeTypeEnum.CASE_BLOCK, labelForCaseBlock(entry), entry);
+            Set<String> connectedBranchLabels = new HashSet<>();
+            for (SwitchEntry pendingEntry : pendingEmptyEntries) {
+                connectSwitchCaseBranch(switchNode, pendingEntry, caseBlockNode, connectedBranchLabels);
+            }
+            pendingEmptyEntries.clear();
+            connectSwitchCaseBranch(switchNode, entry, caseBlockNode, connectedBranchLabels);
+            connectPendingEdges(normalExits(fallThroughExits), caseBlockNode.getCode());
+
+            Collection<PendingEdge> caseExits = processCaseBlock(entry, caseBlockNode);
             breaks.addAll(breakExits(caseExits));
             propagatedControlExits.addAll(nonBreakControlFlowExits(caseExits));
             fallThroughExits = normalExits(caseExits);
@@ -245,6 +249,47 @@ public class GfcBuilder {
         exits.addAll(breakExitsAsNormal(breaks));
         exits.addAll(propagatedControlExits);
         return exits;
+    }
+
+    private void connectSwitchCaseBranch(GfcNode switchNode,
+                                         SwitchEntry entry,
+                                         GfcNode caseBlockNode,
+                                         Set<String> connectedBranchLabels) {
+        for (String label : branchLabelsForSwitchEntry(entry)) {
+            if (!connectedBranchLabels.add(label)) {
+                continue;
+            }
+            addEdge(
+                    switchNode.getCode(),
+                    caseBlockNode.getCode(),
+                    label.equals("default") ? GfcEdgeTypeEnum.DEFAULT_BRANCH : GfcEdgeTypeEnum.CASE_BRANCH,
+                    label
+            );
+        }
+    }
+
+    private Collection<PendingEdge> processCaseBlock(SwitchEntry entry, GfcNode caseBlockNode) {
+        if (isSimpleCaseBlock(entry)) {
+            if (hasTerminalBreak(entry)) {
+                return List.of(new PendingEdge(caseBlockNode.getCode(), GfcEdgeTypeEnum.BREAK_FLOW, "break", PendingEdgeKind.BREAK));
+            }
+            return List.of(new PendingEdge(caseBlockNode.getCode(), GfcEdgeTypeEnum.SEQUENTIAL, null));
+        }
+
+        return processStatements(
+                entry.getStatements(),
+                List.of(new PendingEdge(caseBlockNode.getCode(), GfcEdgeTypeEnum.SEQUENTIAL, null))
+        );
+    }
+
+    private boolean isSimpleCaseBlock(SwitchEntry entry) {
+        return entry.getStatements().stream()
+                .allMatch(statement -> statement.isExpressionStmt() || statement.isBreakStmt());
+    }
+
+    private boolean hasTerminalBreak(SwitchEntry entry) {
+        List<Statement> statements = entry.getStatements();
+        return !statements.isEmpty() && statements.getLast().isBreakStmt();
     }
 
     private Collection<PendingEdge> processTry(TryStmt statement, Collection<PendingEdge> incomingEdges) {
@@ -545,6 +590,12 @@ public class GfcBuilder {
     }
 
     private void addEdge(String sourceNodeCode, String targetNodeCode, GfcEdgeTypeEnum type, String label) {
+        if (edges.stream().anyMatch(edge -> edge.getSourceNodeCode().equals(sourceNodeCode)
+                && edge.getTargetNodeCode().equals(targetNodeCode)
+                && edge.getType() == type
+                && ((edge.getLabel() == null && label == null) || (edge.getLabel() != null && edge.getLabel().equals(label))))) {
+            return;
+        }
         edges.add(new GfcEdge(UUID.randomUUID(), sourceNodeCode, targetNodeCode, type, label));
     }
 
@@ -601,6 +652,21 @@ public class GfcBuilder {
         return compactLabel("case " + entry.getLabels().stream()
                 .map(this::codeWithoutComments)
                 .collect(Collectors.joining(", ")));
+    }
+
+    private List<String> branchLabelsForSwitchEntry(SwitchEntry entry) {
+        if (entry.getLabels().isEmpty()) {
+            return List.of("default");
+        }
+        return entry.getLabels().stream()
+                .map(label -> compactLabel("case " + codeWithoutComments(label)))
+                .toList();
+    }
+
+    private String labelForCaseBlock(SwitchEntry entry) {
+        return compactLabel(entry.getStatements().stream()
+                .map(this::codeWithoutComments)
+                .collect(Collectors.joining(System.lineSeparator())));
     }
 
     private String labelForTry() {

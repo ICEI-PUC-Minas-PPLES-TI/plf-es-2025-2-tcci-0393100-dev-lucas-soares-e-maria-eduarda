@@ -157,7 +157,7 @@ public class Gfc extends BaseEntity {
 
     private void ensureUniqueEdgeSignatures() {
         List<String> signatures = edges.stream()
-                .map(edge -> edge.getSourceNodeCode() + ":" + edge.getTargetNodeCode() + ":" + edge.getType())
+                .map(edge -> edge.getSourceNodeCode() + ":" + edge.getTargetNodeCode() + ":" + edge.getType() + ":" + edge.getLabel())
                 .toList();
         long uniqueSignatures = signatures.stream().distinct().count();
         if (uniqueSignatures != signatures.size()) {
