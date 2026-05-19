@@ -212,6 +212,7 @@ class GfcTest {
                 GfcNodeTypeEnum.THROW,
                 GfcNodeTypeEnum.SWITCH,
                 GfcNodeTypeEnum.CASE,
+                GfcNodeTypeEnum.CASE_BLOCK,
                 GfcNodeTypeEnum.TRY,
                 GfcNodeTypeEnum.CATCH,
                 GfcNodeTypeEnum.FINALLY,

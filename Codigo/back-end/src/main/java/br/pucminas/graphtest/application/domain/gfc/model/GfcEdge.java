@@ -4,6 +4,7 @@ import br.pucminas.graphtest.application.domain.gfc.enums.GfcEdgeTypeEnum;
 import br.pucminas.graphtest.application.domain.shared.model.BaseEntity;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 import static br.pucminas.graphtest.application.domain.gfc.rules.GfcDomainRules.normalizeOptionalText;
@@ -72,6 +73,7 @@ public class GfcEdge extends BaseEntity {
         return other != null
                 && sourceNodeCode.equals(other.sourceNodeCode)
                 && targetNodeCode.equals(other.targetNodeCode)
-                && type == other.type;
+                && type == other.type
+                && Objects.equals(label, other.label);
     }
 }
