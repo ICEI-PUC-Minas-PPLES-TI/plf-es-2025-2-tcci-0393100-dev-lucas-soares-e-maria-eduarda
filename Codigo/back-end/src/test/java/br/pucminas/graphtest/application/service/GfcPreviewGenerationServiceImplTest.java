@@ -419,6 +419,7 @@ class GfcPreviewGenerationServiceImplTest {
                 && graph.findNode(edge.getTargetNodeCode()).orElseThrow().getLabel().contains("executarPadrao()")));
         assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getType() == GfcEdgeTypeEnum.BREAK_FLOW
                 && graph.findNode(edge.getTargetNodeCode()).orElseThrow().getLabel().contains("proximo")));
+        assertNoCaseBlockToCaseBlockEdges(graph);
     }
 
     @Test
@@ -457,6 +458,7 @@ class GfcPreviewGenerationServiceImplTest {
         assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getSourceNodeCode().equals(switchCode)
                 && edge.getType() == GfcEdgeTypeEnum.SEQUENTIAL
                 && graph.findNode(edge.getTargetNodeCode()).orElseThrow().getLabel().contains("proximo")));
+        assertNoCaseBlockToCaseBlockEdges(graph);
     }
 
     @Test
@@ -504,8 +506,10 @@ class GfcPreviewGenerationServiceImplTest {
                 && edge.getLabel().contains("case 2")
                 && edge.getTargetNodeCode().equals(caseTwoBlockCode)));
         assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getSourceNodeCode().equals(caseOneBlockCode)
-                && edge.getTargetNodeCode().equals(caseTwoBlockCode)
-                && edge.getType() == GfcEdgeTypeEnum.SEQUENTIAL));
+                && graph.findNode(edge.getTargetNodeCode()).orElseThrow().getLabel().contains("proximo")));
+        assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getSourceNodeCode().equals(caseTwoBlockCode)
+                && graph.findNode(edge.getTargetNodeCode()).orElseThrow().getLabel().contains("proximo")));
+        assertNoCaseBlockToCaseBlockEdges(graph);
     }
 
     @Test
@@ -546,6 +550,7 @@ class GfcPreviewGenerationServiceImplTest {
         assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getType() == GfcEdgeTypeEnum.CASE_BRANCH
                 && edge.getLabel().contains("case 2")
                 && edge.getTargetNodeCode().equals(caseBlockCode)));
+        assertNoCaseBlockToCaseBlockEdges(graph);
     }
 
     @Test
@@ -1398,5 +1403,11 @@ class GfcPreviewGenerationServiceImplTest {
         GfcMethodNotFoundException exception = assertThrows(GfcMethodNotFoundException.class, () -> service.generate(input));
 
         assertTrue(exception.getMessage().contains("Metodo informado nao foi encontrado"));
+    }
+
+    private void assertNoCaseBlockToCaseBlockEdges(Gfc graph) {
+        assertTrue(graph.getEdges().stream().noneMatch(edge ->
+                graph.findNode(edge.getSourceNodeCode()).orElseThrow().getType() == GfcNodeTypeEnum.CASE_BLOCK
+                        && graph.findNode(edge.getTargetNodeCode()).orElseThrow().getType() == GfcNodeTypeEnum.CASE_BLOCK));
     }
 }
