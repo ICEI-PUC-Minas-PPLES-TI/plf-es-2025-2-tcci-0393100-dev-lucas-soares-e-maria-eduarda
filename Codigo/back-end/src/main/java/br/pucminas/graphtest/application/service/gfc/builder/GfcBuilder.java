@@ -23,9 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -214,57 +212,52 @@ public class GfcBuilder {
         connectPendingEdges(incomingEdges, switchNode.getCode());
 
         List<PendingEdge> breaks = new ArrayList<>();
-        List<PendingEdge> normalCaseExits = new ArrayList<>();
         List<PendingEdge> propagatedControlExits = new ArrayList<>();
+        Collection<PendingEdge> fallThroughExits = List.of();
         boolean hasDefault = false;
-        List<SwitchEntry> pendingEmptyEntries = new ArrayList<>();
+        List<String> pendingEmptyBranchLabels = new ArrayList<>();
 
         for (SwitchEntry entry : statement.getEntries()) {
             hasDefault = hasDefault || entry.getLabels().isEmpty();
+            List<String> entryBranchLabels = branchLabelsForSwitchEntry(entry);
             if (entry.getStatements().isEmpty()) {
-                pendingEmptyEntries.add(entry);
+                pendingEmptyBranchLabels.addAll(entryBranchLabels);
                 continue;
             }
 
+            List<String> branchLabels = new ArrayList<>(pendingEmptyBranchLabels);
+            branchLabels.addAll(entryBranchLabels);
+            pendingEmptyBranchLabels.clear();
+
             GfcNode caseBlockNode = createNode(GfcNodeTypeEnum.CASE_BLOCK, labelForCaseBlock(entry), entry);
-            Set<String> connectedBranchLabels = new HashSet<>();
-            for (SwitchEntry pendingEntry : pendingEmptyEntries) {
-                connectSwitchCaseBranch(switchNode, pendingEntry, caseBlockNode, connectedBranchLabels);
+            for (String branchLabel : branchLabels) {
+                connectSwitchCaseBranch(switchNode, branchLabel, caseBlockNode);
             }
-            pendingEmptyEntries.clear();
-            connectSwitchCaseBranch(switchNode, entry, caseBlockNode, connectedBranchLabels);
+            connectPendingEdges(normalExits(fallThroughExits), caseBlockNode.getCode());
 
             Collection<PendingEdge> caseExits = processCaseBlock(entry, caseBlockNode);
             breaks.addAll(breakExits(caseExits));
-            normalCaseExits.addAll(normalExits(caseExits));
             propagatedControlExits.addAll(nonBreakControlFlowExits(caseExits));
+            fallThroughExits = normalExits(caseExits);
         }
 
         List<PendingEdge> exits = new ArrayList<>();
         if (!hasDefault) {
             exits.add(new PendingEdge(switchNode.getCode(), GfcEdgeTypeEnum.SEQUENTIAL, null));
         }
-        exits.addAll(normalCaseExits);
+        exits.addAll(normalExits(fallThroughExits));
         exits.addAll(breakExitsAsNormal(breaks));
         exits.addAll(propagatedControlExits);
         return exits;
     }
 
-    private void connectSwitchCaseBranch(GfcNode switchNode,
-                                         SwitchEntry entry,
-                                         GfcNode caseBlockNode,
-                                         Set<String> connectedBranchLabels) {
-        for (String label : branchLabelsForSwitchEntry(entry)) {
-            if (!connectedBranchLabels.add(label)) {
-                continue;
-            }
-            addEdge(
-                    switchNode.getCode(),
-                    caseBlockNode.getCode(),
-                    label.equals("default") ? GfcEdgeTypeEnum.DEFAULT_BRANCH : GfcEdgeTypeEnum.CASE_BRANCH,
-                    label
-            );
-        }
+    private void connectSwitchCaseBranch(GfcNode switchNode, String branchLabel, GfcNode caseBlockNode) {
+        addEdge(
+                switchNode.getCode(),
+                caseBlockNode.getCode(),
+                branchLabel.equals("default") ? GfcEdgeTypeEnum.DEFAULT_BRANCH : GfcEdgeTypeEnum.CASE_BRANCH,
+                branchLabel
+        );
     }
 
     private Collection<PendingEdge> processCaseBlock(SwitchEntry entry, GfcNode caseBlockNode) {
