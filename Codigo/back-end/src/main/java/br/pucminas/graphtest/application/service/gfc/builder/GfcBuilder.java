@@ -214,8 +214,8 @@ public class GfcBuilder {
         connectPendingEdges(incomingEdges, switchNode.getCode());
 
         List<PendingEdge> breaks = new ArrayList<>();
+        List<PendingEdge> normalCaseExits = new ArrayList<>();
         List<PendingEdge> propagatedControlExits = new ArrayList<>();
-        Collection<PendingEdge> fallThroughExits = List.of();
         boolean hasDefault = false;
         List<SwitchEntry> pendingEmptyEntries = new ArrayList<>();
 
@@ -233,19 +233,18 @@ public class GfcBuilder {
             }
             pendingEmptyEntries.clear();
             connectSwitchCaseBranch(switchNode, entry, caseBlockNode, connectedBranchLabels);
-            connectPendingEdges(normalExits(fallThroughExits), caseBlockNode.getCode());
 
             Collection<PendingEdge> caseExits = processCaseBlock(entry, caseBlockNode);
             breaks.addAll(breakExits(caseExits));
+            normalCaseExits.addAll(normalExits(caseExits));
             propagatedControlExits.addAll(nonBreakControlFlowExits(caseExits));
-            fallThroughExits = normalExits(caseExits);
         }
 
         List<PendingEdge> exits = new ArrayList<>();
         if (!hasDefault) {
             exits.add(new PendingEdge(switchNode.getCode(), GfcEdgeTypeEnum.SEQUENTIAL, null));
         }
-        exits.addAll(normalExits(fallThroughExits));
+        exits.addAll(normalCaseExits);
         exits.addAll(breakExitsAsNormal(breaks));
         exits.addAll(propagatedControlExits);
         return exits;
