@@ -32,6 +32,11 @@ export function savePositions(gfcId: string, nodes: GFCFlowNode[]) {
   localStorage.setItem(positionsKey(gfcId), JSON.stringify(positions));
 }
 
+/** Apaga as posições manuais salvas para forçar o ELK a recalcular o layout. */
+export function clearPositions(gfcId: string) {
+  localStorage.removeItem(positionsKey(gfcId));
+}
+
 // ──────────────────────────────────────────────
 // Layout ELK (Eclipse Layout Kernel — layered/Sugiyama)
 // ──────────────────────────────────────────────
@@ -122,15 +127,23 @@ function portsForNode(nodeCode: string, type: GFCNodeType): ElkPort[] {
   return ports;
 }
 
+interface ELKLayoutResult {
+  positions: Record<string, Position>;
+  /** Bend points (cantos do roteamento ortogonal) por id de aresta do DTO. */
+  bendPoints: Record<string, Position[]>;
+}
+
 /**
  * Calcula posições usando ELK (algoritmo layered).
  * Roda em web worker dentro do elkjs (não bloqueia a UI).
  * Trata ciclos via `cycleBreaking: GREEDY` (loop_back/continue/break_flow ficam corretos).
- * Retorna coordenadas top-left, prontas para o React Flow.
+ * Retorna coordenadas top-left dos nós + bend points por aresta (usados pelo
+ * `OrthogonalEdge` pra evitar cruzamentos).
  */
-export async function computeELKLayout(dto: GFCDTO): Promise<Record<string, Position>> {
+export async function computeELKLayout(dto: GFCDTO): Promise<ELKLayoutResult> {
   const positions: Record<string, Position> = {};
-  if (dto.nodes.length === 0) return positions;
+  const bendPoints: Record<string, Position[]> = {};
+  if (dto.nodes.length === 0) return { positions, bendPoints };
 
   const children: ElkNode[] = dto.nodes.map((n) => {
     const size = NODE_SIZE[n.type] ?? { width: 200, height: 70 };
@@ -151,8 +164,10 @@ export async function computeELKLayout(dto: GFCDTO): Promise<Record<string, Posi
     };
   });
 
-  const elkEdges = dto.edges.map((e, idx) => ({
-    id: `e${idx}`,
+  // Usa o próprio id da aresta (UUID do backend) pra conseguir parear o
+  // resultado do ELK com `dto.edges` mantendo o mapa de bend points por edge.
+  const elkEdges = dto.edges.map((e) => ({
+    id: e.id,
     sources: [portId(e.sourceNodeCode, elkSourceHandleFor(e.type))],
     targets: [portId(e.targetNodeCode, targetHandleFor(e.type))],
   }));
@@ -167,6 +182,15 @@ export async function computeELKLayout(dto: GFCDTO): Promise<Record<string, Posi
     layout.children?.forEach((c) => {
       positions[c.id] = { x: c.x ?? 0, y: c.y ?? 0 };
     });
+    layout.edges?.forEach((e) => {
+      const section = e.sections?.[0];
+      if (!section) return;
+      const points: Position[] = [];
+      if (section.startPoint) points.push({ x: section.startPoint.x ?? 0, y: section.startPoint.y ?? 0 });
+      section.bendPoints?.forEach((p) => points.push({ x: p.x ?? 0, y: p.y ?? 0 }));
+      if (section.endPoint) points.push({ x: section.endPoint.x ?? 0, y: section.endPoint.y ?? 0 });
+      bendPoints[e.id] = points;
+    });
   } catch {
     // Fallback: tudo em 0,0 — usuário pode arrastar manualmente.
     dto.nodes.forEach((n) => {
@@ -174,7 +198,7 @@ export async function computeELKLayout(dto: GFCDTO): Promise<Record<string, Posi
     });
   }
 
-  return positions;
+  return { positions, bendPoints };
 }
 
 // ──────────────────────────────────────────────
@@ -211,11 +235,13 @@ export async function buildFlowGraph(
 ): Promise<{ nodes: GFCFlowNode[]; edges: GFCFlowEdge[] }> {
   const saved = loadPositions(dto.id);
   const allSaved = dto.nodes.every((n) => saved[n.code] != null);
-  const computed = allSaved ? {} : await computeELKLayout(dto);
+  const layout: ELKLayoutResult = allSaved
+    ? { positions: {}, bendPoints: {} }
+    : await computeELKLayout(dto);
 
   const positions: Record<string, Position> = {};
   dto.nodes.forEach((n) => {
-    positions[n.code] = saved[n.code] ?? computed[n.code] ?? { x: 0, y: 0 };
+    positions[n.code] = saved[n.code] ?? layout.positions[n.code] ?? { x: 0, y: 0 };
   });
 
   const nodes: GFCFlowNode[] = dto.nodes.map((node) => ({
@@ -234,18 +260,22 @@ export async function buildFlowGraph(
   const edges: GFCFlowEdge[] = dto.edges.map((edge) => {
     const src = positions[edge.sourceNodeCode] ?? { x: 0, y: 0 };
     const tgt = positions[edge.targetNodeCode] ?? { x: 0, y: 0 };
+    const bendPoints = layout.bendPoints[edge.id] ?? [];
     return {
       id: edge.id,
       source: edge.sourceNodeCode,
       target: edge.targetNodeCode,
       sourceHandle: sourceHandleFor(edge.type, src, tgt),
       targetHandle: targetHandleFor(edge.type),
-      type: 'smoothstep',
+      // Usa o roteamento ortogonal do ELK quando disponível; sem bend points cai
+      // pro smoothstep do React Flow (ex.: quando todas as posições vieram do localStorage).
+      type: bendPoints.length > 0 ? 'orthogonal' : 'smoothstep',
       label: edgeLabel(edge.type, edge.label),
       data: {
         edgeType: edge.type,
         backendId: edge.id,
         label: edge.label,
+        bendPoints,
       },
     };
   });
@@ -255,17 +285,17 @@ export async function buildFlowGraph(
 
 /**
  * Versão declarativa usada para alimentar o ELK (que ainda não conhece posições).
- * Dá ao ELK uma dica de qual lado da decisão/loop o branch sai, mesmo que o
- * resultado final possa ser ajustado em runtime por `sourceHandleFor`.
+ * Só forçamos left/right para `TRUE_BRANCH`/`FALSE_BRANCH` porque essas são as
+ * únicas que precisam dividir a saída de um losango. Pros outros tipos (break,
+ * continue, throw, case) deixamos `bottom` — assim o ELK posiciona o alvo abaixo,
+ * permitindo o layout em "leque" do switch/case (todos os bodies em uma fileira,
+ * convergindo num merge embaixo). A escolha final do handle visual é feita por
+ * `sourceHandleFor` em runtime, baseada na posição relativa.
  */
 function elkSourceHandleFor(type: GFCEdgeType): string {
   switch (type) {
     case 'TRUE_BRANCH': return 'left';
     case 'FALSE_BRANCH': return 'right';
-    case 'CATCH_BRANCH': return 'right';
-    case 'THROW_FLOW': return 'right';
-    case 'BREAK_FLOW': return 'right';
-    case 'CONTINUE_FLOW': return 'left';
     default: return 'bottom';
   }
 }

@@ -22,6 +22,7 @@ import { SwitchNode } from './nodes/SwitchNode';
 import { TernaryNode } from './nodes/TernaryNode';
 import { BlockNode } from './nodes/BlockNode';
 import { TerminatorNode } from './nodes/TerminatorNode';
+import { OrthogonalEdge } from './edges/OrthogonalEdge';
 import { GFCLegend } from './GFCLegend';
 import { GFCStats } from './GFCStats';
 import { savePositions, type GFCStats as Stats } from '../utils/gfcConverters';
@@ -54,7 +55,9 @@ const nodeTypes = {
   ternary: TernaryNode,
 };
 
-const edgeTypes: EdgeTypes = {};
+const edgeTypes: EdgeTypes = {
+  orthogonal: OrthogonalEdge,
+};
 
 function edgeStyle(type: string | undefined): { stroke: string; strokeWidth: number; strokeDasharray?: string } {
   switch (type) {

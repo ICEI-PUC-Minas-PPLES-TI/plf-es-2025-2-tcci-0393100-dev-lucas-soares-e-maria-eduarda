@@ -149,6 +149,8 @@ export interface GFCFlowEdgeData extends Record<string, unknown> {
   edgeType: GFCEdgeType;
   backendId: string;
   label: string | null;
+  /** Cantos ortogonais calculados pelo ELK; vazio se o layout veio do localStorage. */
+  bendPoints: { x: number; y: number }[];
 }
 
 export type GFCFlowNodeKind =

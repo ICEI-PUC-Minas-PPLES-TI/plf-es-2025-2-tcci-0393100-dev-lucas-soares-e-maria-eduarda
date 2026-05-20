@@ -1,4 +1,4 @@
-import { Trash2, FileCode, Code2 } from 'lucide-react';
+import { Trash2, FileCode, Code2, LayoutGrid, Loader2 } from 'lucide-react';
 import { Button } from '../../../components/Button';
 
 interface GFCToolbarProps {
@@ -10,6 +10,8 @@ interface GFCToolbarProps {
   canViewSource?: boolean;
   onViewMethod?: () => void;
   canViewMethod?: boolean;
+  onRelayout?: () => void;
+  relayoutLoading?: boolean;
 }
 
 export function GFCToolbar({
@@ -21,6 +23,8 @@ export function GFCToolbar({
   canViewSource = false,
   onViewMethod,
   canViewMethod = false,
+  onRelayout,
+  relayoutLoading = false,
 }: GFCToolbarProps) {
   return (
     <div className="h-12 bg-surface-card border-b border-edge flex items-center justify-between px-4 shrink-0">
@@ -39,6 +43,22 @@ export function GFCToolbar({
       </div>
 
       <div className="flex items-center gap-2 shrink-0">
+        {onRelayout && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={onRelayout}
+            disabled={relayoutLoading}
+            title="Recalcula a posição dos nós e descarta o layout manual salvo"
+          >
+            {relayoutLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <LayoutGrid className="w-4 h-4" />
+            )}
+            Reorganizar
+          </Button>
+        )}
         {canViewMethod && onViewMethod && (
           <Button size="sm" variant="outline" onClick={onViewMethod}>
             <Code2 className="w-4 h-4" />

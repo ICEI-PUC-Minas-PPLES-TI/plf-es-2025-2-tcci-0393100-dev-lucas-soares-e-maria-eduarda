@@ -13,6 +13,7 @@ import { MethodCodePanel } from '../features/graph/components/MethodCodePanel';
 import { GFCViewerSkeleton } from '../features/graph/components/GFCViewerSkeleton';
 import {
   buildFlowGraph,
+  clearPositions,
   computeStats,
 } from '../features/graph/utils/gfcConverters';
 import GFCService from '../services/GFC/GFCService';
@@ -46,6 +47,8 @@ export function GFCViewerPage() {
   const [showSourceModal, setShowSourceModal] = useState(false);
   const [sourceHighlight, setSourceHighlight] = useState<{ startLine: number; endLine: number } | null>(null);
   const [methodCodePanelCollapsed, setMethodCodePanelCollapsed] = useState(true);
+  const [relayoutLoading, setRelayoutLoading] = useState(false);
+  const [layoutVersion, setLayoutVersion] = useState(0);
 
   const [methodPanelCollapsed, setMethodPanelCollapsed] = useState(false);
   const [nodeInfoCollapsed, setNodeInfoCollapsed] = useState(false);
@@ -140,6 +143,21 @@ export function GFCViewerPage() {
     navigate(`/projeto/${projectId}`);
   };
 
+  const handleRelayout = async () => {
+    if (!gfc) return;
+    setRelayoutLoading(true);
+    try {
+      clearPositions(gfc.id);
+      const graph = await buildFlowGraph(gfc);
+      setFlowNodes(graph.nodes);
+      setFlowEdges(graph.edges);
+      // Força o GFCCanvas a remontar para reinicializar useNodesState com as novas posições.
+      setLayoutVersion((v) => v + 1);
+    } finally {
+      setRelayoutLoading(false);
+    }
+  };
+
   if (loading && !gfc) {
     return <GFCViewerSkeleton projectName={project.name} projectId={projectId ?? ''} />;
   }
@@ -177,6 +195,8 @@ export function GFCViewerPage() {
           canViewSource={!!sourceFile}
           onViewMethod={() => setMethodCodePanelCollapsed((v) => !v)}
           canViewMethod={!!sourceFile && !!gfc.methodSignature}
+          onRelayout={handleRelayout}
+          relayoutLoading={relayoutLoading}
         />
 
         {transitioning && (
@@ -200,7 +220,7 @@ export function GFCViewerPage() {
           />
 
           <GFCCanvas
-            key={gfc.id}
+            key={`${gfc.id}:${layoutVersion}`}
             gfcId={gfc.id}
             initialNodes={flowNodes}
             initialEdges={flowEdges}
