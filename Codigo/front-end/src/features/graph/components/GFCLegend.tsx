@@ -9,6 +9,7 @@ const NODE_ITEMS = [
   { label: 'Loop', shape: 'hex', color: 'var(--color-gfc-loop-bg)' },
   { label: 'Switch', shape: 'trapezoid', color: 'var(--color-gfc-switch-bg)' },
   { label: 'Case', shape: 'square', color: 'var(--color-gfc-case-bg)' },
+  { label: 'Corpo do Case', shape: 'square', color: 'var(--color-gfc-case-block-bg)' },
   { label: 'Try', shape: 'square', color: 'var(--color-gfc-try-bg)' },
   { label: 'Catch', shape: 'square', color: 'var(--color-gfc-catch-bg)' },
   { label: 'Finally', shape: 'square', color: 'var(--color-gfc-finally-bg)' },

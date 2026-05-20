@@ -10,6 +10,7 @@ interface BlockStyle {
 
 const STYLES: Partial<Record<GFCNodeType, BlockStyle>> = {
   CASE: { badge: 'case', fg: 'var(--color-gfc-case)', bg: 'var(--color-gfc-case-bg)' },
+  CASE_BLOCK: { badge: 'corpo do case', fg: 'var(--color-gfc-case-block)', bg: 'var(--color-gfc-case-block-bg)' },
   TRY: { badge: 'try', fg: 'var(--color-gfc-try)', bg: 'var(--color-gfc-try-bg)' },
   CATCH: { badge: 'catch', fg: 'var(--color-gfc-catch)', bg: 'var(--color-gfc-catch-bg)' },
   FINALLY: { badge: 'finally', fg: 'var(--color-gfc-finally)', bg: 'var(--color-gfc-finally-bg)' },
@@ -61,6 +62,7 @@ export const BlockNode = memo(function BlockNode({ data, selected }: NodeProps<G
       </div>
 
       <Handle id="bottom" type="source" position={Position.Bottom} className="w-2.5! h-2.5!" style={{ background: style.fg }} />
+      <Handle id="left" type="source" position={Position.Left} className="w-2.5! h-2.5!" style={{ background: style.fg }} />
       <Handle id="right" type="source" position={Position.Right} className="w-2.5! h-2.5!" style={{ background: style.fg }} />
     </div>
   );

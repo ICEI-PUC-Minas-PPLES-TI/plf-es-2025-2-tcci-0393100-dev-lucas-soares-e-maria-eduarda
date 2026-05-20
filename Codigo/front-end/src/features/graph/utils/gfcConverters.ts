@@ -53,6 +53,7 @@ const NODE_SIZE: Record<GFCNodeType, { width: number; height: number }> = {
   LOOP:      { width: 200, height: 90 },
   SWITCH:    { width: 210, height: 90 },
   CASE:      { width: 200, height: 70 },
+  CASE_BLOCK:{ width: 220, height: 90 },
   TRY:       { width: 200, height: 70 },
   CATCH:     { width: 200, height: 70 },
   FINALLY:   { width: 200, height: 70 },
@@ -109,7 +110,8 @@ function portsForNode(nodeCode: string, type: GFCNodeType): ElkPort[] {
     add('right', 'EAST');
     add('loopback', 'WEST');
   }
-  if (type === 'CASE' || type === 'TRY' || type === 'CATCH' || type === 'FINALLY') {
+  if (type === 'CASE' || type === 'CASE_BLOCK' || type === 'TRY' || type === 'CATCH' || type === 'FINALLY') {
+    add('left', 'WEST');
     add('right', 'EAST');
   }
   if (type === 'BREAK' || type === 'CONTINUE' || type === 'THROW') {
@@ -191,6 +193,7 @@ const NODE_TYPE_TO_KIND: Record<GFCNodeType, GFCFlowNodeKind> = {
   THROW: 'throw',
   SWITCH: 'switch',
   CASE: 'case',
+  CASE_BLOCK: 'caseBlock',
   TRY: 'try',
   CATCH: 'catch',
   FINALLY: 'finally',

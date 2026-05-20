@@ -39,6 +39,8 @@
   --color-gfc-switch-bg: #9a3412;
   --color-gfc-case: #fdba74;
   --color-gfc-case-bg: #7c2d12;
+  --color-gfc-case-block: #fb923c;
+  --color-gfc-case-block-bg: #9a3412;
   --color-gfc-try: #2dd4bf;
   --color-gfc-try-bg: #115e59;
   --color-gfc-catch: #fbbf24;
@@ -127,6 +129,8 @@
   --color-gfc-switch-bg: #ea580c;
   --color-gfc-case: #7c2d12;
   --color-gfc-case-bg: #f97316;
+  --color-gfc-case-block: #9a3412;
+  --color-gfc-case-block-bg: #ea580c;
   --color-gfc-try: #115e59;
   --color-gfc-try-bg: #0d9488;
   --color-gfc-catch: #92400e;

@@ -47,6 +47,7 @@ const nodeTypes = {
   throw: TerminatorNode,
   switch: SwitchNode,
   case: BlockNode,
+  caseBlock: BlockNode,
   try: BlockNode,
   catch: BlockNode,
   finally: BlockNode,
@@ -132,6 +133,7 @@ export function GFCCanvas({ gfcId, initialNodes, initialEdges, stats, onNodeSele
               case 'ternary': return 'var(--color-gfc-ternary)';
               case 'switch': return 'var(--color-gfc-switch)';
               case 'case': return 'var(--color-gfc-case)';
+              case 'caseBlock': return 'var(--color-gfc-case-block)';
               case 'try': return 'var(--color-gfc-try)';
               case 'catch': return 'var(--color-gfc-catch)';
               case 'finally': return 'var(--color-gfc-finally)';
