@@ -13,6 +13,8 @@ public class LogTopicsUtil {
 
     public static final String GCE_CONTROLLER = "GCE_CONTROLLER";
 
+    public static final String GFC_CONTROLLER = "GFC_CONTROLLER";
+
     public static final String TABELA_DECISAO_CONTROLLER = "TABELA_DECISAO_CONTROLLER";
 
     public static final String JWT = "JWT";

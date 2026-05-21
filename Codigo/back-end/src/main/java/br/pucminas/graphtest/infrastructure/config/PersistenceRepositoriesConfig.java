@@ -85,10 +85,17 @@ public class PersistenceRepositoriesConfig {
 
     @Bean
     public CommandLineRunner ensureNeo4jConstraints(Neo4jClient neo4jClient) {
-        return args -> neo4jClient.query("""
-                CREATE CONSTRAINT gce_node_graph_scoped_code_unique IF NOT EXISTS
-                FOR (node:GceNode)
-                REQUIRE node.graphScopedCode IS UNIQUE
-                """).run();
+        return args -> {
+            neo4jClient.query("""
+                    CREATE CONSTRAINT gce_node_graph_scoped_code_unique IF NOT EXISTS
+                    FOR (node:GceNode)
+                    REQUIRE node.graphScopedCode IS UNIQUE
+                    """).run();
+            neo4jClient.query("""
+                    CREATE CONSTRAINT gfc_node_graph_scoped_code_unique IF NOT EXISTS
+                    FOR (node:GfcNode)
+                    REQUIRE node.graphScopedCode IS UNIQUE
+                    """).run();
+        };
     }
 }

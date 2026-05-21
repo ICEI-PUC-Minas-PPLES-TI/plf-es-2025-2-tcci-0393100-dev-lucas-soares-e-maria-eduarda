@@ -134,6 +134,9 @@ public class GlobalExceptionHandler implements AuthenticationFailureHandler {
      * Erros de conversão
      */
     @ExceptionHandler({
+            EmptyJavaSourceCodeException.class,
+            InvalidJavaSourceCodeException.class,
+            JavaSourceFileException.class,
             IllegalArgumentException.class,
             MethodArgumentTypeMismatchException.class,
             HttpMessageNotReadableException.class

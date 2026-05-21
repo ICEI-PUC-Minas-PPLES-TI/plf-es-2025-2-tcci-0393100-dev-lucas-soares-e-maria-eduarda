@@ -12,6 +12,9 @@ import { ValidationWarnings } from '../features/projects/components/ValidationWa
 import { ProjectFormModal } from '../features/projects/components/ProjectFormModal';
 import { GCEFormModal } from '../features/gce/components/GCEFormModal';
 import { GCEList } from '../features/gce/components/GCEList';
+import { GFCList } from '../features/graph/components/GFCList';
+import { CreateGFCModal } from '../features/graph/components/CreateGFCModal';
+import { SourceFileList } from '../features/graph/components/SourceFileList';
 import { DecisionTableList } from '../features/decision-table/components/DecisionTableList';
 import { SelectGCEForTableModal } from '../features/decision-table/components/SelectGCEForTableModal';
 import ProjectService from '../services/Project/ProjectService';
@@ -24,6 +27,7 @@ export function ProjectPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showCreateGCEModal, setShowCreateGCEModal] = useState(false);
+  const [showCreateGFCModal, setShowCreateGFCModal] = useState(false);
   const [showSelectGCEModal, setShowSelectGCEModal] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -58,7 +62,11 @@ export function ProjectPage() {
         {activeTab === 'overview' && (
           <div className="container mx-auto px-6 py-6 flex gap-6">
             <div className="flex-1 space-y-6 min-w-0">
-              <QuickActions onCreateGCE={() => setShowCreateGCEModal(true)} onGenerateTable={() => setShowSelectGCEModal(true)} />
+              <QuickActions
+                onCreateGCE={() => setShowCreateGCEModal(true)}
+                onGenerateTable={() => setShowSelectGCEModal(true)}
+                onCreateGFC={() => setShowCreateGFCModal(true)}
+              />
               <RecentArtifacts projectId={project.id} />
               <ValidationWarnings />
             </div>
@@ -66,6 +74,17 @@ export function ProjectPage() {
               <ProjectSummary createdAt={project.createdAt} updatedAt={project.updatedAt} />
             </aside>
           </div>
+        )}
+
+        {activeTab === 'artifacts' && (
+          <SourceFileList projectId={project.id} />
+        )}
+
+        {activeTab === 'gfc' && (
+          <GFCList
+            projectId={project.id}
+            onCreateGFC={() => setShowCreateGFCModal(true)}
+          />
         )}
 
         {activeTab === 'gce' && (
@@ -106,6 +125,13 @@ export function ProjectPage() {
         <GCEFormModal
           projectId={project.id}
           onClose={() => setShowCreateGCEModal(false)}
+        />
+      )}
+
+      {showCreateGFCModal && (
+        <CreateGFCModal
+          projectId={project.id}
+          onClose={() => setShowCreateGFCModal(false)}
         />
       )}
 
