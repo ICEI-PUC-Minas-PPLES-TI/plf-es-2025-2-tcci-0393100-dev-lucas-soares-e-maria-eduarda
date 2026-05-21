@@ -74,7 +74,11 @@ const ELK_OPTIONS: Record<string, string> = {
   'elk.layered.spacing.nodeNodeBetweenLayers': '90',
   'elk.spacing.nodeNode': '60',
   'elk.layered.crossingMinimization.strategy': 'LAYER_SWEEP',
-  'elk.layered.cycleBreaking.strategy': 'GREEDY',
+  // DEPTH_FIRST faz DFS a partir do START: qualquer aresta que volte pra ancestral
+  // é marcada como back-edge. Pra CFGs (que sempre têm uma entrada clara), é mais
+  // confiável que GREEDY — esse último heurístico às vezes reverte uma forward-edge
+  // (ex.: LOOP_BODY) quando o nó LOOP tem várias entradas (SEQUENTIAL + LOOP_BACK + CONTINUE_FLOW).
+  'elk.layered.cycleBreaking.strategy': 'DEPTH_FIRST',
   'elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',
   'elk.edgeRouting': 'ORTHOGONAL',
   // Respeita o lado das portas declaradas em cada nó (decisão/loop/etc).
@@ -164,12 +168,20 @@ export async function computeELKLayout(dto: GFCDTO): Promise<ELKLayoutResult> {
     };
   });
 
+  // Back-edges semânticas: marcadas com prioridade baixa pra serem revertidas
+  // na fase de cycle breaking. Sem isso o GREEDY às vezes reverte uma forward-edge
+  // (ex.: `LOOP_BODY`) e o nó LOOP termina abaixo do próprio corpo.
+  const BACK_EDGE_TYPES: ReadonlySet<GFCEdgeType> = new Set(['LOOP_BACK', 'CONTINUE_FLOW']);
+
   // Usa o próprio id da aresta (UUID do backend) pra conseguir parear o
   // resultado do ELK com `dto.edges` mantendo o mapa de bend points por edge.
   const elkEdges = dto.edges.map((e) => ({
     id: e.id,
     sources: [portId(e.sourceNodeCode, elkSourceHandleFor(e.type))],
     targets: [portId(e.targetNodeCode, targetHandleFor(e.type))],
+    layoutOptions: BACK_EDGE_TYPES.has(e.type)
+      ? { 'elk.layered.priority.direction': '-1' }
+      : undefined,
   }));
 
   try {
