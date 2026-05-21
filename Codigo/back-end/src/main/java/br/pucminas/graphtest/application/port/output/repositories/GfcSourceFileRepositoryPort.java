@@ -18,4 +18,6 @@ public interface GfcSourceFileRepositoryPort {
     List<GfcSourceFile> findAllByProjectId(UUID projectId);
 
     void deleteById(UUID id);
+
+    void deleteAllByProjectId(UUID projectId);
 }

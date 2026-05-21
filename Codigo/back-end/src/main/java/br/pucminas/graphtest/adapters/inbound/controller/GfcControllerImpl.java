@@ -3,17 +3,20 @@ package br.pucminas.graphtest.adapters.inbound.controller;
 import br.pucminas.graphtest.adapters.inbound.controller.interfaces.GfcController;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.CreateGfcDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.CreateGfcResponseDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.gfc.CyclomaticComplexityResponseDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.DeleteGfcResponseDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcSummaryDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.PreviewGfcDTO;
 import br.pucminas.graphtest.adapters.inbound.util.GfcDtoConverterUtil;
 import br.pucminas.graphtest.application.port.input.gfc.CreateGfcUseCasePort;
+import br.pucminas.graphtest.application.port.input.gfc.CalculateCyclomaticComplexityUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.DeleteGfcUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.FindGfcByIdUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.ListGfcByProjectUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.PreviewGfcUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.records.CreateGfcOutput;
+import br.pucminas.graphtest.application.port.input.gfc.records.CyclomaticComplexityOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcSummaryOutput;
 import lombok.AllArgsConstructor;
@@ -54,6 +57,7 @@ public class GfcControllerImpl implements GfcController {
     private final FindGfcByIdUseCasePort findGfcByIdUseCasePort;
     private final ListGfcByProjectUseCasePort listGfcByProjectUseCasePort;
     private final PreviewGfcUseCasePort previewGfcUseCasePort;
+    private final CalculateCyclomaticComplexityUseCasePort calculateCyclomaticComplexityUseCasePort;
 
     @Override
     @PostMapping
@@ -99,5 +103,14 @@ public class GfcControllerImpl implements GfcController {
 
         GfcOutput graph = previewGfcUseCasePort.execute(toPreviewInput(request));
         return ResponseEntity.ok(toDto(graph));
+    }
+
+    @Override
+    @GetMapping(GFC_CYCLOMATIC_COMPLEXITY)
+    public ResponseEntity<CyclomaticComplexityResponseDTO> calculateCyclomaticComplexity(@PathVariable UUID gfcId) {
+        log.info(">>> calcularComplexidadeCiclomatica: recebendo requisicao para calcular complexidade ciclomatica");
+
+        CyclomaticComplexityOutput output = calculateCyclomaticComplexityUseCasePort.execute(gfcId);
+        return ResponseEntity.ok(toDto(output));
     }
 }

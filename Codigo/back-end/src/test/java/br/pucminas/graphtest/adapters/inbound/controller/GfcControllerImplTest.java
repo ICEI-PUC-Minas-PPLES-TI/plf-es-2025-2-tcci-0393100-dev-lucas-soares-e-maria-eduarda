@@ -2,17 +2,20 @@ package br.pucminas.graphtest.adapters.inbound.controller;
 
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.CreateGfcDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.CreateGfcResponseDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.gfc.CyclomaticComplexityResponseDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.DeleteGfcResponseDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcSummaryDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.PreviewGfcDTO;
 import br.pucminas.graphtest.application.port.input.gfc.CreateGfcUseCasePort;
+import br.pucminas.graphtest.application.port.input.gfc.CalculateCyclomaticComplexityUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.DeleteGfcUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.FindGfcByIdUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.ListGfcByProjectUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.PreviewGfcUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.records.CreateGfcInput;
 import br.pucminas.graphtest.application.port.input.gfc.records.CreateGfcOutput;
+import br.pucminas.graphtest.application.port.input.gfc.records.CyclomaticComplexityOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcSummaryOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.PreviewGfcInput;
@@ -51,6 +54,9 @@ class GfcControllerImplTest {
 
     @Mock
     private PreviewGfcUseCasePort previewGfcUseCasePort;
+
+    @Mock
+    private CalculateCyclomaticComplexityUseCasePort calculateCyclomaticComplexityUseCasePort;
 
     @InjectMocks
     private GfcControllerImpl controller;
@@ -181,5 +187,36 @@ class GfcControllerImplTest {
         assertEquals(output.projectId(), response.getBody().projectId());
         assertEquals(output.name(), response.getBody().name());
         assertEquals(output.methodSignature(), response.getBody().methodSignature());
+    }
+
+    @Test
+    void shouldCalculateCyclomaticComplexityThroughInputPort() {
+        UUID gfcId = UUID.randomUUID();
+        CyclomaticComplexityOutput output = new CyclomaticComplexityOutput(
+                gfcId,
+                10,
+                15,
+                6,
+                7,
+                7,
+                "V(G) = e - n + 2",
+                "V(G) = P + 1",
+                List.of("Aviso")
+        );
+        when(calculateCyclomaticComplexityUseCasePort.execute(gfcId)).thenReturn(output);
+
+        ResponseEntity<CyclomaticComplexityResponseDTO> response = controller.calculateCyclomaticComplexity(gfcId);
+
+        verify(calculateCyclomaticComplexityUseCasePort).execute(gfcId);
+        assertEquals(OK, response.getStatusCode());
+        assertEquals(gfcId, response.getBody().gfcId());
+        assertEquals(10, response.getBody().nodesCount());
+        assertEquals(15, response.getBody().edgesCount());
+        assertEquals(6, response.getBody().predicateNodesCount());
+        assertEquals(7, response.getBody().cyclomaticComplexityByEdgesAndNodes());
+        assertEquals(7, response.getBody().cyclomaticComplexityByPredicateNodes());
+        assertEquals("V(G) = e - n + 2", response.getBody().formulaByEdgesAndNodes());
+        assertEquals("V(G) = P + 1", response.getBody().formulaByPredicateNodes());
+        assertEquals(List.of("Aviso"), response.getBody().warnings());
     }
 }

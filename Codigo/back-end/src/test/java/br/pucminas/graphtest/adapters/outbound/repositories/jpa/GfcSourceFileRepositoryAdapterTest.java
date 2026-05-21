@@ -81,4 +81,13 @@ class GfcSourceFileRepositoryAdapterTest {
 
         verify(jpaGfcSourceFileRepository).deleteById(sourceFileId);
     }
+
+    @Test
+    void shouldDeleteAllSourceFilesByProjectId() {
+        UUID projectId = UUID.randomUUID();
+
+        adapter.deleteAllByProjectId(projectId);
+
+        verify(jpaGfcSourceFileRepository).deleteAllByProjectId(projectId);
+    }
 }

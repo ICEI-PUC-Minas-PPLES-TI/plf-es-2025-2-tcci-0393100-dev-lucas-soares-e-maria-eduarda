@@ -42,4 +42,9 @@ public class GfcSourceFileRepositoryAdapter implements GfcSourceFileRepositoryPo
     public void deleteById(UUID id) {
         jpaGfcSourceFileRepository.deleteById(id);
     }
+
+    @Override
+    public void deleteAllByProjectId(UUID projectId) {
+        jpaGfcSourceFileRepository.deleteAllByProjectId(projectId);
+    }
 }

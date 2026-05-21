@@ -112,6 +112,17 @@ class GfcRepositoryAdapterTest {
     }
 
     @Test
+    void shouldDeleteAllGraphsByProjectIdUsingExplicitNeo4jQuery() {
+        GfcRepositoryAdapter adapter = new GfcRepositoryAdapter(neo4jGfcRepository, mapper);
+        UUID projectId = UUID.randomUUID();
+        doNothing().when(neo4jGfcRepository).deleteAllByProjectId(projectId);
+
+        adapter.deleteAllByProjectId(projectId);
+
+        verify(neo4jGfcRepository).deleteAllByProjectId(projectId);
+    }
+
+    @Test
     void shouldMapAdvancedControlFlowEnumValuesToNeo4jEntity() {
         UUID graphId = UUID.randomUUID();
         UUID projectId = UUID.randomUUID();

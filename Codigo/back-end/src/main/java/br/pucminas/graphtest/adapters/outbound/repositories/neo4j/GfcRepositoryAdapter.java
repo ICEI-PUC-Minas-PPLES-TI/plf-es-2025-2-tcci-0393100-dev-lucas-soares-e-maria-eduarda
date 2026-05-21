@@ -47,6 +47,11 @@ public class GfcRepositoryAdapter implements GfcRepositoryPort {
     }
 
     @Override
+    public void deleteAllByProjectId(UUID projectId) {
+        neo4jGfcRepository.deleteAllByProjectId(projectId);
+    }
+
+    @Override
     public void deleteAllBySourceFileId(UUID sourceFileId) {
         neo4jGfcRepository.deleteAllBySourceFileId(sourceFileId);
     }
