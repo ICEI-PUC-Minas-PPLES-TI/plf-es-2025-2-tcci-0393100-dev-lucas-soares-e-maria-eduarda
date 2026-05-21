@@ -21,6 +21,53 @@
   --color-node-selected: #58a6ff;
   --color-node-error: #f85149;
   --color-edge-negation: #f85149;
+
+  /* GFC — Grafo de Fluxo de Controle */
+  --color-gfc-start: #3fb950;
+  --color-gfc-start-bg: #1f6f33;
+  --color-gfc-end: #94a3b8;
+  --color-gfc-end-bg: #475569;
+  --color-gfc-statement: #58a6ff;
+  --color-gfc-statement-bg: #1f4e8a;
+  --color-gfc-decision: #eab308;
+  --color-gfc-decision-bg: #a16207;
+  --color-gfc-loop: #c084fc;
+  --color-gfc-loop-bg: #5b21b6;
+  --color-gfc-ternary: #f0abfc;
+  --color-gfc-ternary-bg: #86198f;
+  --color-gfc-switch: #fb923c;
+  --color-gfc-switch-bg: #9a3412;
+  --color-gfc-case: #fdba74;
+  --color-gfc-case-bg: #7c2d12;
+  --color-gfc-case-block: #fb923c;
+  --color-gfc-case-block-bg: #9a3412;
+  --color-gfc-try: #2dd4bf;
+  --color-gfc-try-bg: #115e59;
+  --color-gfc-catch: #fbbf24;
+  --color-gfc-catch-bg: #92400e;
+  --color-gfc-finally: #94a3b8;
+  --color-gfc-finally-bg: #334155;
+  --color-gfc-return: #f85149;
+  --color-gfc-return-bg: #a52821;
+  --color-gfc-break: #fb923c;
+  --color-gfc-break-bg: #9a3412;
+  --color-gfc-continue: #c084fc;
+  --color-gfc-continue-bg: #5b21b6;
+  --color-gfc-throw: #f87171;
+  --color-gfc-throw-bg: #7f1d1d;
+  --color-gfc-edge-true: #3fb950;
+  --color-gfc-edge-false: #f85149;
+  --color-gfc-edge-loop: #a855f7;
+  --color-gfc-edge-body: #c084fc;
+  --color-gfc-edge-exit: #fb923c;
+  --color-gfc-edge-case: #fb923c;
+  --color-gfc-edge-default: #fbbf24;
+  --color-gfc-edge-try: #2dd4bf;
+  --color-gfc-edge-catch: #fbbf24;
+  --color-gfc-edge-finally: #94a3b8;
+  --color-gfc-edge-break: #fb923c;
+  --color-gfc-edge-continue: #c084fc;
+  --color-gfc-edge-throw: #f87171;
 }
 
 :root {
@@ -64,6 +111,53 @@
   --color-gray-700: #cbd5e1;
   --color-gray-800: #e2e8f0;
   --color-gray-900: #f1f5f9;
+
+  /* GFC — fundos saturados o suficiente para manter texto branco legível no tema claro */
+  --color-gfc-start: #15803d;
+  --color-gfc-start-bg: #16a34a;
+  --color-gfc-end: #475569;
+  --color-gfc-end-bg: #64748b;
+  --color-gfc-statement: #1d4ed8;
+  --color-gfc-statement-bg: #2563eb;
+  --color-gfc-decision: #a16207;
+  --color-gfc-decision-bg: #ca8a04;
+  --color-gfc-loop: #6b21a8;
+  --color-gfc-loop-bg: #7e22ce;
+  --color-gfc-ternary: #86198f;
+  --color-gfc-ternary-bg: #a21caf;
+  --color-gfc-switch: #9a3412;
+  --color-gfc-switch-bg: #ea580c;
+  --color-gfc-case: #7c2d12;
+  --color-gfc-case-bg: #f97316;
+  --color-gfc-case-block: #9a3412;
+  --color-gfc-case-block-bg: #ea580c;
+  --color-gfc-try: #115e59;
+  --color-gfc-try-bg: #0d9488;
+  --color-gfc-catch: #92400e;
+  --color-gfc-catch-bg: #d97706;
+  --color-gfc-finally: #334155;
+  --color-gfc-finally-bg: #64748b;
+  --color-gfc-return: #b91c1c;
+  --color-gfc-return-bg: #dc2626;
+  --color-gfc-break: #9a3412;
+  --color-gfc-break-bg: #ea580c;
+  --color-gfc-continue: #6b21a8;
+  --color-gfc-continue-bg: #7e22ce;
+  --color-gfc-throw: #7f1d1d;
+  --color-gfc-throw-bg: #b91c1c;
+  --color-gfc-edge-true: #15803d;
+  --color-gfc-edge-false: #b91c1c;
+  --color-gfc-edge-loop: #7e22ce;
+  --color-gfc-edge-body: #7e22ce;
+  --color-gfc-edge-exit: #ea580c;
+  --color-gfc-edge-case: #ea580c;
+  --color-gfc-edge-default: #d97706;
+  --color-gfc-edge-try: #0d9488;
+  --color-gfc-edge-catch: #d97706;
+  --color-gfc-edge-finally: #64748b;
+  --color-gfc-edge-break: #ea580c;
+  --color-gfc-edge-continue: #7e22ce;
+  --color-gfc-edge-throw: #b91c1c;
 }
 
 :root.light .react-flow__handle.react-flow__handle-connecting,
@@ -100,4 +194,98 @@ button {
 .react-flow__handle.react-flow__handle-valid {
   opacity: 1 !important;
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15);
+}
+
+/* Scrollbar (usar adicionando a classe .thin-scrollbar) */
+.thin-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--color-edge-hover) 60%, transparent) transparent;
+}
+
+.thin-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-edge-hover) 50%, transparent);
+  border-radius: 999px;
+  transition: background 0.15s ease;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--color-edge-hover);
+}
+
+.thin-scrollbar::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Destaque de linhas no CodeMirror ao selecionar um nó do GFC */
+.gfc-highlight-line {
+  background: color-mix(in srgb, var(--color-primary) 22%, transparent);
+  box-shadow: inset 3px 0 0 var(--color-primary);
+}
+
+:root.light .gfc-highlight-line {
+  background: color-mix(in srgb, var(--color-primary) 18%, transparent);
+}
+
+/* Barra de progresso indeterminada usada no GFCViewerPage durante transição */
+@keyframes gfc-progress {
+  0% { left: -33%; }
+  100% { left: 100%; }
+}
+
+/* Botão inline de ação sobre métodos no SourceFileViewerModal. */
+.gfc-inline-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-left: 0.75rem;
+  padding: 0.0625rem 0.5rem;
+  font-size: 0.6875rem;
+  font-family: inherit;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--color-primary-light);
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 35%, transparent);
+  border-radius: 0.25rem;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+.gfc-inline-action:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-primary) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-primary) 55%, transparent);
+}
+
+.gfc-inline-action:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.gfc-inline-action:disabled {
+  cursor: wait;
+  color: var(--color-edge-hover);
+  border-color: var(--color-edge);
+  background: transparent;
+}
+
+.gfc-inline-action__icon {
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.gfc-inline-action__icon--spin {
+  animation: gfc-spin 0.9s linear infinite;
+}
+
+@keyframes gfc-spin {
+  to { transform: rotate(360deg); }
 }

@@ -5,6 +5,7 @@ import { useTheme } from '../../../context/ThemeContext';
 interface QuickActionsProps {
   onCreateGCE?: () => void;
   onGenerateTable?: () => void;
+  onCreateGFC?: () => void;
 }
 
 const actions = [
@@ -46,13 +47,14 @@ const actions = [
   },
 ];
 
-export function QuickActions({ onCreateGCE, onGenerateTable }: QuickActionsProps) {
+export function QuickActions({ onCreateGCE, onGenerateTable, onCreateGFC }: QuickActionsProps) {
   const { theme } = useTheme();
   const isLight = theme === 'light';
 
   const handleClick = (id: string) => {
     if (id === 'gce') onCreateGCE?.();
     if (id === 'table') onGenerateTable?.();
+    if (id === 'gfc') onCreateGFC?.();
   };
 
   return (

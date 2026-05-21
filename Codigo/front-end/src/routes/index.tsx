@@ -6,6 +6,7 @@ import { ProjectLayout } from '../pages/ProjectLayout';
 import { ProjectPage } from '../pages/ProjectPage';
 import { GCEEditorPage } from '../pages/GCEEditorPage';
 import { DecisionTablePage } from '../pages/DecisionTablePage';
+import { GFCViewerPage } from '../pages/GFCViewerPage';
 import { useAuth } from '../context/AuthContext';
 import type { ReactNode } from 'react';
 
@@ -25,6 +26,7 @@ export function AppRouter() {
           <Route index element={<ProjectPage />} />
           <Route path="gce/:gceId" element={<GCEEditorPage />} />
           <Route path="gce/:gceId/tabela-decisao" element={<DecisionTablePage />} />
+          <Route path="gfc/:gfcId" element={<GFCViewerPage />} />
         </Route>
         <Route path="/" element={<Navigate to="/homepage" replace />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
