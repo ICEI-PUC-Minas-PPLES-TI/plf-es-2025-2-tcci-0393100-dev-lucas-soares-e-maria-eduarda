@@ -72,7 +72,14 @@ const ELK_OPTIONS: Record<string, string> = {
   'elk.algorithm': 'layered',
   'elk.direction': 'DOWN',
   'elk.layered.spacing.nodeNodeBetweenLayers': '90',
-  'elk.spacing.nodeNode': '60',
+  'elk.spacing.nodeNode': '80',
+  // Reserva folga lateral entre os canais de aresta e os nós da camada vizinha.
+  // Sem isso o ELK cola o canal vertical de uma `FALSE_BRANCH` (que atravessa
+  // a camada do `THEN`) na borda do nó do `THEN`, e visualmente parece que a
+  // aresta passa por cima do nó.
+  'elk.spacing.edgeNode': '35',
+  'elk.layered.spacing.edgeNodeBetweenLayers': '40',
+  'elk.layered.spacing.edgeEdgeBetweenLayers': '20',
   'elk.layered.crossingMinimization.strategy': 'LAYER_SWEEP',
   // DEPTH_FIRST faz DFS a partir do START: qualquer aresta que volte pra ancestral
   // é marcada como back-edge. Pra CFGs (que sempre têm uma entrada clara), é mais
@@ -270,14 +277,12 @@ export async function buildFlowGraph(
   }));
 
   const edges: GFCFlowEdge[] = dto.edges.map((edge) => {
-    const src = positions[edge.sourceNodeCode] ?? { x: 0, y: 0 };
-    const tgt = positions[edge.targetNodeCode] ?? { x: 0, y: 0 };
     const bendPoints = layout.bendPoints[edge.id] ?? [];
     return {
       id: edge.id,
       source: edge.sourceNodeCode,
       target: edge.targetNodeCode,
-      sourceHandle: sourceHandleFor(edge.type, src, tgt),
+      sourceHandle: sourceHandleFor(edge.type),
       targetHandle: targetHandleFor(edge.type),
       // Usa o roteamento ortogonal do ELK quando disponível; sem bend points cai
       // pro smoothstep do React Flow (ex.: quando todas as posições vieram do localStorage).
@@ -320,34 +325,16 @@ function targetHandleFor(type: GFCEdgeType): string {
 }
 
 /**
- * Escolhe a porta de saída baseada na posição relativa do alvo. Para branches
- * (true/false, break, throw, etc.) o ELK pode colocar o alvo de qualquer lado;
- * pegar a porta correspondente evita que a aresta cruze por cima do losango.
+ * Handle visual do React Flow. Tem que bater exatamente com a porta declarada
+ * em `elkSourceHandleFor` — se divergir, `sourceX/sourceY` (posição do handle)
+ * fica em um lado do nó enquanto os bend points do ELK começam em outro, e o
+ * primeiro segmento da aresta vira uma diagonal cortando o nó.
+ *
+ * Com `elk.portConstraints: FIXED_SIDE`, o ELK posiciona os alvos respeitando
+ * o lado declarado da porta, então não precisamos escolher dinamicamente.
  */
-function sourceHandleFor(type: GFCEdgeType, src: Position, tgt: Position): string {
-  const HORIZ_TOLERANCE = 20;
-  const onRight = tgt.x > src.x + HORIZ_TOLERANCE;
-  const onLeft = tgt.x < src.x - HORIZ_TOLERANCE;
-
-  switch (type) {
-    case 'TRUE_BRANCH':
-      return onRight ? 'right' : 'left';
-    case 'FALSE_BRANCH':
-      return onLeft ? 'left' : 'right';
-    case 'CATCH_BRANCH':
-    case 'THROW_FLOW':
-    case 'BREAK_FLOW':
-      return onLeft ? 'left' : onRight ? 'right' : 'bottom';
-    case 'CONTINUE_FLOW':
-      return onRight ? 'right' : 'left';
-    case 'LOOP_BACK':
-    case 'LOOP_BODY':
-    case 'LOOP_EXIT':
-    case 'FINALLY_BRANCH':
-      return 'bottom';
-    default:
-      return 'bottom';
-  }
+function sourceHandleFor(type: GFCEdgeType): string {
+  return elkSourceHandleFor(type);
 }
 
 function edgeLabel(type: GFCEdgeType, raw: string | null): string {
