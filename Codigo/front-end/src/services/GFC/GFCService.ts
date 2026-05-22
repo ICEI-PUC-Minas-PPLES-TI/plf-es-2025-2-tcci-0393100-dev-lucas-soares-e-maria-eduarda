@@ -2,6 +2,7 @@ import { BaseService } from '../BaseService';
 import type {
   GFCDTO,
   GFCSummaryDTO,
+  GFCCyclomaticComplexityDTO,
   CreateGFCRequest,
   CreateGFCResponse,
 } from '../../features/graph/types/gfc';
@@ -26,6 +27,13 @@ class GFCService extends BaseService {
 
   deletar = async (id: string): Promise<void> => {
     await this.delete(`${BASE}/${id}`);
+  };
+
+  obterComplexidade = async (gfcId: string): Promise<GFCCyclomaticComplexityDTO> => {
+    const res = await this.get<GFCCyclomaticComplexityDTO>(
+      `${BASE}/${gfcId}/complexidade-ciclomatica`,
+    );
+    return res.data;
   };
 }
 
