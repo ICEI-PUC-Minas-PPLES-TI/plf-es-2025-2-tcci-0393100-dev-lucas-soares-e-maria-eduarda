@@ -145,7 +145,7 @@ class GfcDtoConverterUtilTest {
                 6,
                 7,
                 7,
-                "V(G) = e - n + 2",
+                "V(G) = a - n + 2",
                 "V(G) = P + 1",
                 List.of("Aviso")
         );
@@ -158,7 +158,7 @@ class GfcDtoConverterUtilTest {
         assertEquals(6, dto.predicateNodesCount());
         assertEquals(7, dto.cyclomaticComplexityByEdgesAndNodes());
         assertEquals(7, dto.cyclomaticComplexityByPredicateNodes());
-        assertEquals("V(G) = e - n + 2", dto.formulaByEdgesAndNodes());
+        assertEquals("V(G) = a - n + 2", dto.formulaByEdgesAndNodes());
         assertEquals("V(G) = P + 1", dto.formulaByPredicateNodes());
         assertEquals(List.of("Aviso"), dto.warnings());
     }

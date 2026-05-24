@@ -34,7 +34,8 @@ class CalculateCyclomaticComplexityUseCaseImplTest {
 
     private static final UUID PROJECT_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private static final UUID SOURCE_FILE_ID = UUID.fromString("00000000-0000-0000-0000-000000000002");
-    private static final String INCONSISTENT_FORMULAS_WARNING = "Os valores calculados pelas fórmulas V(G) = e - n + 2 e V(G) = P + 1 são diferentes. Recomenda-se revisar a estrutura do grafo, pois pode haver inconsistência na modelagem dos nós ou arestas.";
+    private static final String INCONSISTENT_FORMULAS_WARNING = "Os valores calculados pelas fórmulas V(G) = a - n + 2 e V(G) = P + 1 são diferentes. Recomenda-se revisar a estrutura do grafo, pois pode haver inconsistência na modelagem dos nós ou arestas.";
+    private static final String COMPLEXITY_NORMAL_WARNING = "A complexidade ciclomática é menor que 10. Isso indica baixa complexidade.";
     private static final String COMPLEXITY_GREATER_THAN_TEN_WARNING = "A complexidade ciclomática é maior que 10. Isso pode indicar um método difícil de testar, compreender e manter. Recomenda-se avaliar o redesenho ou refatoração do método.";
     private static final String COMPLEXITY_GREATER_THAN_FIFTEEN_WARNING = "A complexidade ciclomática é maior que 15. O método possui alta complexidade e está além do limite aceitável, sendo fortemente recomendada sua refatoração.";
 
@@ -53,17 +54,18 @@ class CalculateCyclomaticComplexityUseCaseImplTest {
                 public class Exemplo {
                     void executar() {
                         int x = 1;
-                        System.out.println(x);
                     }
                 }
                 """);
 
         CyclomaticComplexityOutput output = executeFor(gfc);
 
+        assertEquals(2, output.nodesCount());
+        assertEquals(1, output.edgesCount());
         assertEquals(0, output.predicateNodesCount());
         assertEquals(1, output.cyclomaticComplexityByEdgesAndNodes());
         assertEquals(1, output.cyclomaticComplexityByPredicateNodes());
-        assertTrue(output.warnings().isEmpty());
+        assertEquals(List.of(COMPLEXITY_NORMAL_WARNING), output.warnings());
     }
 
     @Test
@@ -81,10 +83,12 @@ class CalculateCyclomaticComplexityUseCaseImplTest {
 
         CyclomaticComplexityOutput output = executeFor(gfc);
 
+        assertEquals(4, output.nodesCount());
+        assertEquals(4, output.edgesCount());
         assertEquals(1, output.predicateNodesCount());
         assertEquals(2, output.cyclomaticComplexityByEdgesAndNodes());
         assertEquals(2, output.cyclomaticComplexityByPredicateNodes());
-        assertTrue(output.warnings().isEmpty());
+        assertEquals(List.of(COMPLEXITY_NORMAL_WARNING), output.warnings());
     }
 
     @Test
@@ -104,7 +108,7 @@ class CalculateCyclomaticComplexityUseCaseImplTest {
         assertEquals(1, output.predicateNodesCount());
         assertEquals(2, output.cyclomaticComplexityByEdgesAndNodes());
         assertEquals(2, output.cyclomaticComplexityByPredicateNodes());
-        assertTrue(output.warnings().isEmpty());
+        assertEquals(List.of(COMPLEXITY_NORMAL_WARNING), output.warnings());
     }
 
     @Test
@@ -131,7 +135,7 @@ class CalculateCyclomaticComplexityUseCaseImplTest {
         assertEquals(3, switchBranchCount(gfc));
         assertEquals(2, output.predicateNodesCount());
         assertEquals(3, output.cyclomaticComplexityByPredicateNodes());
-        assertTrue(output.warnings().isEmpty());
+        assertEquals(List.of(COMPLEXITY_NORMAL_WARNING), output.warnings());
     }
 
     @Test
@@ -186,9 +190,12 @@ class CalculateCyclomaticComplexityUseCaseImplTest {
                 && gfc.findNode(edge.getTargetNodeCode()).orElseThrow().getLabel().contains("Numero seis")));
 
         assertEquals(7, switchBranchCount(gfc));
+        assertEquals(9, output.nodesCount());
+        assertEquals(14, output.edgesCount());
         assertEquals(6, output.predicateNodesCount());
+        assertEquals(7, output.cyclomaticComplexityByEdgesAndNodes());
         assertEquals(output.cyclomaticComplexityByEdgesAndNodes(), output.cyclomaticComplexityByPredicateNodes());
-        assertTrue(output.warnings().isEmpty());
+        assertEquals(List.of(COMPLEXITY_NORMAL_WARNING), output.warnings());
     }
 
     @Test
@@ -199,7 +206,7 @@ class CalculateCyclomaticComplexityUseCaseImplTest {
 
         assertEquals(3, output.cyclomaticComplexityByEdgesAndNodes());
         assertEquals(2, output.cyclomaticComplexityByPredicateNodes());
-        assertEquals(List.of(INCONSISTENT_FORMULAS_WARNING), output.warnings());
+        assertEquals(List.of(INCONSISTENT_FORMULAS_WARNING, COMPLEXITY_NORMAL_WARNING), output.warnings());
     }
 
     @Test
@@ -223,6 +230,102 @@ class CalculateCyclomaticComplexityUseCaseImplTest {
     }
 
     @Test
+    void shouldNotCountTryFinallyAsPredicateNodes() {
+        Gfc gfc = generate("""
+                public class Exemplo {
+                    void executar() {
+                        try {
+                            processar();
+                        } finally {
+                            liberar();
+                        }
+                    }
+                }
+                """);
+
+        CyclomaticComplexityOutput output = executeFor(gfc);
+
+        assertTrue(gfc.getNodes().stream().anyMatch(node -> node.getType() == GfcNodeTypeEnum.TRY));
+        assertTrue(gfc.getNodes().stream().anyMatch(node -> node.getType() == GfcNodeTypeEnum.FINALLY));
+        assertEquals(0, output.predicateNodesCount());
+        assertEquals(1, output.cyclomaticComplexityByPredicateNodes());
+    }
+
+    @Test
+    void shouldCountOneCatchAsPredicateNode() {
+        Gfc gfc = generate("""
+                public class Exemplo {
+                    void executar() {
+                        try {
+                            processar();
+                        } catch (IllegalArgumentException ex) {
+                            tratarErro();
+                        }
+                    }
+                }
+                """);
+
+        CyclomaticComplexityOutput output = executeFor(gfc);
+
+        assertEquals(1, gfc.getNodes().stream().filter(node -> node.getType() == GfcNodeTypeEnum.CATCH).count());
+        assertEquals(1, output.predicateNodesCount());
+        assertEquals(2, output.cyclomaticComplexityByPredicateNodes());
+    }
+
+    @Test
+    void shouldCountMultipleCatchBlocksAsPredicateNodes() {
+        Gfc gfc = generate("""
+                import java.io.IOException;
+                import java.sql.SQLException;
+
+                public class Exemplo {
+                    void executar() {
+                        try {
+                            processarPedido();
+                        } catch (IOException ex) {
+                            tratarErroIO();
+                        } catch (SQLException ex) {
+                            tratarErroBanco();
+                        }
+                    }
+                }
+                """);
+
+        CyclomaticComplexityOutput output = executeFor(gfc);
+
+        assertEquals(2, gfc.getNodes().stream().filter(node -> node.getType() == GfcNodeTypeEnum.CATCH).count());
+        assertEquals(2, output.predicateNodesCount());
+        assertEquals(3, output.cyclomaticComplexityByPredicateNodes());
+    }
+
+    @Test
+    void shouldCountCatchButNotTryOrFinallyAsPredicateNode() {
+        Gfc gfc = generate("""
+                import java.io.IOException;
+
+                public class Exemplo {
+                    void executar() {
+                        try {
+                            processarPedido();
+                        } catch (IOException ex) {
+                            tratarErroIO();
+                        } finally {
+                            liberarRecursos();
+                        }
+                    }
+                }
+                """);
+
+        CyclomaticComplexityOutput output = executeFor(gfc);
+
+        assertTrue(gfc.getNodes().stream().anyMatch(node -> node.getType() == GfcNodeTypeEnum.TRY));
+        assertTrue(gfc.getNodes().stream().anyMatch(node -> node.getType() == GfcNodeTypeEnum.FINALLY));
+        assertEquals(1, gfc.getNodes().stream().filter(node -> node.getType() == GfcNodeTypeEnum.CATCH).count());
+        assertEquals(1, output.predicateNodesCount());
+        assertEquals(2, output.cyclomaticComplexityByPredicateNodes());
+    }
+
+    @Test
     void shouldThrowNotFoundWhenGfcDoesNotExist() {
         UUID gfcId = UUID.randomUUID();
         when(gfcRepositoryPort.findById(gfcId)).thenReturn(Optional.empty());
@@ -238,9 +341,9 @@ class CalculateCyclomaticComplexityUseCaseImplTest {
 
         verify(projectAccessService).findAuthorizedProject(gfc.getProjectId());
         assertEquals(gfc.getId(), output.gfcId());
-        assertEquals(gfc.getNodes().size(), output.nodesCount());
-        assertEquals(gfc.getEdges().size(), output.edgesCount());
-        assertEquals("V(G) = e - n + 2", output.formulaByEdgesAndNodes());
+        assertEquals(countNodesForFormula(gfc), output.nodesCount());
+        assertEquals(countEdgesForFormula(gfc), output.edgesCount());
+        assertEquals("V(G) = a - n + 2", output.formulaByEdgesAndNodes());
         assertEquals("V(G) = P + 1", output.formulaByPredicateNodes());
         return output;
     }
@@ -268,6 +371,23 @@ class CalculateCyclomaticComplexityUseCaseImplTest {
                 .filter(edge -> edge.getSourceNodeCode().equals(switchNodeCode))
                 .filter(edge -> edge.getType() == GfcEdgeTypeEnum.CASE_BRANCH
                         || edge.getType() == GfcEdgeTypeEnum.DEFAULT_BRANCH)
+                .count();
+    }
+
+    private int countNodesForFormula(Gfc gfc) {
+        return (int) gfc.getNodes().stream()
+                .filter(node -> node.getType() != GfcNodeTypeEnum.START)
+                .count();
+    }
+
+    private int countEdgesForFormula(Gfc gfc) {
+        String startNodeCode = gfc.getNodes().stream()
+                .filter(node -> node.getType() == GfcNodeTypeEnum.START)
+                .findFirst()
+                .map(GfcNode::getCode)
+                .orElse(null);
+        return (int) gfc.getEdges().stream()
+                .filter(edge -> startNodeCode == null || !edge.startsFrom(startNodeCode))
                 .count();
     }
 
