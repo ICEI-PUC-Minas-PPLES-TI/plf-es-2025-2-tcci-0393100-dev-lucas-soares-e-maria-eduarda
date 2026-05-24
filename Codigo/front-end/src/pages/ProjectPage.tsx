@@ -68,7 +68,7 @@ export function ProjectPage() {
                 onCreateGFC={() => setShowCreateGFCModal(true)}
               />
               <RecentArtifacts projectId={project.id} />
-              <ValidationWarnings />
+              <ValidationWarnings projectId={project.id} />
             </div>
             <aside className="w-80 shrink-0 hidden lg:block">
               <ProjectSummary createdAt={project.createdAt} updatedAt={project.updatedAt} />
