@@ -1,4 +1,4 @@
-import ELK, { type ElkNode, type ElkPort } from 'elkjs/lib/elk.bundled.js';
+import ELK, { type ElkNode, type ElkPort, type ElkExtendedEdge } from 'elkjs/lib/elk.bundled.js';
 import type {
   GFCDTO,
   GFCFlowNode,
@@ -180,16 +180,27 @@ export async function computeELKLayout(dto: GFCDTO): Promise<ELKLayoutResult> {
   // (ex.: `LOOP_BODY`) e o nó LOOP termina abaixo do próprio corpo.
   const BACK_EDGE_TYPES: ReadonlySet<GFCEdgeType> = new Set(['LOOP_BACK', 'CONTINUE_FLOW']);
 
+  // FALSE_BRANCH ganha prioridade alta de straightness pra manter a "espinha"
+  // do if-sem-else reta: decisão e merge ficam alinhados verticalmente.
+  const STRAIGHT_PRIORITY_TYPES: ReadonlySet<GFCEdgeType> = new Set(['FALSE_BRANCH']);
+
   // Usa o próprio id da aresta (UUID do backend) pra conseguir parear o
   // resultado do ELK com `dto.edges` mantendo o mapa de bend points por edge.
-  const elkEdges = dto.edges.map((e) => ({
-    id: e.id,
-    sources: [portId(e.sourceNodeCode, elkSourceHandleFor(e.type))],
-    targets: [portId(e.targetNodeCode, targetHandleFor(e.type))],
-    layoutOptions: BACK_EDGE_TYPES.has(e.type)
-      ? { 'elk.layered.priority.direction': '-1' }
-      : undefined,
-  }));
+  const elkEdges: ElkExtendedEdge[] = dto.edges.map((e) => {
+    const layoutOptions: Record<string, string> = {};
+    if (BACK_EDGE_TYPES.has(e.type)) {
+      layoutOptions['elk.layered.priority.direction'] = '-1';
+    }
+    if (STRAIGHT_PRIORITY_TYPES.has(e.type)) {
+      layoutOptions['elk.layered.priority.straightness'] = '10';
+    }
+    return {
+      id: e.id,
+      sources: [portId(e.sourceNodeCode, elkSourceHandleFor(e.type))],
+      targets: [portId(e.targetNodeCode, targetHandleFor(e.type))],
+      layoutOptions: Object.keys(layoutOptions).length > 0 ? layoutOptions : undefined,
+    };
+  });
 
   try {
     const layout = await elk.layout({
@@ -210,6 +221,8 @@ export async function computeELKLayout(dto: GFCDTO): Promise<ELKLayoutResult> {
       if (section.endPoint) points.push({ x: section.endPoint.x ?? 0, y: section.endPoint.y ?? 0 });
       bendPoints[e.id] = points;
     });
+
+    shiftThenBodiesLeft(dto, positions);
   } catch {
     // Fallback: tudo em 0,0 — usuário pode arrastar manualmente.
     dto.nodes.forEach((n) => {
@@ -218,6 +231,32 @@ export async function computeELKLayout(dto: GFCDTO): Promise<ELKLayoutResult> {
   }
 
   return { positions, bendPoints };
+}
+
+/**
+ * Desloca corpos do THEN pra esquerda da decisão que os origina, simulando
+ * o layout clássico de fluxograma "if sem else". O ELK por padrão centraliza
+ * o corpo do THEN abaixo da decisão (porque a SEQUENTIAL de saída pesa
+ * tanto quanto o TRUE_BRANCH de entrada), produzindo aresta com curva
+ * desnecessária.
+ */
+function shiftThenBodiesLeft(dto: GFCDTO, positions: Record<string, Position>) {
+  const SPACING = 30;
+  const sizeByCode = new Map<string, { width: number; height: number }>();
+  dto.nodes.forEach((n) => {
+    sizeByCode.set(n.code, NODE_SIZE[n.type] ?? { width: 200, height: 70 });
+  });
+
+  dto.edges.forEach((e) => {
+    if (e.type !== 'TRUE_BRANCH') return;
+    const srcPos = positions[e.sourceNodeCode];
+    const tgtPos = positions[e.targetNodeCode];
+    const tgtSize = sizeByCode.get(e.targetNodeCode);
+    if (!srcPos || !tgtPos || !tgtSize) return;
+    // Posiciona o nó-alvo de modo que sua borda direita fique pouco antes da
+    // borda esquerda da decisão: aí a aresta TRUE desce reta da porta WEST.
+    tgtPos.x = srcPos.x - tgtSize.width - SPACING;
+  });
 }
 
 // ──────────────────────────────────────────────
