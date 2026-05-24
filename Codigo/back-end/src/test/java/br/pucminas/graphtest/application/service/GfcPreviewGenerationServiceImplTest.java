@@ -16,6 +16,7 @@ import java.util.UUID;
 
 import static br.pucminas.graphtest.application.domain.gfc.rules.GfcDomainRules.JAVA_LANGUAGE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -762,7 +763,24 @@ class GfcPreviewGenerationServiceImplTest {
                 .findFirst()
                 .orElseThrow()
                 .getCode();
+        String executarCode = graph.getNodes().stream()
+                .filter(node -> node.getLabel().contains("executarAcao"))
+                .findFirst()
+                .orElseThrow()
+                .getCode();
+        String tratarCode = graph.getNodes().stream()
+                .filter(node -> node.getLabel().contains("tratarErro"))
+                .findFirst()
+                .orElseThrow()
+                .getCode();
         assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getTargetNodeCode().equals(finallyCode)
+                && edge.getType() == GfcEdgeTypeEnum.FINALLY_BRANCH));
+        assertFalse(hasDirectTryToFinallyEdge(graph));
+        assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getSourceNodeCode().equals(executarCode)
+                && edge.getTargetNodeCode().equals(finallyCode)
+                && edge.getType() == GfcEdgeTypeEnum.FINALLY_BRANCH));
+        assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getSourceNodeCode().equals(tratarCode)
+                && edge.getTargetNodeCode().equals(finallyCode)
                 && edge.getType() == GfcEdgeTypeEnum.FINALLY_BRANCH));
         assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getSourceNodeCode().equals(finalizarCode)
                 && graph.findNode(edge.getTargetNodeCode()).orElseThrow().getLabel().contains("proximo")));
@@ -799,6 +817,7 @@ class GfcPreviewGenerationServiceImplTest {
         assertTrue(graph.getNodes().stream().anyMatch(node -> node.getType() == GfcNodeTypeEnum.TRY));
         assertEquals(1, graph.getNodes().stream().filter(node -> node.getType() == GfcNodeTypeEnum.FINALLY).count());
         assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getType() == GfcEdgeTypeEnum.FINALLY_BRANCH));
+        assertFalse(hasDirectTryToFinallyEdge(graph));
         assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getSourceNodeCode().equals(finalizarCode)
                 && graph.findNode(edge.getTargetNodeCode()).orElseThrow().getLabel().contains("proximo")));
     }
@@ -1408,5 +1427,12 @@ class GfcPreviewGenerationServiceImplTest {
         GfcMethodNotFoundException exception = assertThrows(GfcMethodNotFoundException.class, () -> service.generate(input));
 
         assertTrue(exception.getMessage().contains("Metodo informado nao foi encontrado"));
+    }
+
+    private boolean hasDirectTryToFinallyEdge(Gfc graph) {
+        return graph.getEdges().stream().anyMatch(edge ->
+                graph.findNode(edge.getSourceNodeCode()).orElseThrow().getType() == GfcNodeTypeEnum.TRY
+                        && graph.findNode(edge.getTargetNodeCode()).orElseThrow().getType() == GfcNodeTypeEnum.FINALLY
+        );
     }
 }

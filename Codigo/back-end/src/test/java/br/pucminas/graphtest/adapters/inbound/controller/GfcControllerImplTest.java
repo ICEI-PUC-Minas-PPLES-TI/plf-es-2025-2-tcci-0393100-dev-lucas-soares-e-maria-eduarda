@@ -199,7 +199,7 @@ class GfcControllerImplTest {
                 6,
                 7,
                 7,
-                "V(G) = a - n + 2",
+                "V(g) = a - n + 2",
                 "V(G) = P + 1",
                 List.of("Aviso")
         );
@@ -215,7 +215,7 @@ class GfcControllerImplTest {
         assertEquals(6, response.getBody().predicateNodesCount());
         assertEquals(7, response.getBody().cyclomaticComplexityByEdgesAndNodes());
         assertEquals(7, response.getBody().cyclomaticComplexityByPredicateNodes());
-        assertEquals("V(G) = a - n + 2", response.getBody().formulaByEdgesAndNodes());
+        assertEquals("V(g) = a - n + 2", response.getBody().formulaByEdgesAndNodes());
         assertEquals("V(G) = P + 1", response.getBody().formulaByPredicateNodes());
         assertEquals(List.of("Aviso"), response.getBody().warnings());
     }
