@@ -23,6 +23,7 @@ import java.util.UUID;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
@@ -34,7 +35,7 @@ class CalculateCyclomaticComplexityUseCaseImplTest {
 
     private static final UUID PROJECT_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private static final UUID SOURCE_FILE_ID = UUID.fromString("00000000-0000-0000-0000-000000000002");
-    private static final String INCONSISTENT_FORMULAS_WARNING = "Os valores calculados pelas fórmulas V(G) = a - n + 2 e V(G) = P + 1 são diferentes. Recomenda-se revisar a estrutura do grafo, pois pode haver inconsistência na modelagem dos nós ou arestas.";
+    private static final String INCONSISTENT_FORMULAS_WARNING = "Os valores calculados pelas fórmulas V(g) = a - n + 2 e V(G) = P + 1 são diferentes. Recomenda-se revisar a estrutura do grafo, pois pode haver inconsistência na modelagem dos nós ou arestas.";
     private static final String COMPLEXITY_NORMAL_WARNING = "A complexidade ciclomática é menor que 10. Isso indica baixa complexidade.";
     private static final String COMPLEXITY_GREATER_THAN_TEN_WARNING = "A complexidade ciclomática é maior que 10. Isso pode indicar um método difícil de testar, compreender e manter. Recomenda-se avaliar o redesenho ou refatoração do método.";
     private static final String COMPLEXITY_GREATER_THAN_FIFTEEN_WARNING = "A complexidade ciclomática é maior que 15. O método possui alta complexidade e está além do limite aceitável, sendo fortemente recomendada sua refatoração.";
@@ -326,6 +327,40 @@ class CalculateCyclomaticComplexityUseCaseImplTest {
     }
 
     @Test
+    void shouldCalculateConsistentComplexityForTryCatchFinallyWithoutDirectTryToFinallyEdge() {
+        Gfc gfc = generate("""
+                public class Exemplo {
+                    public static int aplicarValidacaoEBonus(
+                            int pontuacao,
+                            double valor,
+                            String categoria
+                    ) {
+                        try {
+                            validarValor(valor);
+                            pontuacao += calcularBonus(categoria);
+                        } catch (IllegalArgumentException ex) {
+                            pontuacao = -100;
+                        } finally {
+                            pontuacao += 1;
+                        }
+
+                        return pontuacao;
+                    }
+                }
+                """);
+
+        CyclomaticComplexityOutput output = executeFor(gfc);
+
+        assertFalse(hasDirectTryToFinallyEdge(gfc));
+        assertEquals(9, output.nodesCount());
+        assertEquals(9, output.edgesCount());
+        assertEquals(1, output.predicateNodesCount());
+        assertEquals(2, output.cyclomaticComplexityByEdgesAndNodes());
+        assertEquals(2, output.cyclomaticComplexityByPredicateNodes());
+        assertEquals(List.of(COMPLEXITY_NORMAL_WARNING), output.warnings());
+    }
+
+    @Test
     void shouldThrowNotFoundWhenGfcDoesNotExist() {
         UUID gfcId = UUID.randomUUID();
         when(gfcRepositoryPort.findById(gfcId)).thenReturn(Optional.empty());
@@ -343,7 +378,7 @@ class CalculateCyclomaticComplexityUseCaseImplTest {
         assertEquals(gfc.getId(), output.gfcId());
         assertEquals(countNodesForFormula(gfc), output.nodesCount());
         assertEquals(countEdgesForFormula(gfc), output.edgesCount());
-        assertEquals("V(G) = a - n + 2", output.formulaByEdgesAndNodes());
+        assertEquals("V(g) = a - n + 2", output.formulaByEdgesAndNodes());
         assertEquals("V(G) = P + 1", output.formulaByPredicateNodes());
         return output;
     }
@@ -389,6 +424,13 @@ class CalculateCyclomaticComplexityUseCaseImplTest {
         return (int) gfc.getEdges().stream()
                 .filter(edge -> startNodeCode == null || !edge.startsFrom(startNodeCode))
                 .count();
+    }
+
+    private boolean hasDirectTryToFinallyEdge(Gfc graph) {
+        return graph.getEdges().stream().anyMatch(edge ->
+                graph.findNode(edge.getSourceNodeCode()).orElseThrow().getType() == GfcNodeTypeEnum.TRY
+                        && graph.findNode(edge.getTargetNodeCode()).orElseThrow().getType() == GfcNodeTypeEnum.FINALLY
+        );
     }
 
     private Gfc graphWithOneDecisionAndExtraParallelEdge() {

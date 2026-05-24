@@ -298,9 +298,6 @@ public class GfcBuilder {
         GfcNode finallyNode = statement.getFinallyBlock()
                 .map(finallyBlock -> createNode(GfcNodeTypeEnum.FINALLY, labelForFinally(), finallyBlock))
                 .orElse(null);
-        if (finallyNode != null) {
-            addEdge(tryNode.getCode(), finallyNode.getCode(), GfcEdgeTypeEnum.FINALLY_BRANCH, "finally");
-        }
 
         ExceptionFlowContext context = new ExceptionFlowContext(
                 catchNodes.isEmpty() ? null : catchNodes.getFirst().getCode(),
