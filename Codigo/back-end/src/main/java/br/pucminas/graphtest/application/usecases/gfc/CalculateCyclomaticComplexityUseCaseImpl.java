@@ -38,8 +38,9 @@ public class CalculateCyclomaticComplexityUseCaseImpl implements CalculateCyclom
                 .orElseThrow(GfcNotFoundException::new);
         projectAccessService.findAuthorizedProject(gfc.getProjectId());
 
-        int nodesCount = gfc.getNodes().size();
-        int edgesCount = gfc.getEdges().size();
+        String startNodeCode = findStartNodeCode(gfc);
+        int nodesCount = countNodesForEdgesAndNodesFormula(gfc);
+        int edgesCount = countEdgesForEdgesAndNodesFormula(gfc, startNodeCode);
         int predicateNodesCount = countPredicateNodes(gfc);
         int complexityByEdgesAndNodes = edgesCount - nodesCount + 2;
         int complexityByPredicateNodes = predicateNodesCount + 1;
@@ -73,6 +74,26 @@ public class CalculateCyclomaticComplexityUseCaseImpl implements CalculateCyclom
         return warnings;
     }
 
+    private String findStartNodeCode(Gfc gfc) {
+        return gfc.getNodes().stream()
+                .filter(node -> node.getType() == GfcNodeTypeEnum.START)
+                .findFirst()
+                .map(GfcNode::getCode)
+                .orElse(null);
+    }
+
+    private int countNodesForEdgesAndNodesFormula(Gfc gfc) {
+        return (int) gfc.getNodes().stream()
+                .filter(node -> node.getType() != GfcNodeTypeEnum.START)
+                .count();
+    }
+
+    private int countEdgesForEdgesAndNodesFormula(Gfc gfc, String startNodeCode) {
+        return (int) gfc.getEdges().stream()
+                .filter(edge -> startNodeCode == null || !edge.startsFrom(startNodeCode))
+                .count();
+    }
+
     private int countPredicateNodes(Gfc gfc) {
         int total = 0;
 
@@ -85,7 +106,10 @@ public class CalculateCyclomaticComplexityUseCaseImpl implements CalculateCyclom
 
     private int predicateContribution(Gfc gfc, GfcNode node) {
         GfcNodeTypeEnum type = node.getType();
-        if (type == GfcNodeTypeEnum.DECISION || type == GfcNodeTypeEnum.LOOP || type == GfcNodeTypeEnum.TERNARY) {
+        if (type == GfcNodeTypeEnum.DECISION
+                || type == GfcNodeTypeEnum.LOOP
+                || type == GfcNodeTypeEnum.TERNARY
+                || type == GfcNodeTypeEnum.CATCH) {
             return 1;
         }
         if (type == GfcNodeTypeEnum.SWITCH) {
