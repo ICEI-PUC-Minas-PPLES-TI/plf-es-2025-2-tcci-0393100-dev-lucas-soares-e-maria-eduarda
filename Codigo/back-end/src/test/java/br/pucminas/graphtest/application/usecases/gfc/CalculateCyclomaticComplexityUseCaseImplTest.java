@@ -35,6 +35,7 @@ class CalculateCyclomaticComplexityUseCaseImplTest {
     private static final UUID PROJECT_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private static final UUID SOURCE_FILE_ID = UUID.fromString("00000000-0000-0000-0000-000000000002");
     private static final String INCONSISTENT_FORMULAS_WARNING = "Os valores calculados pelas fórmulas V(G) = e - n + 2 e V(G) = P + 1 são diferentes. Recomenda-se revisar a estrutura do grafo, pois pode haver inconsistência na modelagem dos nós ou arestas.";
+    private static final String COMPLEXITY_NORMAL_WARNING = "A complexidade ciclomática é menor que 10. Isso indica baixa complexidade.";
     private static final String COMPLEXITY_GREATER_THAN_TEN_WARNING = "A complexidade ciclomática é maior que 10. Isso pode indicar um método difícil de testar, compreender e manter. Recomenda-se avaliar o redesenho ou refatoração do método.";
     private static final String COMPLEXITY_GREATER_THAN_FIFTEEN_WARNING = "A complexidade ciclomática é maior que 15. O método possui alta complexidade e está além do limite aceitável, sendo fortemente recomendada sua refatoração.";
 
@@ -64,7 +65,7 @@ class CalculateCyclomaticComplexityUseCaseImplTest {
         assertEquals(0, output.predicateNodesCount());
         assertEquals(1, output.cyclomaticComplexityByEdgesAndNodes());
         assertEquals(1, output.cyclomaticComplexityByPredicateNodes());
-        assertTrue(output.warnings().isEmpty());
+        assertEquals(List.of(COMPLEXITY_NORMAL_WARNING), output.warnings());
     }
 
     @Test
@@ -87,7 +88,7 @@ class CalculateCyclomaticComplexityUseCaseImplTest {
         assertEquals(1, output.predicateNodesCount());
         assertEquals(2, output.cyclomaticComplexityByEdgesAndNodes());
         assertEquals(2, output.cyclomaticComplexityByPredicateNodes());
-        assertTrue(output.warnings().isEmpty());
+        assertEquals(List.of(COMPLEXITY_NORMAL_WARNING), output.warnings());
     }
 
     @Test
@@ -107,7 +108,7 @@ class CalculateCyclomaticComplexityUseCaseImplTest {
         assertEquals(1, output.predicateNodesCount());
         assertEquals(2, output.cyclomaticComplexityByEdgesAndNodes());
         assertEquals(2, output.cyclomaticComplexityByPredicateNodes());
-        assertTrue(output.warnings().isEmpty());
+        assertEquals(List.of(COMPLEXITY_NORMAL_WARNING), output.warnings());
     }
 
     @Test
@@ -134,7 +135,7 @@ class CalculateCyclomaticComplexityUseCaseImplTest {
         assertEquals(3, switchBranchCount(gfc));
         assertEquals(2, output.predicateNodesCount());
         assertEquals(3, output.cyclomaticComplexityByPredicateNodes());
-        assertTrue(output.warnings().isEmpty());
+        assertEquals(List.of(COMPLEXITY_NORMAL_WARNING), output.warnings());
     }
 
     @Test
@@ -194,7 +195,7 @@ class CalculateCyclomaticComplexityUseCaseImplTest {
         assertEquals(6, output.predicateNodesCount());
         assertEquals(7, output.cyclomaticComplexityByEdgesAndNodes());
         assertEquals(output.cyclomaticComplexityByEdgesAndNodes(), output.cyclomaticComplexityByPredicateNodes());
-        assertTrue(output.warnings().isEmpty());
+        assertEquals(List.of(COMPLEXITY_NORMAL_WARNING), output.warnings());
     }
 
     @Test
@@ -205,7 +206,7 @@ class CalculateCyclomaticComplexityUseCaseImplTest {
 
         assertEquals(3, output.cyclomaticComplexityByEdgesAndNodes());
         assertEquals(2, output.cyclomaticComplexityByPredicateNodes());
-        assertEquals(List.of(INCONSISTENT_FORMULAS_WARNING), output.warnings());
+        assertEquals(List.of(INCONSISTENT_FORMULAS_WARNING, COMPLEXITY_NORMAL_WARNING), output.warnings());
     }
 
     @Test
