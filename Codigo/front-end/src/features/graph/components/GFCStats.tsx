@@ -16,10 +16,29 @@ function severityFor(value: number): Severity {
   return 'simple';
 }
 
-const SEVERITY_STYLES: Record<Severity, { color: string; bg: string; ring: string; label: string }> = {
-  simple:   { color: 'text-green-400',  bg: 'bg-green-500/10',  ring: 'ring-green-500/30',  label: 'Simples' },
-  moderate: { color: 'text-yellow-400', bg: 'bg-yellow-500/10', ring: 'ring-yellow-500/30', label: 'Moderada' },
-  high:     { color: 'text-red-400',    bg: 'bg-red-500/10',    ring: 'ring-red-500/30',    label: 'Alta' },
+interface SeverityStyle {
+  color: string;
+  bg: string;
+  ring: string;
+  label: string;
+  warningText: string;
+  warningBg: string;
+  warningBorder: string;
+}
+
+const SEVERITY_STYLES: Record<Severity, SeverityStyle> = {
+  simple: {
+    color: 'text-green-400', bg: 'bg-green-500/10', ring: 'ring-green-500/30', label: 'Simples',
+    warningText: 'text-green-300/90', warningBg: 'bg-green-500/5', warningBorder: 'border-green-500/20',
+  },
+  moderate: {
+    color: 'text-yellow-400', bg: 'bg-yellow-500/10', ring: 'ring-yellow-500/30', label: 'Moderada',
+    warningText: 'text-yellow-300/90', warningBg: 'bg-yellow-500/5', warningBorder: 'border-yellow-500/20',
+  },
+  high: {
+    color: 'text-red-400', bg: 'bg-red-500/10', ring: 'ring-red-500/30', label: 'Alta',
+    warningText: 'text-red-300/90', warningBg: 'bg-red-500/5', warningBorder: 'border-red-500/20',
+  },
 };
 
 export function GFCStats({ stats, complexity }: GFCStatsProps) {
@@ -91,7 +110,7 @@ export function GFCStats({ stats, complexity }: GFCStatsProps) {
           {warnings.map((w, i) => (
             <div
               key={i}
-              className="flex items-start gap-1.5 text-[10px] text-yellow-300/90 bg-yellow-500/5 border border-yellow-500/20 rounded px-2 py-1.5 leading-snug"
+              className={`flex items-start gap-1.5 text-[10px] ${sev.warningText} ${sev.warningBg} border ${sev.warningBorder} rounded px-2 py-1.5 leading-snug`}
             >
               <AlertTriangle className="w-3 h-3 shrink-0 mt-0.5" />
               <span>{w}</span>
