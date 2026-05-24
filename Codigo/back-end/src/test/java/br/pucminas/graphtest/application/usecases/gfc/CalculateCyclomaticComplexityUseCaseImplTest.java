@@ -34,7 +34,7 @@ class CalculateCyclomaticComplexityUseCaseImplTest {
 
     private static final UUID PROJECT_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private static final UUID SOURCE_FILE_ID = UUID.fromString("00000000-0000-0000-0000-000000000002");
-    private static final String INCONSISTENT_FORMULAS_WARNING = "Os valores calculados pelas fórmulas V(G) = e - n + 2 e V(G) = P + 1 são diferentes. Recomenda-se revisar a estrutura do grafo, pois pode haver inconsistência na modelagem dos nós ou arestas.";
+    private static final String INCONSISTENT_FORMULAS_WARNING = "Os valores calculados pelas fórmulas V(G) = a - n + 2 e V(G) = P + 1 são diferentes. Recomenda-se revisar a estrutura do grafo, pois pode haver inconsistência na modelagem dos nós ou arestas.";
     private static final String COMPLEXITY_NORMAL_WARNING = "A complexidade ciclomática é menor que 10. Isso indica baixa complexidade.";
     private static final String COMPLEXITY_GREATER_THAN_TEN_WARNING = "A complexidade ciclomática é maior que 10. Isso pode indicar um método difícil de testar, compreender e manter. Recomenda-se avaliar o redesenho ou refatoração do método.";
     private static final String COMPLEXITY_GREATER_THAN_FIFTEEN_WARNING = "A complexidade ciclomática é maior que 15. O método possui alta complexidade e está além do limite aceitável, sendo fortemente recomendada sua refatoração.";
@@ -343,7 +343,7 @@ class CalculateCyclomaticComplexityUseCaseImplTest {
         assertEquals(gfc.getId(), output.gfcId());
         assertEquals(countNodesForFormula(gfc), output.nodesCount());
         assertEquals(countEdgesForFormula(gfc), output.edgesCount());
-        assertEquals("V(G) = e - n + 2", output.formulaByEdgesAndNodes());
+        assertEquals("V(G) = a - n + 2", output.formulaByEdgesAndNodes());
         assertEquals("V(G) = P + 1", output.formulaByPredicateNodes());
         return output;
     }

@@ -17,9 +17,9 @@ import java.util.UUID;
 
 public class CalculateCyclomaticComplexityUseCaseImpl implements CalculateCyclomaticComplexityUseCasePort {
 
-    private static final String FORMULA_BY_EDGES_AND_NODES = "V(G) = e - n + 2";
+    private static final String FORMULA_BY_EDGES_AND_NODES = "V(G) = a - n + 2";
     private static final String FORMULA_BY_PREDICATE_NODES = "V(G) = P + 1";
-    private static final String INCONSISTENT_FORMULAS_WARNING = "Os valores calculados pelas fórmulas V(G) = e - n + 2 e V(G) = P + 1 são diferentes. Recomenda-se revisar a estrutura do grafo, pois pode haver inconsistência na modelagem dos nós ou arestas.";
+    private static final String INCONSISTENT_FORMULAS_WARNING = "Os valores calculados pelas fórmulas V(G) = a - n + 2 e V(G) = P + 1 são diferentes. Recomenda-se revisar a estrutura do grafo, pois pode haver inconsistência na modelagem dos nós ou arestas.";
     private static final String COMPLEXITY_NORMAL_WARNING = "A complexidade ciclomática é menor que 10. Isso indica baixa complexidade.";
     private static final String COMPLEXITY_GREATER_THAN_TEN_WARNING = "A complexidade ciclomática é maior que 10. Isso pode indicar um método difícil de testar, compreender e manter. Recomenda-se avaliar o redesenho ou refatoração do método.";
     private static final String COMPLEXITY_GREATER_THAN_FIFTEEN_WARNING = "A complexidade ciclomática é maior que 15. O método possui alta complexidade e está além do limite aceitável, sendo fortemente recomendada sua refatoração.";
