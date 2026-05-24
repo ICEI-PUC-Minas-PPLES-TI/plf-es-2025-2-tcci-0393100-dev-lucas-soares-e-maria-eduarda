@@ -153,7 +153,7 @@ export function GFCCanvas({ gfcId, initialNodes, initialEdges, stats, complexity
         />
       </ReactFlow>
 
-      <div className="absolute top-4 left-4 flex flex-col gap-3 pointer-events-auto">
+      <div className="absolute top-4 left-4 bottom-4 flex flex-col gap-3 pointer-events-auto">
         <GFCLegend />
         <GFCStats stats={stats} complexity={complexity ?? null} />
       </div>

@@ -1,7 +1,36 @@
 import { useState } from 'react';
-import { Activity, AlertTriangle, ChevronDown, ChevronUp, Info } from 'lucide-react';
+import {
+  Activity,
+  AlertTriangle,
+  BookMarked,
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
+  Info,
+} from 'lucide-react';
 import type { GFCStats as Stats } from '../utils/gfcConverters';
 import type { GFCCyclomaticComplexityDTO } from '../types/gfc';
+
+interface Reference {
+  topic: string;
+  citation: string;
+  url?: string;
+}
+
+// Fontes consultadas para o cálculo da complexidade ciclomática.
+const REFERENCES: Reference[] = [
+  {
+    topic: 'Complexidade em switch/case',
+    citation:
+      'NAGY, Gergely Attila. Az AV-metrika kiterjesztése kivételkezelésre. Budapest, 2012. Trabalho de conclusão de curso (Graduação em Programação Matemática) — Eötvös Loránd Tudományegyetem, Faculdade de Informática.',
+    url: 'http://aszt.inf.elte.hu/~gsd/diploma/samples/NagyGergoDiplomamunka.pdf',
+  },
+  {
+    topic: 'Limiares de severidade',
+    citation:
+      'FENTON, Norman; BIEMAN, James. Software Metrics: A Rigorous and Practical Approach. 3. ed. Boca Raton: CRC Press, 2015.',
+  },
+];
 
 interface GFCStatsProps {
   stats: Stats;
@@ -43,6 +72,7 @@ const SEVERITY_STYLES: Record<Severity, SeverityStyle> = {
 
 export function GFCStats({ stats, complexity }: GFCStatsProps) {
   const [showFormulas, setShowFormulas] = useState(false);
+  const [showReferences, setShowReferences] = useState(false);
 
   // Prefere o cálculo do backend; cai pro local quando o endpoint falha.
   const value = complexity?.cyclomaticComplexityByEdgesAndNodes ?? stats.cyclomaticComplexity;
@@ -55,7 +85,7 @@ export function GFCStats({ stats, complexity }: GFCStatsProps) {
   const warnings = complexity?.warnings ?? [];
 
   return (
-    <div className="bg-surface-card border border-edge rounded-lg p-3 shadow-lg w-52">
+    <div className="bg-surface-card border border-edge rounded-lg p-3 shadow-lg w-52 min-h-0 overflow-y-auto thin-scrollbar">
       <div className="flex items-center gap-2 mb-2.5 text-gray-200">
         <Activity className="w-3.5 h-3.5" />
         <span className="text-xs font-medium">Complexidade Ciclomática</span>
@@ -102,6 +132,41 @@ export function GFCStats({ stats, complexity }: GFCStatsProps) {
             {complexity.formulaByPredicateNodes} ={' '}
             <span className="text-gray-200">{complexity.cyclomaticComplexityByPredicateNodes}</span>
           </div>
+        </div>
+      )}
+
+      {complexity && (
+        <button
+          onClick={() => setShowReferences((v) => !v)}
+          className="w-full flex items-center justify-between text-[10px] text-gray-500 hover:text-gray-300 transition-colors mt-1.5 px-0.5"
+        >
+          <span className="flex items-center gap-1">
+            <BookMarked className="w-3 h-3" />
+            Referências
+          </span>
+          {showReferences ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+        </button>
+      )}
+
+      {showReferences && (
+        <div className="mt-1.5 space-y-2 text-[10px] text-gray-400 bg-surface border border-edge rounded px-2 py-2">
+          {REFERENCES.map((ref) => (
+            <div key={ref.topic} className="space-y-0.5">
+              <p className="text-[9px] uppercase tracking-wider text-gray-500">{ref.topic}</p>
+              <p className="text-gray-300 leading-snug">{ref.citation}</p>
+              {ref.url && (
+                <a
+                  href={ref.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-start gap-1 text-primary-light hover:text-primary transition-colors"
+                >
+                  <ExternalLink className="w-2.5 h-2.5 shrink-0 mt-0.5" />
+                  <span className="break-all min-w-0">{ref.url}</span>
+                </a>
+              )}
+            </div>
+          ))}
         </div>
       )}
 
