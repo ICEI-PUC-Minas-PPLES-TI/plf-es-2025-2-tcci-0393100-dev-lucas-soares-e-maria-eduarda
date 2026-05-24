@@ -48,12 +48,12 @@ export function GFCViewerPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showSourceModal, setShowSourceModal] = useState(false);
   const [sourceHighlight, setSourceHighlight] = useState<{ startLine: number; endLine: number } | null>(null);
-  const [methodCodePanelCollapsed, setMethodCodePanelCollapsed] = useState(true);
+  const [methodCodePanelCollapsed, setMethodCodePanelCollapsed] = useState(false);
   const [relayoutLoading, setRelayoutLoading] = useState(false);
   const [layoutVersion, setLayoutVersion] = useState(0);
 
   const [methodPanelCollapsed, setMethodPanelCollapsed] = useState(false);
-  const [nodeInfoCollapsed, setNodeInfoCollapsed] = useState(false);
+  const [nodeInfoCollapsed, setNodeInfoCollapsed] = useState(true);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -238,6 +238,7 @@ export function GFCViewerPage() {
           <MethodCodePanel
             sourceFileId={sourceFile?.id ?? null}
             methodSignature={gfc.methodSignature}
+            fileName={sourceFile?.fileName ?? null}
             isCollapsed={methodCodePanelCollapsed}
             onToggleCollapse={() => setMethodCodePanelCollapsed((v) => !v)}
             selectedStartLine={selectedNodeInfo?.startLine ?? null}

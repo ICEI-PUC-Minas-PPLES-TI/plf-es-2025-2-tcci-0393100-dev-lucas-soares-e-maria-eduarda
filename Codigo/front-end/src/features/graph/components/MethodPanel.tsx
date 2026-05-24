@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Search, ChevronLeft, ChevronRight, CheckCircle2, Circle, Loader2 } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, CheckCircle2, Circle, ListTree, Loader2 } from 'lucide-react';
 import type { GFCSourceMethodDTO, GFCSummaryDTO } from '../types/gfc';
 
 interface MethodPanelProps {
@@ -42,14 +42,24 @@ export function MethodPanel({
 
   if (isCollapsed) {
     return (
-      <div className="w-10 bg-surface-card border-r border-edge flex items-start justify-center pt-3 shrink-0">
-        <button
-          onClick={onToggleCollapse}
-          className="p-1.5 text-gray-400 hover:text-gray-200 hover:bg-surface-hover rounded transition-colors"
-          title="Expandir painel"
-        >
-          <ChevronRight className="w-4 h-4" />
-        </button>
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={onToggleCollapse}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onToggleCollapse();
+          }
+        }}
+        title="Expandir lista de métodos"
+        className="w-10 bg-surface-card border-r border-edge flex flex-col items-center pt-3 gap-2 shrink-0 cursor-pointer hover:bg-surface-hover transition-colors"
+      >
+        <ChevronRight className="w-4 h-4 text-gray-400" />
+        <ListTree className="w-4 h-4 text-gray-500" aria-hidden />
+        <span className="[writing-mode:vertical-rl] text-[10px] tracking-wider uppercase text-gray-500 mt-1">
+          Métodos
+        </span>
       </div>
     );
   }

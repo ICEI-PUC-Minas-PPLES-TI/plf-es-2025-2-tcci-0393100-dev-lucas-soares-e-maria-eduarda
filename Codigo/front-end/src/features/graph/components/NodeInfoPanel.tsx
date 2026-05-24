@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Code2, FileCode, Hash, FileText, Tag } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Code2, FileCode, Hash, FileText, Info, Tag } from 'lucide-react';
 import type { GFCNodeType } from '../types/gfc';
 
 interface NodeInfo {
@@ -64,14 +64,24 @@ export function NodeInfoPanel({
 }: NodeInfoPanelProps) {
   if (isCollapsed) {
     return (
-      <div className="w-10 bg-surface-card border-l border-edge flex items-start justify-center pt-3 shrink-0">
-        <button
-          onClick={onToggleCollapse}
-          className="p-1.5 text-gray-400 hover:text-gray-200 hover:bg-surface-hover rounded transition-colors"
-          title="Expandir painel"
-        >
-          <ChevronLeft className="w-4 h-4" />
-        </button>
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={onToggleCollapse}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onToggleCollapse();
+          }
+        }}
+        title="Expandir informações do nó"
+        className="w-10 bg-surface-card border-l border-edge flex flex-col items-center pt-3 gap-2 shrink-0 cursor-pointer hover:bg-surface-hover transition-colors"
+      >
+        <ChevronLeft className="w-4 h-4 text-gray-400" />
+        <Info className="w-4 h-4 text-gray-500" aria-hidden />
+        <span className="[writing-mode:vertical-rl] rotate-180 text-[10px] tracking-wider uppercase text-gray-500 mt-1">
+          Info do nó
+        </span>
       </div>
     );
   }
