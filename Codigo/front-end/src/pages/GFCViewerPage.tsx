@@ -25,6 +25,7 @@ import type {
   GFCSourceFileDTO,
   GFCFlowNode,
   GFCFlowEdge,
+  GFCCyclomaticComplexityDTO,
 } from '../features/graph/types/gfc';
 import type { ProjectLayoutContext } from './ProjectLayout';
 
@@ -39,6 +40,7 @@ export function GFCViewerPage() {
   const [sourceFile, setSourceFile] = useState<GFCSourceFileDTO | null>(null);
   const [methods, setMethods] = useState<GFCSourceMethodDTO[]>([]);
   const [projectGfcs, setProjectGfcs] = useState<GFCSummaryDTO[]>([]);
+  const [complexity, setComplexity] = useState<GFCCyclomaticComplexityDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [generatingSignature, setGeneratingSignature] = useState<string | null>(null);
@@ -46,12 +48,12 @@ export function GFCViewerPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showSourceModal, setShowSourceModal] = useState(false);
   const [sourceHighlight, setSourceHighlight] = useState<{ startLine: number; endLine: number } | null>(null);
-  const [methodCodePanelCollapsed, setMethodCodePanelCollapsed] = useState(true);
+  const [methodCodePanelCollapsed, setMethodCodePanelCollapsed] = useState(false);
   const [relayoutLoading, setRelayoutLoading] = useState(false);
   const [layoutVersion, setLayoutVersion] = useState(0);
 
   const [methodPanelCollapsed, setMethodPanelCollapsed] = useState(false);
-  const [nodeInfoCollapsed, setNodeInfoCollapsed] = useState(false);
+  const [nodeInfoCollapsed, setNodeInfoCollapsed] = useState(true);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -63,11 +65,14 @@ export function GFCViewerPage() {
     GFCService.buscarPorId(gfcId)
       .then(async (g) => {
         if (cancelled) return;
-        const [file, fileMethods, gfcs, graph] = await Promise.all([
+        const [file, fileMethods, gfcs, graph, complexityResult] = await Promise.all([
           SourceFileService.buscarPorId(g.sourceFileId),
           SourceFileService.listarMetodos(g.sourceFileId),
           GFCService.listarPorProjeto(g.projectId),
           buildFlowGraph(g),
+          // Endpoint pode falhar (ex.: GFC novo ainda sem cálculo). Trata silenciosamente —
+          // o painel volta a usar o cálculo local de fallback.
+          GFCService.obterComplexidade(g.id).catch(() => null),
         ]);
         if (cancelled) return;
         setGfc(g);
@@ -76,6 +81,7 @@ export function GFCViewerPage() {
         setSourceFile(file);
         setMethods(fileMethods);
         setProjectGfcs(gfcs);
+        setComplexity(complexityResult);
       })
       .catch(() => {
         if (!cancelled) setLoadError('GFC não encontrado.');
@@ -225,12 +231,14 @@ export function GFCViewerPage() {
             initialNodes={flowNodes}
             initialEdges={flowEdges}
             stats={stats}
+            complexity={complexity}
             onNodeSelect={setSelectedNodeId}
           />
 
           <MethodCodePanel
             sourceFileId={sourceFile?.id ?? null}
             methodSignature={gfc.methodSignature}
+            fileName={sourceFile?.fileName ?? null}
             isCollapsed={methodCodePanelCollapsed}
             onToggleCollapse={() => setMethodCodePanelCollapsed((v) => !v)}
             selectedStartLine={selectedNodeInfo?.startLine ?? null}

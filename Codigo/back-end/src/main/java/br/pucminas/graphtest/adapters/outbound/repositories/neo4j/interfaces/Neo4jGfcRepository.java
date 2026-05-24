@@ -29,4 +29,11 @@ public interface Neo4jGfcRepository extends Neo4jRepository<Neo4jGfcEntity, UUID
             DETACH DELETE g, n
             """)
     void deleteAllBySourceFileId(UUID sourceFileId);
+
+    @Query("""
+            MATCH (g:Gfc {projectId: $projectId})
+            OPTIONAL MATCH (g)-[:HAS_NODE]->(n:GfcNode)
+            DETACH DELETE g, n
+            """)
+    void deleteAllByProjectId(UUID projectId);
 }

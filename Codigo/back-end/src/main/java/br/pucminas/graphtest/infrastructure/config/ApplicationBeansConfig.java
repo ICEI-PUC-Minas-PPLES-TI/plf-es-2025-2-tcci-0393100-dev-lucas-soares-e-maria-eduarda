@@ -29,6 +29,7 @@ import br.pucminas.graphtest.application.port.input.gce.UpdateGceNodeUseCasePort
 import br.pucminas.graphtest.application.port.input.gce.UpdateGceUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.ValidateGceUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.CreateGfcSourceFileUseCasePort;
+import br.pucminas.graphtest.application.port.input.gfc.CalculateCyclomaticComplexityUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.CreateGfcUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.DeleteGfcSourceFileUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.DeleteGfcUseCasePort;
@@ -99,6 +100,7 @@ import br.pucminas.graphtest.application.usecases.gce.UpdateGceNodeUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gce.UpdateGceUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gce.ValidateGceUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gfc.CreateGfcSourceFileUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.gfc.CalculateCyclomaticComplexityUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gfc.CreateGfcUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gfc.DeleteGfcSourceFileUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gfc.DeleteGfcUseCaseImpl;
@@ -312,6 +314,12 @@ public class ApplicationBeansConfig {
     }
 
     @Bean
+    public CalculateCyclomaticComplexityUseCasePort calculateCyclomaticComplexityUseCase(GfcRepositoryPort gfcRepositoryPort,
+                                                                                        ProjectAccessService projectAccessService) {
+        return new CalculateCyclomaticComplexityUseCaseImpl(gfcRepositoryPort, projectAccessService);
+    }
+
+    @Bean
     public DeleteGfcUseCasePort deleteGfcUseCase(GfcRepositoryPort gfcRepositoryPort,
                                                  ProjectAccessService projectAccessService) {
         return new DeleteGfcUseCaseImpl(gfcRepositoryPort, projectAccessService);
@@ -495,8 +503,16 @@ public class ApplicationBeansConfig {
     @Bean
     public ProjectDeletionService projectDeletionService(ProjectRepositoryPort projectRepositoryPort,
                                                          GceRepositoryPort gceRepositoryPort,
-                                                         DecisionTableRepositoryPort decisionTableRepositoryPort) {
-        return new ProjectDeletionServiceImpl(projectRepositoryPort, gceRepositoryPort, decisionTableRepositoryPort);
+                                                         DecisionTableRepositoryPort decisionTableRepositoryPort,
+                                                         GfcRepositoryPort gfcRepositoryPort,
+                                                         GfcSourceFileRepositoryPort gfcSourceFileRepositoryPort) {
+        return new ProjectDeletionServiceImpl(
+                projectRepositoryPort,
+                gceRepositoryPort,
+                decisionTableRepositoryPort,
+                gfcRepositoryPort,
+                gfcSourceFileRepositoryPort
+        );
     }
 
     @Bean

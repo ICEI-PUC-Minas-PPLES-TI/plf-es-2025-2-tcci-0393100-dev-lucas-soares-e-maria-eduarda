@@ -1,6 +1,7 @@
 package br.pucminas.graphtest.adapters.inbound.util;
 
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.CreateGfcSourceFileResponseDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.gfc.CyclomaticComplexityResponseDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.CreateGfcDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.CreateGfcResponseDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcDTO;
@@ -13,6 +14,7 @@ import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcSourceMethodDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcSummaryDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.PreviewGfcDTO;
 import br.pucminas.graphtest.application.port.input.gfc.records.CreateGfcSourceFileInput;
+import br.pucminas.graphtest.application.port.input.gfc.records.CyclomaticComplexityOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.CreateGfcSourceFileOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.CreateGfcInput;
 import br.pucminas.graphtest.application.port.input.gfc.records.CreateGfcOutput;
@@ -73,6 +75,20 @@ public class GfcDtoConverterUtil {
                 output.language(),
                 output.nodes().stream().map(GfcDtoConverterUtil::toDto).toList(),
                 output.edges().stream().map(GfcDtoConverterUtil::toDto).toList()
+        );
+    }
+
+    public static CyclomaticComplexityResponseDTO toDto(CyclomaticComplexityOutput output) {
+        return new CyclomaticComplexityResponseDTO(
+                output.gfcId(),
+                output.nodesCount(),
+                output.edgesCount(),
+                output.predicateNodesCount(),
+                output.cyclomaticComplexityByEdgesAndNodes(),
+                output.cyclomaticComplexityByPredicateNodes(),
+                output.formulaByEdgesAndNodes(),
+                output.formulaByPredicateNodes(),
+                output.warnings()
         );
     }
 

@@ -27,6 +27,8 @@ public final class ApiRequestPaths {
 
     public static final String GFC_PREVIEW = "/preview";
 
+    public static final String GFC_CYCLOMATIC_COMPLEXITY = "/{gfcId}/complexidade-ciclomatica";
+
     public static final String GFC_PROJECT = "/projeto/{projectId}";
 
     public static final String DECISION_TABLE = "/tabela-de-decisao";

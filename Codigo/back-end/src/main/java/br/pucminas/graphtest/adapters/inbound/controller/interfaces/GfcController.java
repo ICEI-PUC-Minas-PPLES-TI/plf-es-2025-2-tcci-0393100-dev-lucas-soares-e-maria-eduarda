@@ -2,6 +2,7 @@ package br.pucminas.graphtest.adapters.inbound.controller.interfaces;
 
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.CreateGfcDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.CreateGfcResponseDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.gfc.CyclomaticComplexityResponseDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.DeleteGfcResponseDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcSummaryDTO;
@@ -35,4 +36,7 @@ public interface GfcController {
 
     @PostMapping(GFC_PREVIEW)
     ResponseEntity<GfcDTO> preview(@Validated @RequestBody PreviewGfcDTO request);
+
+    @GetMapping(GFC_CYCLOMATIC_COMPLEXITY)
+    ResponseEntity<CyclomaticComplexityResponseDTO> calculateCyclomaticComplexity(@PathVariable UUID gfcId);
 }

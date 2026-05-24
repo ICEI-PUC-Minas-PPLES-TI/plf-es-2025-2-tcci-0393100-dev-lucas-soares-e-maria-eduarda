@@ -26,13 +26,14 @@ import { OrthogonalEdge } from './edges/OrthogonalEdge';
 import { GFCLegend } from './GFCLegend';
 import { GFCStats } from './GFCStats';
 import { savePositions, type GFCStats as Stats } from '../utils/gfcConverters';
-import type { GFCFlowNode, GFCFlowEdge } from '../types/gfc';
+import type { GFCCyclomaticComplexityDTO, GFCFlowNode, GFCFlowEdge } from '../types/gfc';
 
 interface GFCCanvasProps {
   gfcId: string;
   initialNodes: GFCFlowNode[];
   initialEdges: GFCFlowEdge[];
   stats: Stats;
+  complexity?: GFCCyclomaticComplexityDTO | null;
   onNodeSelect: (nodeId: string | null) => void;
 }
 
@@ -78,7 +79,7 @@ function edgeStyle(type: string | undefined): { stroke: string; strokeWidth: num
   }
 }
 
-export function GFCCanvas({ gfcId, initialNodes, initialEdges, stats, onNodeSelect }: GFCCanvasProps) {
+export function GFCCanvas({ gfcId, initialNodes, initialEdges, stats, complexity, onNodeSelect }: GFCCanvasProps) {
   const styledEdges = useMemo(
     () =>
       initialEdges.map((e) => ({
@@ -152,9 +153,9 @@ export function GFCCanvas({ gfcId, initialNodes, initialEdges, stats, onNodeSele
         />
       </ReactFlow>
 
-      <div className="absolute top-4 left-4 flex flex-col gap-3 pointer-events-auto">
+      <div className="absolute top-4 left-4 bottom-4 flex flex-col gap-3 pointer-events-auto">
         <GFCLegend />
-        <GFCStats stats={stats} />
+        <GFCStats stats={stats} complexity={complexity ?? null} />
       </div>
     </div>
   );

@@ -81,6 +81,18 @@ export interface GFCSummaryDTO {
   language: string | null;
 }
 
+export interface GFCCyclomaticComplexityDTO {
+  gfcId: string;
+  nodesCount: number;
+  edgesCount: number;
+  predicateNodesCount: number;
+  cyclomaticComplexityByEdgesAndNodes: number;
+  cyclomaticComplexityByPredicateNodes: number;
+  formulaByEdgesAndNodes: string;
+  formulaByPredicateNodes: string;
+  warnings: string[];
+}
+
 export interface CreateGFCRequest {
   projectId: string;
   sourceFileId: string;

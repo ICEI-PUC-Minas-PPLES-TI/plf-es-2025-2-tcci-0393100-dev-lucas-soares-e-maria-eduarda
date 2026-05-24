@@ -19,5 +19,7 @@ public interface GfcRepositoryPort {
 
     void deleteById(UUID id);
 
+    void deleteAllByProjectId(UUID projectId);
+
     void deleteAllBySourceFileId(UUID sourceFileId);
 }

@@ -1,6 +1,7 @@
 package br.pucminas.graphtest.adapters.inbound.util;
 
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.CreateGfcSourceFileResponseDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.gfc.CyclomaticComplexityResponseDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.CreateGfcDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.CreateGfcResponseDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcDTO;
@@ -10,6 +11,7 @@ import br.pucminas.graphtest.application.domain.gfc.enums.GfcEdgeTypeEnum;
 import br.pucminas.graphtest.application.domain.gfc.enums.GfcNodeTypeEnum;
 import br.pucminas.graphtest.application.port.input.gfc.records.CreateGfcSourceFileInput;
 import br.pucminas.graphtest.application.port.input.gfc.records.CreateGfcSourceFileOutput;
+import br.pucminas.graphtest.application.port.input.gfc.records.CyclomaticComplexityOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.CreateGfcInput;
 import br.pucminas.graphtest.application.port.input.gfc.records.CreateGfcOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcEdgeOutput;
@@ -131,6 +133,34 @@ class GfcDtoConverterUtilTest {
 
         assertEquals(GfcNodeTypeEnum.LOOP, dto.nodes().getFirst().type());
         assertEquals(GfcEdgeTypeEnum.LOOP_BODY, dto.edges().getFirst().type());
+    }
+
+    @Test
+    void shouldConvertCyclomaticComplexityOutputToResponseDto() {
+        UUID gfcId = UUID.randomUUID();
+        CyclomaticComplexityOutput output = new CyclomaticComplexityOutput(
+                gfcId,
+                10,
+                15,
+                6,
+                7,
+                7,
+                "V(g) = a - n + 2",
+                "V(G) = P + 1",
+                List.of("Aviso")
+        );
+
+        CyclomaticComplexityResponseDTO dto = GfcDtoConverterUtil.toDto(output);
+
+        assertEquals(gfcId, dto.gfcId());
+        assertEquals(10, dto.nodesCount());
+        assertEquals(15, dto.edgesCount());
+        assertEquals(6, dto.predicateNodesCount());
+        assertEquals(7, dto.cyclomaticComplexityByEdgesAndNodes());
+        assertEquals(7, dto.cyclomaticComplexityByPredicateNodes());
+        assertEquals("V(g) = a - n + 2", dto.formulaByEdgesAndNodes());
+        assertEquals("V(G) = P + 1", dto.formulaByPredicateNodes());
+        assertEquals(List.of("Aviso"), dto.warnings());
     }
 
     @Test
