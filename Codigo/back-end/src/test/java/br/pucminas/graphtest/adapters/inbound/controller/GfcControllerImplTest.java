@@ -6,19 +6,23 @@ import br.pucminas.graphtest.adapters.inbound.dto.gfc.CyclomaticComplexityRespon
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.DeleteGfcResponseDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcSummaryDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.gfc.GenerateStructuralTestSignatureResponseDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.PreviewGfcDTO;
 import br.pucminas.graphtest.application.port.input.gfc.CreateGfcUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.CalculateCyclomaticComplexityUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.DeleteGfcUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.FindGfcByIdUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.ListGfcByProjectUseCasePort;
+import br.pucminas.graphtest.application.port.input.gfc.GenerateStructuralTestSignatureUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.PreviewGfcUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.records.CreateGfcInput;
 import br.pucminas.graphtest.application.port.input.gfc.records.CreateGfcOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.CyclomaticComplexityOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcSummaryOutput;
+import br.pucminas.graphtest.application.port.input.gfc.records.GenerateStructuralTestSignatureOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.PreviewGfcInput;
+import br.pucminas.graphtest.application.port.input.gfc.records.StructuralTestMethodSignatureOutput;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -57,6 +61,9 @@ class GfcControllerImplTest {
 
     @Mock
     private CalculateCyclomaticComplexityUseCasePort calculateCyclomaticComplexityUseCasePort;
+
+    @Mock
+    private GenerateStructuralTestSignatureUseCasePort generateStructuralTestSignatureUseCasePort;
 
     @InjectMocks
     private GfcControllerImpl controller;
@@ -218,5 +225,29 @@ class GfcControllerImplTest {
         assertEquals("V(g) = a - n + 2", response.getBody().formulaByEdgesAndNodes());
         assertEquals("V(G) = P + 1", response.getBody().formulaByPredicateNodes());
         assertEquals(List.of("Aviso"), response.getBody().warnings());
+    }
+
+    @Test
+    void shouldGenerateStructuralTestSignatureThroughInputPort() {
+        UUID gfcId = UUID.randomUUID();
+        String code = "@Test\nvoid teste01() {\n\n}";
+        GenerateStructuralTestSignatureOutput output = new GenerateStructuralTestSignatureOutput(
+                gfcId,
+                "void executar()",
+                1,
+                List.of(new StructuralTestMethodSignatureOutput("teste01", code)),
+                code
+        );
+        when(generateStructuralTestSignatureUseCasePort.execute(gfcId)).thenReturn(output);
+
+        ResponseEntity<GenerateStructuralTestSignatureResponseDTO> response = controller.generateStructuralTestSignature(gfcId);
+
+        verify(generateStructuralTestSignatureUseCasePort).execute(gfcId);
+        assertEquals(OK, response.getStatusCode());
+        assertEquals(gfcId, response.getBody().gfcId());
+        assertEquals("void executar()", response.getBody().methodSignature());
+        assertEquals(1, response.getBody().cyclomaticComplexity());
+        assertEquals("teste01", response.getBody().testMethods().getFirst().methodName());
+        assertEquals(code, response.getBody().generatedCode());
     }
 }

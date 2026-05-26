@@ -5,6 +5,7 @@ import br.pucminas.graphtest.adapters.inbound.dto.gfc.CreateGfcDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.CreateGfcResponseDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.CyclomaticComplexityResponseDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.DeleteGfcResponseDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.gfc.GenerateStructuralTestSignatureResponseDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcSummaryDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.PreviewGfcDTO;
@@ -13,12 +14,14 @@ import br.pucminas.graphtest.application.port.input.gfc.CreateGfcUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.CalculateCyclomaticComplexityUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.DeleteGfcUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.FindGfcByIdUseCasePort;
+import br.pucminas.graphtest.application.port.input.gfc.GenerateStructuralTestSignatureUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.ListGfcByProjectUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.PreviewGfcUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.records.CreateGfcOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.CyclomaticComplexityOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcSummaryOutput;
+import br.pucminas.graphtest.application.port.input.gfc.records.GenerateStructuralTestSignatureOutput;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -58,6 +61,7 @@ public class GfcControllerImpl implements GfcController {
     private final ListGfcByProjectUseCasePort listGfcByProjectUseCasePort;
     private final PreviewGfcUseCasePort previewGfcUseCasePort;
     private final CalculateCyclomaticComplexityUseCasePort calculateCyclomaticComplexityUseCasePort;
+    private final GenerateStructuralTestSignatureUseCasePort generateStructuralTestSignatureUseCasePort;
 
     @Override
     @PostMapping
@@ -111,6 +115,15 @@ public class GfcControllerImpl implements GfcController {
         log.info(">>> calcularComplexidadeCiclomatica: recebendo requisicao para calcular complexidade ciclomatica");
 
         CyclomaticComplexityOutput output = calculateCyclomaticComplexityUseCasePort.execute(gfcId);
+        return ResponseEntity.ok(toDto(output));
+    }
+
+    @Override
+    @GetMapping(GFC_STRUCTURAL_TEST_SIGNATURE)
+    public ResponseEntity<GenerateStructuralTestSignatureResponseDTO> generateStructuralTestSignature(@PathVariable UUID gfcId) {
+        log.info(">>> gerarAssinaturaTesteEstrutural: recebendo requisicao para gerar assinaturas de teste estrutural");
+
+        GenerateStructuralTestSignatureOutput output = generateStructuralTestSignatureUseCasePort.execute(gfcId);
         return ResponseEntity.ok(toDto(output));
     }
 }

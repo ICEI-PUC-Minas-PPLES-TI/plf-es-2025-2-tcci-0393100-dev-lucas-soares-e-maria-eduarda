@@ -4,6 +4,7 @@ import br.pucminas.graphtest.adapters.inbound.dto.gfc.CreateGfcDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.CreateGfcResponseDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.CyclomaticComplexityResponseDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.DeleteGfcResponseDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.gfc.GenerateStructuralTestSignatureResponseDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcSummaryDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.PreviewGfcDTO;
@@ -39,4 +40,7 @@ public interface GfcController {
 
     @GetMapping(GFC_CYCLOMATIC_COMPLEXITY)
     ResponseEntity<CyclomaticComplexityResponseDTO> calculateCyclomaticComplexity(@PathVariable UUID gfcId);
+
+    @GetMapping(GFC_STRUCTURAL_TEST_SIGNATURE)
+    ResponseEntity<GenerateStructuralTestSignatureResponseDTO> generateStructuralTestSignature(@PathVariable UUID gfcId);
 }

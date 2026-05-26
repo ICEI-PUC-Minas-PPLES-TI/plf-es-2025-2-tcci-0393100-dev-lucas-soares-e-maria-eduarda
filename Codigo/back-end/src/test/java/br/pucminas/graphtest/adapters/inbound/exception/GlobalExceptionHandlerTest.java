@@ -1,6 +1,7 @@
 package br.pucminas.graphtest.adapters.inbound.exception;
 
 import br.pucminas.graphtest.adapters.inbound.error.ErrorResponse;
+import br.pucminas.graphtest.application.exception.InvalidCyclomaticComplexityException;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -36,5 +37,16 @@ class GlobalExceptionHandlerTest {
 
         assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
         assertTrue(response.getContentAsString().contains("\"status\": 401"));
+    }
+
+    @Test
+    void shouldReturnBadRequestForInvalidCyclomaticComplexity() {
+        var exception = new InvalidCyclomaticComplexityException("Complexidade invalida");
+
+        var response = handler.handleBadRequest(exception);
+        ErrorResponse body = (ErrorResponse) response.getBody();
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals(HttpStatus.BAD_REQUEST.value(), body.getStatus());
     }
 }
