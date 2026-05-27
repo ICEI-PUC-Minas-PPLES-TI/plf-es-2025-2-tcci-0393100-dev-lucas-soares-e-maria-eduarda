@@ -9,7 +9,10 @@ import { createEmptyRule } from '../features/decision-table/utils/gceToDecisionT
 import { mapDTOToDecisionTable } from '../features/decision-table/utils/decisionTableMapper';
 import DecisionTableService from '../services/DecisionTable/DecisionTableService';
 import GCEService from '../services/GCE/GCEService';
+import { TestSignatureModal } from '../features/graph/components/TestSignatureModal';
+import { extractApiErrorMessage } from '../utils/apiError';
 import type { DecisionTable, ConditionValue, EffectValue } from '../features/decision-table/types/decisionTable';
+import type { GenerateFunctionalTestSignatureResponseDTO } from '../features/decision-table/types/decisionTableDTO';
 import type { ProjectLayoutContext } from './ProjectLayout';
 
 export function DecisionTablePage() {
@@ -23,6 +26,10 @@ export function DecisionTablePage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [regenerateStatus, setRegenerateStatus] = useState<'idle' | 'loading' | 'synced' | 'error'>('idle');
+  const [testModalOpen, setTestModalOpen] = useState(false);
+  const [testLoading, setTestLoading] = useState(false);
+  const [testError, setTestError] = useState<string | null>(null);
+  const [testData, setTestData] = useState<GenerateFunctionalTestSignatureResponseDTO | null>(null);
 
   useEffect(() => {
     if (!gceId || !projectId) return;
@@ -143,6 +150,22 @@ export function DecisionTablePage() {
     navigate(`/projeto/${projectId}/gce/${gceId}`);
   }, [navigate, projectId, gceId]);
 
+  const handleGenerateTests = useCallback(async () => {
+    if (!table) return;
+    setTestModalOpen(true);
+    setTestLoading(true);
+    setTestError(null);
+    setTestData(null);
+    try {
+      const data = await DecisionTableService.gerarAssinaturaTesteFuncional(table.id);
+      setTestData(data);
+    } catch (err) {
+      setTestError(extractApiErrorMessage(err, 'Erro ao gerar assinaturas de teste.'));
+    } finally {
+      setTestLoading(false);
+    }
+  }, [table]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-surface flex items-center justify-center">
@@ -178,6 +201,8 @@ export function DecisionTablePage() {
         onRegenerate={handleRegenerate}
         regenerateStatus={regenerateStatus}
         onSave={handleSave}
+        onGenerateTests={handleGenerateTests}
+        generateTestsLoading={testLoading}
       />
 
       <div className="flex-1 flex overflow-hidden">
@@ -200,6 +225,22 @@ export function DecisionTablePage() {
         ruleCount={table.rules.length}
         generatedAt={table.generatedAt}
         updatedAt={table.updatedAt !== table.generatedAt ? table.updatedAt : undefined}
+      />
+
+      <TestSignatureModal
+        open={testModalOpen}
+        onClose={() => setTestModalOpen(false)}
+        title={testData?.decisionTableName ?? table.name}
+        subtitle={
+          testData
+            ? `${testData.testMethods.length} ${testData.testMethods.length === 1 ? 'teste' : 'testes'} · ${testData.rulesCount} regra${testData.rulesCount === 1 ? '' : 's'}`
+            : null
+        }
+        generatedCode={testData?.generatedCode ?? null}
+        loading={testLoading}
+        error={testError}
+        methods={testData?.testMethods.map((m) => ({ methodName: m.methodName, badge: m.ruleCode }))}
+        warnings={testData?.warnings}
       />
     </div>
   );

@@ -81,6 +81,19 @@ export interface GFCSummaryDTO {
   language: string | null;
 }
 
+export interface StructuralTestMethodSignatureDTO {
+  methodName: string;
+  generatedCode: string;
+}
+
+export interface GenerateStructuralTestSignatureResponseDTO {
+  gfcId: string;
+  methodSignature: string;
+  cyclomaticComplexity: number;
+  testMethods: StructuralTestMethodSignatureDTO[];
+  generatedCode: string;
+}
+
 export interface GFCCyclomaticComplexityDTO {
   gfcId: string;
   nodesCount: number;
