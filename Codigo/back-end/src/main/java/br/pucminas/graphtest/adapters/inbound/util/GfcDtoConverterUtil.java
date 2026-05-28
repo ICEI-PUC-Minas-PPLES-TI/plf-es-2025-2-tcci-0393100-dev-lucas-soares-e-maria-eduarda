@@ -7,18 +7,21 @@ import br.pucminas.graphtest.adapters.inbound.dto.gfc.CreateGfcResponseDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcEdgeDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcNodeDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.gfc.GenerateStructuralTestSignatureResponseDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcSourceCodeDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcSourceFileDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcSourceMethodDetailsDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcSourceMethodDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcSummaryDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.PreviewGfcDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.gfc.StructuralTestMethodSignatureDTO;
 import br.pucminas.graphtest.application.port.input.gfc.records.CreateGfcSourceFileInput;
 import br.pucminas.graphtest.application.port.input.gfc.records.CyclomaticComplexityOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.CreateGfcSourceFileOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.CreateGfcInput;
 import br.pucminas.graphtest.application.port.input.gfc.records.CreateGfcOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcEdgeOutput;
+import br.pucminas.graphtest.application.port.input.gfc.records.GenerateStructuralTestSignatureOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcNodeOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcSourceCodeOutput;
@@ -27,6 +30,7 @@ import br.pucminas.graphtest.application.port.input.gfc.records.GfcSourceMethodD
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcSourceMethodOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcSummaryOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.PreviewGfcInput;
+import br.pucminas.graphtest.application.port.input.gfc.records.StructuralTestMethodSignatureOutput;
 import lombok.experimental.UtilityClass;
 
 import java.util.UUID;
@@ -90,6 +94,20 @@ public class GfcDtoConverterUtil {
                 output.formulaByPredicateNodes(),
                 output.warnings()
         );
+    }
+
+    public static GenerateStructuralTestSignatureResponseDTO toDto(GenerateStructuralTestSignatureOutput output) {
+        return new GenerateStructuralTestSignatureResponseDTO(
+                output.gfcId(),
+                output.methodSignature(),
+                output.cyclomaticComplexity(),
+                output.testMethods().stream().map(GfcDtoConverterUtil::toDto).toList(),
+                output.generatedCode()
+        );
+    }
+
+    private static StructuralTestMethodSignatureDTO toDto(StructuralTestMethodSignatureOutput output) {
+        return new StructuralTestMethodSignatureDTO(output.methodName(), output.generatedCode());
     }
 
     private static GfcNodeDTO toDto(GfcNodeOutput output) {

@@ -2,6 +2,7 @@ import { BaseService } from '../BaseService';
 import type {
   DecisionTableDTO,
   UpdateDecisionTableDetailsDTO,
+  GenerateFunctionalTestSignatureResponseDTO,
 } from '../../features/decision-table/types/decisionTableDTO';
 
 const BASE = '/tabela-de-decisao';
@@ -34,6 +35,15 @@ class DecisionTableService extends BaseService {
 
   deletar = async (id: string): Promise<void> => {
     await this.delete(`${BASE}/${id}`);
+  };
+
+  gerarAssinaturaTesteFuncional = async (
+    decisionTableId: string,
+  ): Promise<GenerateFunctionalTestSignatureResponseDTO> => {
+    const res = await this.get<GenerateFunctionalTestSignatureResponseDTO>(
+      `${BASE}/${decisionTableId}/assinatura-teste-funcional`,
+    );
+    return res.data;
   };
 }
 

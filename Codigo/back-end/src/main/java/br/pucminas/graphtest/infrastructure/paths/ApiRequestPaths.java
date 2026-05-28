@@ -29,6 +29,8 @@ public final class ApiRequestPaths {
 
     public static final String GFC_CYCLOMATIC_COMPLEXITY = "/{gfcId}/complexidade-ciclomatica";
 
+    public static final String GFC_STRUCTURAL_TEST_SIGNATURE = "/{gfcId}/assinatura-teste-estrutural";
+
     public static final String GFC_PROJECT = "/projeto/{projectId}";
 
     public static final String DECISION_TABLE = "/tabela-de-decisao";
@@ -44,6 +46,8 @@ public final class ApiRequestPaths {
     public static final String ID = "/{id}";
 
     public static final String DECISION_TABLE_STATUS = "/{id}/status";
+
+    public static final String DECISION_TABLE_FUNCTIONAL_TEST_SIGNATURE = "/{decisionTableId}/assinatura-teste-funcional";
 
     public static final String USUARIO_SENHA = "/{id}/senha";
 

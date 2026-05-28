@@ -11,6 +11,8 @@ import { NodeInfoPanel } from '../features/graph/components/NodeInfoPanel';
 import { SourceFileViewerModal } from '../features/graph/components/SourceFileViewerModal';
 import { MethodCodePanel } from '../features/graph/components/MethodCodePanel';
 import { GFCViewerSkeleton } from '../features/graph/components/GFCViewerSkeleton';
+import { TestSignatureModal } from '../features/graph/components/TestSignatureModal';
+import { extractApiErrorMessage } from '../utils/apiError';
 import {
   buildFlowGraph,
   clearPositions,
@@ -26,6 +28,7 @@ import type {
   GFCFlowNode,
   GFCFlowEdge,
   GFCCyclomaticComplexityDTO,
+  GenerateStructuralTestSignatureResponseDTO,
 } from '../features/graph/types/gfc';
 import type { ProjectLayoutContext } from './ProjectLayout';
 
@@ -51,6 +54,10 @@ export function GFCViewerPage() {
   const [methodCodePanelCollapsed, setMethodCodePanelCollapsed] = useState(false);
   const [relayoutLoading, setRelayoutLoading] = useState(false);
   const [layoutVersion, setLayoutVersion] = useState(0);
+  const [testModalOpen, setTestModalOpen] = useState(false);
+  const [testLoading, setTestLoading] = useState(false);
+  const [testError, setTestError] = useState<string | null>(null);
+  const [testData, setTestData] = useState<GenerateStructuralTestSignatureResponseDTO | null>(null);
 
   const [methodPanelCollapsed, setMethodPanelCollapsed] = useState(false);
   const [nodeInfoCollapsed, setNodeInfoCollapsed] = useState(true);
@@ -149,6 +156,22 @@ export function GFCViewerPage() {
     navigate(`/projeto/${projectId}`);
   };
 
+  const handleGenerateTests = async () => {
+    if (!gfc) return;
+    setTestModalOpen(true);
+    setTestLoading(true);
+    setTestError(null);
+    setTestData(null);
+    try {
+      const data = await GFCService.gerarAssinaturaTesteEstrutural(gfc.id);
+      setTestData(data);
+    } catch (err) {
+      setTestError(extractApiErrorMessage(err, 'Erro ao gerar assinaturas de teste.'));
+    } finally {
+      setTestLoading(false);
+    }
+  };
+
   const handleRelayout = async () => {
     if (!gfc) return;
     setRelayoutLoading(true);
@@ -203,6 +226,8 @@ export function GFCViewerPage() {
           canViewMethod={!!sourceFile && !!gfc.methodSignature}
           onRelayout={handleRelayout}
           relayoutLoading={relayoutLoading}
+          onGenerateTests={handleGenerateTests}
+          generateTestsLoading={testLoading}
         />
 
         {transitioning && (
@@ -266,6 +291,21 @@ export function GFCViewerPage() {
             {generateError}
           </div>
         )}
+
+        <TestSignatureModal
+          open={testModalOpen}
+          onClose={() => setTestModalOpen(false)}
+          title={testData?.methodSignature ?? gfc.methodSignature ?? 'Assinaturas de teste estrutural'}
+          subtitle={
+            testData
+              ? `${testData.testMethods.length} ${testData.testMethods.length === 1 ? 'teste' : 'testes'} · V(G) = ${testData.cyclomaticComplexity}`
+              : null
+          }
+          generatedCode={testData?.generatedCode ?? null}
+          loading={testLoading}
+          error={testError}
+          methods={testData?.testMethods.map((m, i) => ({ methodName: m.methodName, badge: `T${i + 1}` }))}
+        />
 
         {showDeleteModal && (
           <ConfirmModal

@@ -135,6 +135,7 @@ public class GlobalExceptionHandler implements AuthenticationFailureHandler {
      */
     @ExceptionHandler({
             EmptyJavaSourceCodeException.class,
+            InvalidCyclomaticComplexityException.class,
             InvalidJavaSourceCodeException.class,
             JavaSourceFileException.class,
             IllegalArgumentException.class,

@@ -5,6 +5,7 @@ import br.pucminas.graphtest.adapters.inbound.dto.gfc.CyclomaticComplexityRespon
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.CreateGfcDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.CreateGfcResponseDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.gfc.GenerateStructuralTestSignatureResponseDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.GfcSourceFileDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gfc.PreviewGfcDTO;
 import br.pucminas.graphtest.application.domain.gfc.enums.GfcEdgeTypeEnum;
@@ -15,6 +16,7 @@ import br.pucminas.graphtest.application.port.input.gfc.records.CyclomaticComple
 import br.pucminas.graphtest.application.port.input.gfc.records.CreateGfcInput;
 import br.pucminas.graphtest.application.port.input.gfc.records.CreateGfcOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcEdgeOutput;
+import br.pucminas.graphtest.application.port.input.gfc.records.GenerateStructuralTestSignatureOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcNodeOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcSourceCodeOutput;
@@ -23,6 +25,7 @@ import br.pucminas.graphtest.application.port.input.gfc.records.GfcSourceMethodD
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcSourceMethodOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.GfcSummaryOutput;
 import br.pucminas.graphtest.application.port.input.gfc.records.PreviewGfcInput;
+import br.pucminas.graphtest.application.port.input.gfc.records.StructuralTestMethodSignatureOutput;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
@@ -161,6 +164,27 @@ class GfcDtoConverterUtilTest {
         assertEquals("V(g) = a - n + 2", dto.formulaByEdgesAndNodes());
         assertEquals("V(G) = P + 1", dto.formulaByPredicateNodes());
         assertEquals(List.of("Aviso"), dto.warnings());
+    }
+
+    @Test
+    void shouldConvertStructuralTestSignatureOutputToResponseDto() {
+        UUID gfcId = UUID.randomUUID();
+        String code = "@Test\nvoid teste01() {\n\n}";
+        GenerateStructuralTestSignatureOutput output = new GenerateStructuralTestSignatureOutput(
+                gfcId,
+                "void executar()",
+                1,
+                List.of(new StructuralTestMethodSignatureOutput("teste01", code)),
+                code
+        );
+
+        GenerateStructuralTestSignatureResponseDTO dto = GfcDtoConverterUtil.toDto(output);
+
+        assertEquals(gfcId, dto.gfcId());
+        assertEquals("void executar()", dto.methodSignature());
+        assertEquals(1, dto.cyclomaticComplexity());
+        assertEquals("teste01", dto.testMethods().getFirst().methodName());
+        assertEquals(code, dto.generatedCode());
     }
 
     @Test

@@ -6,6 +6,7 @@ import br.pucminas.graphtest.application.port.input.decisiontable.FindDecisionTa
 import br.pucminas.graphtest.application.port.input.decisiontable.FindDecisionTableByIdUseCasePort;
 import br.pucminas.graphtest.application.port.input.decisiontable.FindDecisionTableStatusByIdUseCasePort;
 import br.pucminas.graphtest.application.port.input.decisiontable.GenerateDecisionTableUseCasePort;
+import br.pucminas.graphtest.application.port.input.decisiontable.GenerateFunctionalTestSignatureUseCasePort;
 import br.pucminas.graphtest.application.port.input.decisiontable.ListDecisionTablesUseCasePort;
 import br.pucminas.graphtest.application.port.input.decisiontable.ListDecisionTablesByProjectUseCasePort;
 import br.pucminas.graphtest.application.port.input.decisiontable.PatchDecisionTableDetailsUseCasePort;
@@ -34,6 +35,7 @@ import br.pucminas.graphtest.application.port.input.gfc.CreateGfcUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.DeleteGfcSourceFileUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.DeleteGfcUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.FindGfcByIdUseCasePort;
+import br.pucminas.graphtest.application.port.input.gfc.GenerateStructuralTestSignatureUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.FindGfcSourceFileByIdUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.GetGfcSourceCodeUseCasePort;
 import br.pucminas.graphtest.application.port.input.gfc.GetGfcSourceMethodDetailsUseCasePort;
@@ -105,6 +107,7 @@ import br.pucminas.graphtest.application.usecases.gfc.CreateGfcUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gfc.DeleteGfcSourceFileUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gfc.DeleteGfcUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gfc.FindGfcByIdUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.gfc.GenerateStructuralTestSignatureUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gfc.FindGfcSourceFileByIdUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gfc.GetGfcSourceCodeUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gfc.GetGfcSourceMethodDetailsUseCaseImpl;
@@ -118,6 +121,7 @@ import br.pucminas.graphtest.application.usecases.decisiontable.FindDecisionTabl
 import br.pucminas.graphtest.application.usecases.decisiontable.FindDecisionTableByIdUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.decisiontable.FindDecisionTableStatusByIdUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.decisiontable.GenerateDecisionTableUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.decisiontable.GenerateFunctionalTestSignatureUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.decisiontable.ListDecisionTablesUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.decisiontable.ListDecisionTablesByProjectUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.decisiontable.PatchDecisionTableDetailsUseCaseImpl;
@@ -320,6 +324,19 @@ public class ApplicationBeansConfig {
     }
 
     @Bean
+    public GenerateStructuralTestSignatureUseCasePort generateStructuralTestSignatureUseCase(
+            GfcRepositoryPort gfcRepositoryPort,
+            ProjectAccessService projectAccessService,
+            CalculateCyclomaticComplexityUseCasePort calculateCyclomaticComplexityUseCasePort
+    ) {
+        return new GenerateStructuralTestSignatureUseCaseImpl(
+                gfcRepositoryPort,
+                projectAccessService,
+                calculateCyclomaticComplexityUseCasePort
+        );
+    }
+
+    @Bean
     public DeleteGfcUseCasePort deleteGfcUseCase(GfcRepositoryPort gfcRepositoryPort,
                                                  ProjectAccessService projectAccessService) {
         return new DeleteGfcUseCaseImpl(gfcRepositoryPort, projectAccessService);
@@ -442,6 +459,14 @@ public class ApplicationBeansConfig {
                 decisionTableRepositoryPort,
                 projectAccessService
         );
+    }
+
+    @Bean
+    public GenerateFunctionalTestSignatureUseCasePort generateFunctionalTestSignatureUseCase(
+            DecisionTableRepositoryPort decisionTableRepositoryPort,
+            ProjectAccessService projectAccessService
+    ) {
+        return new GenerateFunctionalTestSignatureUseCaseImpl(decisionTableRepositoryPort, projectAccessService);
     }
 
     @Bean

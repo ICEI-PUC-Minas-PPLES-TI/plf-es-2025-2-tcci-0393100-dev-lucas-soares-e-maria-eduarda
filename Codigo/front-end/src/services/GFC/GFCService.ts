@@ -5,6 +5,7 @@ import type {
   GFCCyclomaticComplexityDTO,
   CreateGFCRequest,
   CreateGFCResponse,
+  GenerateStructuralTestSignatureResponseDTO,
 } from '../../features/graph/types/gfc';
 
 const BASE = '/grafo-de-fluxo-de-controle';
@@ -32,6 +33,15 @@ class GFCService extends BaseService {
   obterComplexidade = async (gfcId: string): Promise<GFCCyclomaticComplexityDTO> => {
     const res = await this.get<GFCCyclomaticComplexityDTO>(
       `${BASE}/${gfcId}/complexidade-ciclomatica`,
+    );
+    return res.data;
+  };
+
+  gerarAssinaturaTesteEstrutural = async (
+    gfcId: string,
+  ): Promise<GenerateStructuralTestSignatureResponseDTO> => {
+    const res = await this.get<GenerateStructuralTestSignatureResponseDTO>(
+      `${BASE}/${gfcId}/assinatura-teste-estrutural`,
     );
     return res.data;
   };

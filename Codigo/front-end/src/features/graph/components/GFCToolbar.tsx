@@ -1,4 +1,4 @@
-import { Trash2, FileCode, Code2, LayoutGrid, Loader2 } from 'lucide-react';
+import { Trash2, FileCode, Code2, FlaskConical, LayoutGrid, Loader2 } from 'lucide-react';
 import { Button } from '../../../components/Button';
 
 interface GFCToolbarProps {
@@ -12,6 +12,8 @@ interface GFCToolbarProps {
   canViewMethod?: boolean;
   onRelayout?: () => void;
   relayoutLoading?: boolean;
+  onGenerateTests?: () => void;
+  generateTestsLoading?: boolean;
 }
 
 export function GFCToolbar({
@@ -25,6 +27,8 @@ export function GFCToolbar({
   canViewMethod = false,
   onRelayout,
   relayoutLoading = false,
+  onGenerateTests,
+  generateTestsLoading = false,
 }: GFCToolbarProps) {
   return (
     <div className="h-12 bg-surface-card border-b border-edge flex items-center justify-between px-4 shrink-0">
@@ -43,6 +47,22 @@ export function GFCToolbar({
       </div>
 
       <div className="flex items-center gap-2 shrink-0">
+        {onGenerateTests && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={onGenerateTests}
+            disabled={generateTestsLoading}
+            title="Gera assinaturas de teste estrutural (uma por caminho independente)"
+          >
+            {generateTestsLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <FlaskConical className="w-4 h-4" />
+            )}
+            Gerar testes
+          </Button>
+        )}
         {onRelayout && (
           <Button
             size="sm"

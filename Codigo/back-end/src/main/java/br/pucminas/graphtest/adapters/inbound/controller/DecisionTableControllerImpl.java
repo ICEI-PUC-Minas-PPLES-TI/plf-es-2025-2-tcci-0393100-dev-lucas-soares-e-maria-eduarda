@@ -3,6 +3,7 @@ package br.pucminas.graphtest.adapters.inbound.controller;
 import br.pucminas.graphtest.adapters.inbound.controller.interfaces.DecisionTableController;
 import br.pucminas.graphtest.adapters.inbound.controller.interfaces.OperacoesCRUDController;
 import br.pucminas.graphtest.adapters.inbound.dto.decisiontable.DecisionTableDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.decisiontable.GenerateFunctionalTestSignatureResponseDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.decisiontable.UpdateDecisionTableDetailsDTO;
 import br.pucminas.graphtest.adapters.inbound.util.DecisionTableDtoConverterUtil;
 import br.pucminas.graphtest.application.port.input.decisiontable.DeleteDecisionTableByIdUseCasePort;
@@ -10,6 +11,7 @@ import br.pucminas.graphtest.application.port.input.decisiontable.FindDecisionTa
 import br.pucminas.graphtest.application.port.input.decisiontable.FindDecisionTableByIdUseCasePort;
 import br.pucminas.graphtest.application.port.input.decisiontable.FindDecisionTableStatusByIdUseCasePort;
 import br.pucminas.graphtest.application.port.input.decisiontable.GenerateDecisionTableUseCasePort;
+import br.pucminas.graphtest.application.port.input.decisiontable.GenerateFunctionalTestSignatureUseCasePort;
 import br.pucminas.graphtest.application.port.input.decisiontable.ListDecisionTablesUseCasePort;
 import br.pucminas.graphtest.application.port.input.decisiontable.ListDecisionTablesByProjectUseCasePort;
 import br.pucminas.graphtest.application.port.input.decisiontable.PatchDecisionTableDetailsUseCasePort;
@@ -45,6 +47,7 @@ import static br.pucminas.graphtest.adapters.inbound.util.JsonResponseBuilderUti
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.DECISION_TABLE;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.DECISION_TABLE_BY_GCE;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.DECISION_TABLE_GENERATE;
+import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.DECISION_TABLE_FUNCTIONAL_TEST_SIGNATURE;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.DECISION_TABLE_PREVIEW;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.DECISION_TABLE_PROJECT;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.DECISION_TABLE_REFRESH;
@@ -72,6 +75,7 @@ public class DecisionTableControllerImpl implements DecisionTableController, Ope
     private final PreviewDecisionTableUseCasePort previewDecisionTableUseCasePort;
     private final RefreshDecisionTableUseCasePort refreshDecisionTableUseCasePort;
     private final DeleteDecisionTableByIdUseCasePort deleteDecisionTableByIdUseCasePort;
+    private final GenerateFunctionalTestSignatureUseCasePort generateFunctionalTestSignatureUseCasePort;
 
     @Override
     @PostMapping(DECISION_TABLE_GENERATE)
@@ -174,5 +178,15 @@ public class DecisionTableControllerImpl implements DecisionTableController, Ope
                 CHAVES_TABELA_DECISAO_CONTROLLER,
                 asList(OK.value(), MSG_TABELA_DECISAO_DELETADA, id)
         ));
+    }
+
+    @Override
+    @GetMapping(DECISION_TABLE_FUNCTIONAL_TEST_SIGNATURE)
+    public ResponseEntity<GenerateFunctionalTestSignatureResponseDTO> generateFunctionalTestSignature(
+            @PathVariable UUID decisionTableId
+    ) {
+        log.info(">>> gerarAssinaturaTesteFuncional: recebendo requisicao para gerar assinaturas de teste funcional");
+
+        return ResponseEntity.ok(toDto(generateFunctionalTestSignatureUseCasePort.execute(decisionTableId)));
     }
 }

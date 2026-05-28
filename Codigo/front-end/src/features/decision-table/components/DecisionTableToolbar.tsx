@@ -1,4 +1,4 @@
-import { ArrowLeft, RotateCw, Save, AlertTriangle, CheckCircle } from 'lucide-react';
+import { ArrowLeft, RotateCw, Save, AlertTriangle, CheckCircle, FlaskConical, Loader2 } from 'lucide-react';
 import { Button } from '../../../components/Button';
 
 interface DecisionTableToolbarProps {
@@ -10,6 +10,8 @@ interface DecisionTableToolbarProps {
   onBack: () => void;
   onRegenerate: () => void;
   onSave: () => void;
+  onGenerateTests?: () => void;
+  generateTestsLoading?: boolean;
 }
 
 const SAVE_LABELS: Record<string, string> = {
@@ -28,6 +30,8 @@ export function DecisionTableToolbar({
   onBack,
   onRegenerate,
   onSave,
+  onGenerateTests,
+  generateTestsLoading = false,
 }: DecisionTableToolbarProps) {
   return (
     <div className="h-12 bg-surface-card border-b border-edge flex items-center justify-between px-4 shrink-0">
@@ -54,6 +58,22 @@ export function DecisionTableToolbar({
       </div>
 
       <div className="flex items-center gap-2 shrink-0">
+        {onGenerateTests && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={onGenerateTests}
+            disabled={generateTestsLoading}
+            title="Gera assinaturas de teste funcional (uma por regra da tabela)"
+          >
+            {generateTestsLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <FlaskConical className="w-4 h-4" />
+            )}
+            Gerar testes
+          </Button>
+        )}
         {regenerateStatus === 'synced' ? (
           <span className="flex items-center gap-1.5 px-2 py-1 text-sm text-green-400">
             <CheckCircle className="w-4 h-4 shrink-0" />

@@ -1,6 +1,10 @@
 package br.pucminas.graphtest.adapters.inbound.util;
 
 import br.pucminas.graphtest.adapters.inbound.dto.decisiontable.DecisionTableDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.decisiontable.FunctionalTestActionDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.decisiontable.FunctionalTestConditionDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.decisiontable.FunctionalTestMethodSignatureDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.decisiontable.GenerateFunctionalTestSignatureResponseDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.decisiontable.UpdateDecisionTableDetailsDTO;
 import br.pucminas.graphtest.application.port.input.decisiontable.records.DecisionTableActionCellOutput;
 import br.pucminas.graphtest.application.port.input.decisiontable.records.DecisionTableActionOutput;
@@ -11,6 +15,10 @@ import br.pucminas.graphtest.application.port.input.decisiontable.records.Decisi
 import br.pucminas.graphtest.application.port.input.decisiontable.records.DecisionTableOutput;
 import br.pucminas.graphtest.application.port.input.decisiontable.records.DecisionTableRuleOutput;
 import br.pucminas.graphtest.application.port.input.decisiontable.records.GenerateDecisionTableInput;
+import br.pucminas.graphtest.application.port.input.decisiontable.records.GenerateFunctionalTestSignatureOutput;
+import br.pucminas.graphtest.application.port.input.decisiontable.records.FunctionalTestActionOutput;
+import br.pucminas.graphtest.application.port.input.decisiontable.records.FunctionalTestConditionOutput;
+import br.pucminas.graphtest.application.port.input.decisiontable.records.FunctionalTestMethodSignatureOutput;
 import br.pucminas.graphtest.application.port.input.decisiontable.records.ListDecisionTablesByProjectInput;
 import br.pucminas.graphtest.application.port.input.decisiontable.records.UpdateDecisionTableDetailsInput;
 import jakarta.validation.constraints.NotNull;
@@ -50,6 +58,19 @@ public class DecisionTableDtoConverterUtil {
 
     public static GenerateDecisionTableInput toGenerateInput(UUID gceId) {
         return new GenerateDecisionTableInput(gceId);
+    }
+
+    public static GenerateFunctionalTestSignatureResponseDTO toDto(GenerateFunctionalTestSignatureOutput output) {
+        return new GenerateFunctionalTestSignatureResponseDTO(
+                output.decisionTableId(),
+                output.gceId(),
+                output.projectId(),
+                output.decisionTableName(),
+                output.rulesCount(),
+                output.testMethods().stream().map(DecisionTableDtoConverterUtil::toDto).toList(),
+                output.generatedCode(),
+                output.warnings()
+        );
     }
 
     public static DecisionTableByGceIdInput toByGceIdInput(UUID gceId) {
@@ -124,5 +145,24 @@ public class DecisionTableDtoConverterUtil {
                 output.createdAt(),
                 output.updatedAt()
         );
+    }
+
+    private static FunctionalTestMethodSignatureDTO toDto(FunctionalTestMethodSignatureOutput output) {
+        return new FunctionalTestMethodSignatureDTO(
+                output.ruleId(),
+                output.ruleCode(),
+                output.methodName(),
+                output.conditions().stream().map(DecisionTableDtoConverterUtil::toDto).toList(),
+                output.actions().stream().map(DecisionTableDtoConverterUtil::toDto).toList(),
+                output.generatedCode()
+        );
+    }
+
+    private static FunctionalTestConditionDTO toDto(FunctionalTestConditionOutput output) {
+        return new FunctionalTestConditionDTO(output.conditionId(), output.code(), output.label(), output.value());
+    }
+
+    private static FunctionalTestActionDTO toDto(FunctionalTestActionOutput output) {
+        return new FunctionalTestActionDTO(output.actionId(), output.code(), output.label(), output.value());
     }
 }

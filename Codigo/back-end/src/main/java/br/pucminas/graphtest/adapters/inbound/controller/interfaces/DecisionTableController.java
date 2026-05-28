@@ -1,6 +1,7 @@
 package br.pucminas.graphtest.adapters.inbound.controller.interfaces;
 
 import br.pucminas.graphtest.adapters.inbound.dto.decisiontable.DecisionTableDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.decisiontable.GenerateFunctionalTestSignatureResponseDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.decisiontable.UpdateDecisionTableDetailsDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,6 +18,7 @@ import java.util.UUID;
 
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.DECISION_TABLE_BY_GCE;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.DECISION_TABLE_GENERATE;
+import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.DECISION_TABLE_FUNCTIONAL_TEST_SIGNATURE;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.DECISION_TABLE_PREVIEW;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.DECISION_TABLE_PROJECT;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.DECISION_TABLE_REFRESH;
@@ -51,4 +53,7 @@ public interface DecisionTableController {
 
     @DeleteMapping(ID)
     ResponseEntity<Map<String, Object>> delete(@PathVariable UUID id);
+
+    @GetMapping(DECISION_TABLE_FUNCTIONAL_TEST_SIGNATURE)
+    ResponseEntity<GenerateFunctionalTestSignatureResponseDTO> generateFunctionalTestSignature(@PathVariable UUID decisionTableId);
 }

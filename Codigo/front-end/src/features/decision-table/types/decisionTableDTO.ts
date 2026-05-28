@@ -72,3 +72,38 @@ export interface UpdateDecisionTableDetailsDTO {
   name: string;
   description?: string;
 }
+
+// Assinatura de teste funcional (gerada a partir da tabela de decisão).
+export interface FunctionalTestConditionDTO {
+  conditionId: string;
+  code: string;
+  label: string;
+  value: BackendConditionValue;
+}
+
+export interface FunctionalTestActionDTO {
+  actionId: string;
+  code: string;
+  label: string;
+  value: BackendActionValue;
+}
+
+export interface FunctionalTestMethodSignatureDTO {
+  ruleId: string;
+  ruleCode: string;
+  methodName: string;
+  conditions: FunctionalTestConditionDTO[];
+  actions: FunctionalTestActionDTO[];
+  generatedCode: string;
+}
+
+export interface GenerateFunctionalTestSignatureResponseDTO {
+  decisionTableId: string;
+  gceId: string;
+  projectId: string;
+  decisionTableName: string;
+  rulesCount: number;
+  testMethods: FunctionalTestMethodSignatureDTO[];
+  generatedCode: string;
+  warnings: string[];
+}
