@@ -135,7 +135,9 @@ class CalculateCyclomaticComplexityUseCaseImplTest {
 
         assertEquals(3, switchBranchCount(gfc));
         assertEquals(2, output.predicateNodesCount());
+        assertEquals(3, output.cyclomaticComplexityByEdgesAndNodes());
         assertEquals(3, output.cyclomaticComplexityByPredicateNodes());
+        assertEquals(output.cyclomaticComplexityByEdgesAndNodes(), output.cyclomaticComplexityByPredicateNodes());
         assertEquals(List.of(COMPLEXITY_NORMAL_WARNING), output.warnings());
     }
 
@@ -172,13 +174,14 @@ class CalculateCyclomaticComplexityUseCaseImplTest {
 
         String groupedCaseBlockCode = gfc.getEdges().stream()
                 .filter(edge -> edge.getType() == GfcEdgeTypeEnum.CASE_BRANCH)
-                .filter(edge -> edge.getLabel().contains("case 3"))
+                .filter(edge -> edge.getLabel().equals("case 3, case 4"))
                 .findFirst()
                 .orElseThrow()
                 .getTargetNodeCode();
-        assertTrue(gfc.getEdges().stream().anyMatch(edge -> edge.getType() == GfcEdgeTypeEnum.CASE_BRANCH
-                && edge.getLabel().contains("case 4")
-                && edge.getTargetNodeCode().equals(groupedCaseBlockCode)));
+        assertEquals(1, gfc.getEdges().stream()
+                .filter(edge -> edge.getType() == GfcEdgeTypeEnum.CASE_BRANCH)
+                .filter(edge -> edge.getLabel().contains("case 3") || edge.getLabel().contains("case 4"))
+                .count());
 
         String case5BlockCode = gfc.getEdges().stream()
                 .filter(edge -> edge.getType() == GfcEdgeTypeEnum.CASE_BRANCH)
@@ -190,13 +193,124 @@ class CalculateCyclomaticComplexityUseCaseImplTest {
                 && edge.getType() == GfcEdgeTypeEnum.SEQUENTIAL
                 && gfc.findNode(edge.getTargetNodeCode()).orElseThrow().getLabel().contains("Numero seis")));
 
-        assertEquals(7, switchBranchCount(gfc));
+        assertEquals(6, switchBranchCount(gfc));
         assertEquals(9, output.nodesCount());
-        assertEquals(14, output.edgesCount());
-        assertEquals(6, output.predicateNodesCount());
-        assertEquals(7, output.cyclomaticComplexityByEdgesAndNodes());
+        assertEquals(13, output.edgesCount());
+        assertEquals(5, output.predicateNodesCount());
+        assertEquals(6, output.cyclomaticComplexityByEdgesAndNodes());
         assertEquals(output.cyclomaticComplexityByEdgesAndNodes(), output.cyclomaticComplexityByPredicateNodes());
         assertEquals(List.of(COMPLEXITY_NORMAL_WARNING), output.warnings());
+    }
+
+    @Test
+    void shouldCalculateSwitchComplexityWithGroupedLabelsAndImplicitDefault() {
+        Gfc gfc = generate("""
+                public class Exemplo {
+                    void executar(int x) {
+                        switch (x) {
+                            case 1:
+                            case 2:
+                                a();
+                                break;
+                            case 3:
+                                b();
+                                break;
+                        }
+                        proximo();
+                    }
+                }
+                """);
+
+        CyclomaticComplexityOutput output = executeFor(gfc);
+
+        assertEquals(3, switchBranchCount(gfc));
+        assertEquals(2, output.predicateNodesCount());
+        assertEquals(3, output.cyclomaticComplexityByEdgesAndNodes());
+        assertEquals(3, output.cyclomaticComplexityByPredicateNodes());
+        assertTrue(gfc.getEdges().stream().anyMatch(edge -> edge.getType() == GfcEdgeTypeEnum.CASE_BRANCH
+                && edge.getLabel().equals("case 1, case 2")));
+        assertTrue(hasImplicitDefaultVisualEdge(gfc));
+    }
+
+    @Test
+    void shouldCalculateSwitchComplexityWithFallThroughAndImplicitDefault() {
+        Gfc gfc = generate("""
+                public class Exemplo {
+                    void executar(int x) {
+                        switch (x) {
+                            case 1:
+                                a();
+                            case 2:
+                                b();
+                                break;
+                        }
+                        proximo();
+                    }
+                }
+                """);
+
+        CyclomaticComplexityOutput output = executeFor(gfc);
+
+        assertEquals(3, switchBranchCount(gfc));
+        assertEquals(2, output.predicateNodesCount());
+        assertEquals(3, output.cyclomaticComplexityByEdgesAndNodes());
+        assertEquals(3, output.cyclomaticComplexityByPredicateNodes());
+        assertTrue(hasCaseBlockFallThrough(gfc, "a();", "b();"));
+        assertTrue(hasImplicitDefaultVisualEdge(gfc));
+    }
+
+    @Test
+    void shouldCalculateSwitchComplexityWithImplicitDefaultWhenNoDefaultExists() {
+        Gfc gfc = generate("""
+                public class Exemplo {
+                    void executar(int x) {
+                        switch (x) {
+                            case 1:
+                                a();
+                                break;
+                            case 2:
+                                b();
+                                break;
+                        }
+                        proximo();
+                    }
+                }
+                """);
+
+        CyclomaticComplexityOutput output = executeFor(gfc);
+
+        assertEquals(3, switchBranchCount(gfc));
+        assertEquals(2, output.predicateNodesCount());
+        assertEquals(3, output.cyclomaticComplexityByEdgesAndNodes());
+        assertEquals(3, output.cyclomaticComplexityByPredicateNodes());
+        assertTrue(hasImplicitDefaultVisualEdge(gfc));
+    }
+
+    @Test
+    void shouldCalculateSwitchComplexityForFormaPagamento() {
+        Gfc gfc = generate("""
+                public class Exemplo {
+                    void executar(String formaPagamento) {
+                        switch (formaPagamento) {
+                            case "PIX":
+                                break;
+                            case "CARTAO":
+                                break;
+                            case "BOLETO":
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
+                """);
+
+        CyclomaticComplexityOutput output = executeFor(gfc);
+
+        assertEquals(4, switchBranchCount(gfc));
+        assertEquals(3, output.predicateNodesCount());
+        assertEquals(4, output.cyclomaticComplexityByEdgesAndNodes());
+        assertEquals(4, output.cyclomaticComplexityByPredicateNodes());
     }
 
     @Test
@@ -407,6 +521,32 @@ class CalculateCyclomaticComplexityUseCaseImplTest {
                 .filter(edge -> edge.getType() == GfcEdgeTypeEnum.CASE_BRANCH
                         || edge.getType() == GfcEdgeTypeEnum.DEFAULT_BRANCH)
                 .count();
+    }
+
+    private boolean hasImplicitDefaultVisualEdge(Gfc gfc) {
+        return gfc.getEdges().stream().anyMatch(edge ->
+                edge.getType() == GfcEdgeTypeEnum.DEFAULT_BRANCH
+                        && "implicit default".equals(edge.getLabel())
+        );
+    }
+
+    private boolean hasCaseBlockFallThrough(Gfc gfc, String sourceLabel, String targetLabel) {
+        String sourceCode = gfc.getNodes().stream()
+                .filter(node -> node.getType() == GfcNodeTypeEnum.CASE_BLOCK)
+                .filter(node -> node.getLabel().contains(sourceLabel))
+                .findFirst()
+                .orElseThrow()
+                .getCode();
+        String targetCode = gfc.getNodes().stream()
+                .filter(node -> node.getType() == GfcNodeTypeEnum.CASE_BLOCK)
+                .filter(node -> node.getLabel().contains(targetLabel))
+                .findFirst()
+                .orElseThrow()
+                .getCode();
+
+        return gfc.getEdges().stream().anyMatch(edge -> edge.getSourceNodeCode().equals(sourceCode)
+                && edge.getTargetNodeCode().equals(targetCode)
+                && edge.getType() == GfcEdgeTypeEnum.SEQUENTIAL);
     }
 
     private int countNodesForFormula(Gfc gfc) {
