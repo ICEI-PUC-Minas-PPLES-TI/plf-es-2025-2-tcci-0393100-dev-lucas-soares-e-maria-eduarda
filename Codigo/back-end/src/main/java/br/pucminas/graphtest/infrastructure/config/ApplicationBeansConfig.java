@@ -15,6 +15,7 @@ import br.pucminas.graphtest.application.port.input.decisiontable.RefreshDecisio
 import br.pucminas.graphtest.application.port.input.project.CreateProjectUseCasePort;
 import br.pucminas.graphtest.application.port.input.project.DeleteProjectUseCasePort;
 import br.pucminas.graphtest.application.port.input.project.FindProjectByIdUseCasePort;
+import br.pucminas.graphtest.application.port.input.project.ListProjectArtifactsUseCasePort;
 import br.pucminas.graphtest.application.port.input.project.ListProjectsByUserUseCasePort;
 import br.pucminas.graphtest.application.port.input.project.ListProjectsUseCasePort;
 import br.pucminas.graphtest.application.port.input.project.UpdateProjectUseCasePort;
@@ -130,6 +131,7 @@ import br.pucminas.graphtest.application.usecases.decisiontable.RefreshDecisionT
 import br.pucminas.graphtest.application.usecases.project.CreateProjectUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.project.DeleteProjectUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.project.FindProjectByIdUseCaseImpl;
+import br.pucminas.graphtest.application.usecases.project.ListProjectArtifactsUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.project.ListProjectsByUserUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.project.ListProjectsUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.project.UpdateProjectUseCaseImpl;
@@ -574,6 +576,21 @@ public class ApplicationBeansConfig {
     @Bean
     public ListProjectsByUserUseCasePort listProjectsByUserUseCase(ProjectRepositoryPort projectRepositoryPort, CurrentUserPort currentUserPort) {
         return new ListProjectsByUserUseCaseImpl(projectRepositoryPort, currentUserPort);
+    }
+
+    @Bean
+    public ListProjectArtifactsUseCasePort listProjectArtifactsUseCase(ProjectAccessService projectAccessService,
+                                                                       GceRepositoryPort gceRepositoryPort,
+                                                                       GfcRepositoryPort gfcRepositoryPort,
+                                                                       DecisionTableRepositoryPort decisionTableRepositoryPort,
+                                                                       GfcSourceFileRepositoryPort gfcSourceFileRepositoryPort) {
+        return new ListProjectArtifactsUseCaseImpl(
+                projectAccessService,
+                gceRepositoryPort,
+                gfcRepositoryPort,
+                decisionTableRepositoryPort,
+                gfcSourceFileRepositoryPort
+        );
     }
 
     @Bean

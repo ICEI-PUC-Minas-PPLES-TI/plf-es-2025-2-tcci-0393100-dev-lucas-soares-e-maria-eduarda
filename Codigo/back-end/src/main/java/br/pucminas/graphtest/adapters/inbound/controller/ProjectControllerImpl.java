@@ -2,11 +2,13 @@ package br.pucminas.graphtest.adapters.inbound.controller;
 
 import br.pucminas.graphtest.adapters.inbound.controller.interfaces.ProjectController;
 import br.pucminas.graphtest.adapters.inbound.controller.interfaces.OperacoesCRUDController;
+import br.pucminas.graphtest.adapters.inbound.dto.project.ProjectArtifactDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.project.ProjectDTO;
 import br.pucminas.graphtest.adapters.inbound.util.EntityDtoConverterUtil;
 import br.pucminas.graphtest.application.port.input.project.CreateProjectUseCasePort;
 import br.pucminas.graphtest.application.port.input.project.DeleteProjectUseCasePort;
 import br.pucminas.graphtest.application.port.input.project.FindProjectByIdUseCasePort;
+import br.pucminas.graphtest.application.port.input.project.ListProjectArtifactsUseCasePort;
 import br.pucminas.graphtest.application.port.input.project.ListProjectsByUserUseCasePort;
 import br.pucminas.graphtest.application.port.input.project.ListProjectsUseCasePort;
 import br.pucminas.graphtest.application.port.input.project.UpdateProjectUseCasePort;
@@ -37,6 +39,7 @@ import static br.pucminas.graphtest.adapters.inbound.util.EntityDtoConverterUtil
 import static br.pucminas.graphtest.adapters.inbound.util.JsonResponseBuilderUtil.buildJsonResponse;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.ID;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.PROJETO;
+import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.PROJETO_ARTEFATOS;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.PROJETO_MEUS;
 import static br.pucminas.graphtest.shared.LogTopicsUtil.PROJETO_CONTROLLER;
 import static java.util.Arrays.asList;
@@ -55,6 +58,7 @@ public class ProjectControllerImpl implements ProjectController, OperacoesCRUDCo
     private final FindProjectByIdUseCasePort findProjectByIdUseCasePort;
     private final ListProjectsUseCasePort listProjectsUseCasePort;
     private final ListProjectsByUserUseCasePort listProjectsByUserUseCasePort;
+    private final ListProjectArtifactsUseCasePort listProjectArtifactsUseCasePort;
     private final UpdateProjectUseCasePort updateProjectUseCasePort;
 
     @Override
@@ -106,6 +110,19 @@ public class ProjectControllerImpl implements ProjectController, OperacoesCRUDCo
 
         return ResponseEntity.ok()
                 .body(projects.stream()
+                        .map(EntityDtoConverterUtil::toDto)
+                        .toList());
+    }
+
+    @Override
+    @GetMapping(PROJETO_ARTEFATOS)
+    public ResponseEntity<List<ProjectArtifactDTO>> listArtifacts(@PathVariable UUID projectId) {
+        log.info(">>> listarArtefatos: recebendo requisicao para listar artefatos do projeto");
+
+        List<ProjectArtifactOutput> artifacts = listProjectArtifactsUseCasePort.execute(projectId);
+
+        return ResponseEntity.ok()
+                .body(artifacts.stream()
                         .map(EntityDtoConverterUtil::toDto)
                         .toList());
     }

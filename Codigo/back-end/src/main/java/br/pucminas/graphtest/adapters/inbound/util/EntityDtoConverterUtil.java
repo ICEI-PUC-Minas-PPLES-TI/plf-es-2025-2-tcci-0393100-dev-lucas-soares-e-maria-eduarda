@@ -1,8 +1,12 @@
 package br.pucminas.graphtest.adapters.inbound.util;
 
 import br.pucminas.graphtest.adapters.inbound.dto.user.UserDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.project.ProjectArtifactDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.project.ProjectDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.project.RelatedArtifactDTO;
+import br.pucminas.graphtest.application.port.input.project.records.ProjectArtifactOutput;
 import br.pucminas.graphtest.application.port.input.project.records.ProjectOutput;
+import br.pucminas.graphtest.application.port.input.project.records.RelatedArtifactOutput;
 import br.pucminas.graphtest.application.port.input.user.records.UserOutput;
 import jakarta.validation.constraints.NotNull;
 import lombok.experimental.UtilityClass;
@@ -36,6 +40,30 @@ public class EntityDtoConverterUtil {
                 .description(projectOutput.description())
                 .createdAt(projectOutput.createdAt())
                 .updatedAt(projectOutput.updatedAt())
+                .build();
+    }
+
+    public static ProjectArtifactDTO toDto(@NotNull ProjectArtifactOutput projectArtifactOutput) {
+        log.info(format(">>> toDto: convertendo ProjectArtifactOutput (id: %s) para DTO", projectArtifactOutput.id()));
+        return ProjectArtifactDTO.builder()
+                .id(projectArtifactOutput.id())
+                .type(projectArtifactOutput.type())
+                .name(projectArtifactOutput.name())
+                .createdAt(projectArtifactOutput.createdAt())
+                .updatedAt(projectArtifactOutput.updatedAt())
+                .relatedArtifact(toDto(projectArtifactOutput.relatedArtifact()))
+                .build();
+    }
+
+    private static RelatedArtifactDTO toDto(RelatedArtifactOutput relatedArtifactOutput) {
+        if (relatedArtifactOutput == null) {
+            return null;
+        }
+
+        return RelatedArtifactDTO.builder()
+                .type(relatedArtifactOutput.type())
+                .id(relatedArtifactOutput.id())
+                .name(relatedArtifactOutput.name())
                 .build();
     }
 }
