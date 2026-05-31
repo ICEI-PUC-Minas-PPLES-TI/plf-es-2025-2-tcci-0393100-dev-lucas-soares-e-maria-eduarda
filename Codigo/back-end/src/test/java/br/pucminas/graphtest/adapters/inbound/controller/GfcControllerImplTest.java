@@ -31,6 +31,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -73,6 +74,7 @@ class GfcControllerImplTest {
         UUID projectId = UUID.randomUUID();
         UUID sourceFileId = UUID.randomUUID();
         UUID gfcId = UUID.randomUUID();
+        LocalDateTime createdAt = LocalDateTime.now();
         CreateGfcDTO request = new CreateGfcDTO(
                 projectId,
                 sourceFileId,
@@ -81,7 +83,7 @@ class GfcControllerImplTest {
                 "Descricao"
         );
         when(createGfcUseCasePort.execute(org.mockito.ArgumentMatchers.any(CreateGfcInput.class)))
-                .thenReturn(new CreateGfcOutput(gfcId));
+                .thenReturn(new CreateGfcOutput(gfcId, createdAt));
 
         ResponseEntity<CreateGfcResponseDTO> response = controller.create(request);
 
@@ -94,6 +96,7 @@ class GfcControllerImplTest {
         assertEquals(gfcId, response.getBody().id_gfc());
         assertEquals("Grafo de Fluxo de Controle criado com sucesso", response.getBody().mensagem());
         assertEquals(CREATED.value(), response.getBody().status());
+        assertEquals(createdAt, response.getBody().createdAt());
     }
 
     @Test
@@ -101,6 +104,7 @@ class GfcControllerImplTest {
         UUID gfcId = UUID.randomUUID();
         UUID projectId = UUID.randomUUID();
         UUID sourceFileId = UUID.randomUUID();
+        LocalDateTime createdAt = LocalDateTime.now();
         GfcOutput output = new GfcOutput(
                 gfcId,
                 projectId,
@@ -109,6 +113,7 @@ class GfcControllerImplTest {
                 "GFC soma",
                 "Descricao",
                 "Java",
+                createdAt,
                 List.of(),
                 List.of()
         );
@@ -122,6 +127,7 @@ class GfcControllerImplTest {
         assertEquals(sourceFileId, response.getBody().sourceFileId());
         assertEquals("int soma(int a, int b)", response.getBody().methodSignature());
         assertEquals("GFC soma", response.getBody().name());
+        assertEquals(createdAt, response.getBody().createdAt());
     }
 
     @Test
@@ -142,6 +148,7 @@ class GfcControllerImplTest {
         UUID projectId = UUID.randomUUID();
         UUID gfcId = UUID.randomUUID();
         UUID sourceFileId = UUID.randomUUID();
+        LocalDateTime createdAt = LocalDateTime.now();
         GfcSummaryOutput output = new GfcSummaryOutput(
                 gfcId,
                 projectId,
@@ -149,7 +156,8 @@ class GfcControllerImplTest {
                 "int soma(int a, int b)",
                 "GFC soma",
                 "Descricao",
-                "Java"
+                "Java",
+                createdAt
         );
         when(listGfcByProjectUseCasePort.execute(projectId)).thenReturn(List.of(output));
 
@@ -160,12 +168,14 @@ class GfcControllerImplTest {
         assertEquals(gfcId, response.getBody().getFirst().id());
         assertEquals(sourceFileId, response.getBody().getFirst().sourceFileId());
         assertEquals("GFC soma", response.getBody().getFirst().name());
+        assertEquals(createdAt, response.getBody().getFirst().createdAt());
     }
 
     @Test
     void shouldPreviewGfcThroughInputPort() {
         UUID projectId = UUID.randomUUID();
         UUID graphId = UUID.randomUUID();
+        LocalDateTime createdAt = LocalDateTime.now();
         PreviewGfcDTO request = new PreviewGfcDTO(projectId, "GFC", "Descricao", "int x = 1;", "void m()");
         GfcOutput output = new GfcOutput(
                 graphId,
@@ -175,6 +185,7 @@ class GfcControllerImplTest {
                 "GFC",
                 "Descricao",
                 "Java",
+                createdAt,
                 List.of(),
                 List.of()
         );
@@ -194,6 +205,7 @@ class GfcControllerImplTest {
         assertEquals(output.projectId(), response.getBody().projectId());
         assertEquals(output.name(), response.getBody().name());
         assertEquals(output.methodSignature(), response.getBody().methodSignature());
+        assertEquals(createdAt, response.getBody().createdAt());
     }
 
     @Test

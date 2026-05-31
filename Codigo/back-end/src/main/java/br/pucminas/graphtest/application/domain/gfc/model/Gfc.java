@@ -33,32 +33,6 @@ public class Gfc extends BaseEntity {
     private final Map<String, GfcNode> nodes;
     private final List<GfcEdge> edges;
 
-    public Gfc(UUID id,
-               UUID projectId,
-               UUID sourceFileId,
-               String methodSignature,
-               String name,
-               String description,
-               String language,
-               Collection<GfcNode> nodes,
-               Collection<GfcEdge> edges) {
-        this(id, projectId, sourceFileId, methodSignature, name, description, language, nodes, edges, null, null, true);
-    }
-
-    public Gfc(UUID id,
-               UUID projectId,
-               UUID sourceFileId,
-               String methodSignature,
-               String name,
-               String description,
-               String language,
-               Collection<GfcNode> nodes,
-               Collection<GfcEdge> edges,
-               LocalDateTime createdAt,
-               LocalDateTime updatedAt) {
-        this(id, projectId, sourceFileId, methodSignature, name, description, language, nodes, edges, createdAt, updatedAt, true);
-    }
-
     public static Gfc preview(UUID id,
                               UUID projectId,
                               String methodSignature,
@@ -67,7 +41,7 @@ public class Gfc extends BaseEntity {
                               String language,
                               Collection<GfcNode> nodes,
                               Collection<GfcEdge> edges) {
-        return new Gfc(id, projectId, null, methodSignature, name, description, language, nodes, edges, null, null, false);
+        return new Gfc(id, projectId, null, methodSignature, name, description, language, nodes, edges, LocalDateTime.now(), null, false);
     }
 
     public static Gfc persisted(UUID id,
@@ -79,7 +53,21 @@ public class Gfc extends BaseEntity {
                                 String language,
                                 Collection<GfcNode> nodes,
                                 Collection<GfcEdge> edges) {
-        return new Gfc(id, projectId, sourceFileId, methodSignature, name, description, language, nodes, edges);
+        return new Gfc(id, projectId, sourceFileId, methodSignature, name, description, language, nodes, edges, LocalDateTime.now(), null, true);
+    }
+
+    public static Gfc reconstitute(UUID id,
+                                   UUID projectId,
+                                   UUID sourceFileId,
+                                   String methodSignature,
+                                   String name,
+                                   String description,
+                                   String language,
+                                   Collection<GfcNode> nodes,
+                                   Collection<GfcEdge> edges,
+                                   LocalDateTime createdAt,
+                                   LocalDateTime updatedAt) {
+        return new Gfc(id, projectId, sourceFileId, methodSignature, name, description, language, nodes, edges, createdAt, updatedAt, true);
     }
 
     private Gfc(UUID id,
@@ -95,7 +83,7 @@ public class Gfc extends BaseEntity {
                 LocalDateTime updatedAt,
                 boolean requirePersistedReferences) {
         this.id = id;
-        this.createdAt = createdAt;
+        this.createdAt = requireCreatedAt(createdAt);
         this.updatedAt = updatedAt;
         this.projectId = requireUuid(projectId, "O projeto");
         this.sourceFileId = requirePersistedReferences ? requireUuid(sourceFileId, "O arquivo-fonte") : sourceFileId;
@@ -109,6 +97,13 @@ public class Gfc extends BaseEntity {
         this.edges = toList(edges, "As arestas");
 
         validateAggregate();
+    }
+
+    private LocalDateTime requireCreatedAt(LocalDateTime value) {
+        if (value == null) {
+            throw new InvalidGfcModelException("A data de criacao do GFC e obrigatoria.");
+        }
+        return value;
     }
 
     private Map<String, GfcNode> toNodeMap(Collection<GfcNode> values) {

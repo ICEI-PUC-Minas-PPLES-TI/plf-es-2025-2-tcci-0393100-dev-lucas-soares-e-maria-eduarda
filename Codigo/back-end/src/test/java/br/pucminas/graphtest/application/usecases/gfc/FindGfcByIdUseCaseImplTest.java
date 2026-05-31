@@ -13,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -41,6 +42,7 @@ class FindGfcByIdUseCaseImplTest {
         UUID gfcId = UUID.randomUUID();
         UUID projectId = UUID.randomUUID();
         UUID sourceFileId = UUID.randomUUID();
+        LocalDateTime createdAt = LocalDateTime.now();
         Gfc gfc = Gfc.persisted(
                 gfcId,
                 projectId,
@@ -60,6 +62,7 @@ class FindGfcByIdUseCaseImplTest {
                 ),
                 List.of()
         );
+        gfc.setCreatedAt(createdAt);
         when(gfcRepositoryPort.findById(gfcId)).thenReturn(Optional.of(gfc));
         when(projectAccessService.findAuthorizedProject(projectId))
                 .thenReturn(new Project(projectId, "Projeto", "Descricao", UUID.randomUUID()));
@@ -71,6 +74,7 @@ class FindGfcByIdUseCaseImplTest {
         assertEquals(projectId, output.projectId());
         assertEquals(sourceFileId, output.sourceFileId());
         assertEquals("int soma(int a, int b)", output.methodSignature());
+        assertEquals(createdAt, output.createdAt());
         assertEquals(List.of("N0", "N1", "N2", "N3", "N4", "N5", "N_END"),
                 output.nodes().stream().map(node -> node.code()).toList());
     }

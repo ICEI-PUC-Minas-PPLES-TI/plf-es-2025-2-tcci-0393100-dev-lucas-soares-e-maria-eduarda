@@ -20,12 +20,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static br.pucminas.graphtest.application.domain.gfc.rules.GfcDomainRules.JAVA_LANGUAGE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -55,6 +57,7 @@ class CreateGfcUseCaseImplTest {
         UUID sourceFileId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
         UUID gfcId = UUID.randomUUID();
+        LocalDateTime createdAt = LocalDateTime.now();
         String sourceCode = "class Exemplo { int soma(int a, int b) { return a + b; } }";
         CreateGfcInput input = new CreateGfcInput(
                 projectId,
@@ -64,7 +67,7 @@ class CreateGfcUseCaseImplTest {
                 "Descricao"
         );
         GfcSourceFile sourceFile = new GfcSourceFile(sourceFileId, projectId, "Exemplo.java", sourceCode, JAVA_LANGUAGE);
-        Gfc generatedGfc = new Gfc(
+        Gfc generatedGfc = Gfc.reconstitute(
                 gfcId,
                 projectId,
                 sourceFileId,
@@ -73,7 +76,9 @@ class CreateGfcUseCaseImplTest {
                 input.description(),
                 JAVA_LANGUAGE,
                 List.of(GfcNode.start(UUID.randomUUID(), "N0", "Inicio")),
-                List.of()
+                List.of(),
+                createdAt,
+                null
         );
         when(projectAccessService.findAuthorizedProject(projectId))
                 .thenReturn(new Project(projectId, "Projeto", "Descricao", userId));
@@ -91,6 +96,8 @@ class CreateGfcUseCaseImplTest {
         assertEquals(sourceFileId, generationInputCaptor.getValue().sourceFileId());
         assertEquals(input.methodSignature(), generationInputCaptor.getValue().methodSignature());
         assertEquals(gfcId, output.gfcId());
+        assertEquals(createdAt, output.createdAt());
+        assertNotNull(output.createdAt());
     }
 
     @Test

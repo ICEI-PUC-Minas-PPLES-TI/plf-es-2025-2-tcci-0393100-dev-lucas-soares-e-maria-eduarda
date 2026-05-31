@@ -1,5 +1,6 @@
 package br.pucminas.graphtest.adapters.inbound.dto.gfc;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
@@ -8,6 +9,7 @@ import java.util.UUID;
 public record CreateGfcResponseDTO(
         UUID id_gfc,
         String mensagem,
-        Integer status
+        Integer status,
+        LocalDateTime createdAt
 ) {
 }

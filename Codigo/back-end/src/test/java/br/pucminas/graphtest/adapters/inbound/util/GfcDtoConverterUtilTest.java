@@ -87,6 +87,7 @@ class GfcDtoConverterUtilTest {
         UUID sourceFileId = UUID.randomUUID();
         UUID nodeId = UUID.randomUUID();
         UUID edgeId = UUID.randomUUID();
+        LocalDateTime createdAt = LocalDateTime.now();
         GfcOutput output = new GfcOutput(
                 graphId,
                 projectId,
@@ -95,6 +96,7 @@ class GfcDtoConverterUtilTest {
                 "GFC",
                 "Descricao",
                 "Java",
+                createdAt,
                 List.of(new GfcNodeOutput(nodeId, "N1", "int x = 1;", GfcNodeTypeEnum.STATEMENT, 1, 1)),
                 List.of(new GfcEdgeOutput(edgeId, "N0", "N1", GfcEdgeTypeEnum.SEQUENTIAL, null))
         );
@@ -107,6 +109,7 @@ class GfcDtoConverterUtilTest {
         assertEquals("void m()", dto.methodSignature());
         assertEquals("GFC", dto.name());
         assertEquals("Java", dto.language());
+        assertEquals(createdAt, dto.createdAt());
         assertEquals(nodeId, dto.nodes().getFirst().id());
         assertEquals(GfcNodeTypeEnum.STATEMENT, dto.nodes().getFirst().type());
         assertEquals(edgeId, dto.edges().getFirst().id());
@@ -120,6 +123,7 @@ class GfcDtoConverterUtilTest {
         UUID sourceFileId = UUID.randomUUID();
         UUID nodeId = UUID.randomUUID();
         UUID edgeId = UUID.randomUUID();
+        LocalDateTime createdAt = LocalDateTime.now();
         GfcOutput output = new GfcOutput(
                 graphId,
                 projectId,
@@ -128,6 +132,7 @@ class GfcDtoConverterUtilTest {
                 "GFC",
                 "Descricao",
                 "Java",
+                createdAt,
                 List.of(new GfcNodeOutput(nodeId, "N1", "while (ativo)", GfcNodeTypeEnum.LOOP, 3, 3)),
                 List.of(new GfcEdgeOutput(edgeId, "N1", "N2", GfcEdgeTypeEnum.LOOP_BODY, "body"))
         );
@@ -223,6 +228,7 @@ class GfcDtoConverterUtilTest {
         UUID gfcId = UUID.randomUUID();
         UUID projectId = UUID.randomUUID();
         UUID sourceFileId = UUID.randomUUID();
+        LocalDateTime createdAt = LocalDateTime.now();
         GfcSummaryOutput output = new GfcSummaryOutput(
                 gfcId,
                 projectId,
@@ -230,7 +236,8 @@ class GfcDtoConverterUtilTest {
                 "int soma(int a, int b)",
                 "GFC soma",
                 "Descricao",
-                "Java"
+                "Java",
+                createdAt
         );
 
         var dto = GfcDtoConverterUtil.toSummaryDto(output);
@@ -242,6 +249,7 @@ class GfcDtoConverterUtilTest {
         assertEquals("GFC soma", dto.name());
         assertEquals("Descricao", dto.description());
         assertEquals("Java", dto.language());
+        assertEquals(createdAt, dto.createdAt());
     }
 
     @Test
@@ -295,11 +303,13 @@ class GfcDtoConverterUtilTest {
     @Test
     void shouldConvertCreateGfcOutputToResponseDto() {
         UUID gfcId = UUID.randomUUID();
+        LocalDateTime createdAt = LocalDateTime.now();
 
-        CreateGfcResponseDTO dto = GfcDtoConverterUtil.toDto(new CreateGfcOutput(gfcId), 201);
+        CreateGfcResponseDTO dto = GfcDtoConverterUtil.toDto(new CreateGfcOutput(gfcId, createdAt), 201);
 
         assertEquals(gfcId, dto.id_gfc());
         assertEquals("Grafo de Fluxo de Controle criado com sucesso", dto.mensagem());
         assertEquals(201, dto.status());
+        assertEquals(createdAt, dto.createdAt());
     }
 }
