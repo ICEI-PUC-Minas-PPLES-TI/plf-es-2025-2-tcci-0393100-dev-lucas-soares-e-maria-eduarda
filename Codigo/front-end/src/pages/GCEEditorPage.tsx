@@ -7,6 +7,7 @@ import { ElementPalette } from '../features/gce/components/ElementPalette';
 import { GCECanvas, type GCECanvasHandle } from '../features/gce/components/GCECanvas';
 import { PropertiesPanel } from '../features/gce/components/PropertiesPanel';
 import { ValidationPanel } from '../features/gce/components/ValidationPanel';
+import { GCEEditorSkeleton } from '../features/gce/components/GCEEditorSkeleton';
 import {
   dtoToFlowNodes,
   dtoToFlowEdges,
@@ -158,11 +159,7 @@ export function GCEEditorPage() {
   }, [gce, projectId]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-surface flex items-center justify-center">
-        <p className="text-gray-400">Carregando GCE...</p>
-      </div>
-    );
+    return <GCEEditorSkeleton projectName={project.name} projectId={projectId ?? ''} />;
   }
 
   if (loadError || !gce) {

@@ -10,6 +10,7 @@ import { mapDTOToDecisionTable } from '../features/decision-table/utils/decision
 import DecisionTableService from '../services/DecisionTable/DecisionTableService';
 import GCEService from '../services/GCE/GCEService';
 import { TestSignatureModal } from '../features/graph/components/TestSignatureModal';
+import { DecisionTablePageSkeleton } from '../features/decision-table/components/DecisionTablePageSkeleton';
 import { extractApiErrorMessage } from '../utils/apiError';
 import type { DecisionTable, ConditionValue, EffectValue } from '../features/decision-table/types/decisionTable';
 import type { GenerateFunctionalTestSignatureResponseDTO } from '../features/decision-table/types/decisionTableDTO';
@@ -167,11 +168,7 @@ export function DecisionTablePage() {
   }, [table]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-surface flex items-center justify-center">
-        <p className="text-gray-400">Carregando tabela de decisão...</p>
-      </div>
-    );
+    return <DecisionTablePageSkeleton projectName={project.name} projectId={projectId ?? ''} />;
   }
 
   if (loadError || !table) {
