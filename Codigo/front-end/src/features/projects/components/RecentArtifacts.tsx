@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Clock, ExternalLink, FileCode } from 'lucide-react';
+import { Clock, ExternalLink, FileCode, Network } from 'lucide-react';
 import { Button } from '../../../components/Button';
 import { SectionHeader } from '../../../components/SectionHeader';
 import { ARTIFACT_TYPES, type ArtifactType } from '../../../shared/artifactTypes';
@@ -131,15 +131,22 @@ export function RecentArtifacts({ projectId }: RecentArtifactsProps) {
               </h3>
               <p className="text-xs text-gray-500 mb-2">{typeConfig.label}</p>
 
-              {artifact.relatedArtifact?.name && (
-                <p
-                  className="text-xs text-gray-500 mb-2 flex items-center gap-1 truncate"
-                  title={artifact.relatedArtifact.name}
-                >
-                  <FileCode className="w-3 h-3 shrink-0 text-blue-400" />
-                  <span className="truncate font-mono">{artifact.relatedArtifact.name}</span>
-                </p>
-              )}
+              {artifact.relatedArtifact?.name && (() => {
+                const isGce = artifact.relatedArtifact.type === 'GCE';
+                const RelatedIcon = isGce ? Network : FileCode;
+                const iconColor = isGce ? 'text-green-400' : 'text-blue-400';
+                return (
+                  <p
+                    className="text-xs text-gray-500 mb-2 flex items-center gap-1 truncate"
+                    title={artifact.relatedArtifact.name}
+                  >
+                    <RelatedIcon className={`w-3 h-3 shrink-0 ${iconColor}`} />
+                    <span className={`truncate ${isGce ? '' : 'font-mono'}`}>
+                      {artifact.relatedArtifact.name}
+                    </span>
+                  </p>
+                );
+              })()}
 
               <div className="flex items-center gap-1 text-xs text-gray-500 mb-3 mt-auto">
                 <Clock className="w-3 h-3" />
