@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlertTriangle, FileCode, Plus, Trash2 } from 'lucide-react';
+import { AlertTriangle, Clock, FileCode, Plus, Trash2 } from 'lucide-react';
 import { Button } from '../../../components/Button';
 import { ConfirmModal } from '../../../components/ConfirmModal';
 import { ARTIFACT_TYPES } from '../../../shared/artifactTypes';
 import GFCService from '../../../services/GFC/GFCService';
 import SourceFileService from '../../../services/GFC/SourceFileService';
+import { formatRelativeDate } from '../../../utils/formatDate';
 import type { GFCSourceFileDTO, GFCSummaryDTO } from '../types/gfc';
 
 interface GFCListProps {
@@ -120,6 +121,13 @@ export function GFCList({ projectId, onCreateGFC }: GFCListProps) {
                 {gfc.language && (
                   <p className="text-xs text-gray-600 mt-1">{gfc.language}</p>
                 )}
+                <p
+                  className="text-xs text-gray-500 mt-1.5 flex items-center gap-1"
+                  title={new Date(gfc.createdAt).toLocaleString('pt-BR')}
+                >
+                  <Clock className="w-3 h-3 shrink-0" />
+                  <span className="truncate">Criado {formatRelativeDate(gfc.createdAt)}</span>
+                </p>
               </div>
 
               <Button

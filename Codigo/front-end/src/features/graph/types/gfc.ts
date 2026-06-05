@@ -67,6 +67,7 @@ export interface GFCDTO {
   name: string;
   description: string | null;
   language: string | null;
+  createdAt: string;
   nodes: GFCNodeDTO[];
   edges: GFCEdgeDTO[];
 }
@@ -79,6 +80,7 @@ export interface GFCSummaryDTO {
   name: string;
   description: string | null;
   language: string | null;
+  createdAt: string;
 }
 
 export interface StructuralTestMethodSignatureDTO {
