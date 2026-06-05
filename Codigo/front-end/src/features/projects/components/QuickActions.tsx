@@ -6,6 +6,7 @@ interface QuickActionsProps {
   onCreateGCE?: () => void;
   onGenerateTable?: () => void;
   onCreateGFC?: () => void;
+  onImportFile?: () => void;
 }
 
 const actions = [
@@ -47,7 +48,7 @@ const actions = [
   },
 ];
 
-export function QuickActions({ onCreateGCE, onGenerateTable, onCreateGFC }: QuickActionsProps) {
+export function QuickActions({ onCreateGCE, onGenerateTable, onCreateGFC, onImportFile }: QuickActionsProps) {
   const { theme } = useTheme();
   const isLight = theme === 'light';
 
@@ -55,6 +56,7 @@ export function QuickActions({ onCreateGCE, onGenerateTable, onCreateGFC }: Quic
     if (id === 'gce') onCreateGCE?.();
     if (id === 'table') onGenerateTable?.();
     if (id === 'gfc') onCreateGFC?.();
+    if (id === 'import') onImportFile?.();
   };
 
   return (

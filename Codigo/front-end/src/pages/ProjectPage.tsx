@@ -14,6 +14,7 @@ import { GCEFormModal } from '../features/gce/components/GCEFormModal';
 import { GCEList } from '../features/gce/components/GCEList';
 import { GFCList } from '../features/graph/components/GFCList';
 import { CreateGFCModal } from '../features/graph/components/CreateGFCModal';
+import { ImportSourceFileModal } from '../features/graph/components/ImportSourceFileModal';
 import { SourceFileList } from '../features/graph/components/SourceFileList';
 import { DecisionTableList } from '../features/decision-table/components/DecisionTableList';
 import { SelectGCEForTableModal } from '../features/decision-table/components/SelectGCEForTableModal';
@@ -28,6 +29,7 @@ export function ProjectPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showCreateGCEModal, setShowCreateGCEModal] = useState(false);
   const [showCreateGFCModal, setShowCreateGFCModal] = useState(false);
+  const [showImportFileModal, setShowImportFileModal] = useState(false);
   const [showSelectGCEModal, setShowSelectGCEModal] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -66,6 +68,7 @@ export function ProjectPage() {
                 onCreateGCE={() => setShowCreateGCEModal(true)}
                 onGenerateTable={() => setShowSelectGCEModal(true)}
                 onCreateGFC={() => setShowCreateGFCModal(true)}
+                onImportFile={() => setShowImportFileModal(true)}
               />
               <RecentArtifacts projectId={project.id} />
               <ValidationWarnings projectId={project.id} />
@@ -132,6 +135,13 @@ export function ProjectPage() {
         <CreateGFCModal
           projectId={project.id}
           onClose={() => setShowCreateGFCModal(false)}
+        />
+      )}
+
+      {showImportFileModal && (
+        <ImportSourceFileModal
+          projectId={project.id}
+          onClose={() => setShowImportFileModal(false)}
         />
       )}
 
