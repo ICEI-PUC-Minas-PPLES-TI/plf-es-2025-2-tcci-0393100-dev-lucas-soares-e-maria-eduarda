@@ -71,7 +71,7 @@ export function ProjectPage() {
               <ValidationWarnings projectId={project.id} />
             </div>
             <aside className="w-80 shrink-0 hidden lg:block">
-              <ProjectSummary createdAt={project.createdAt} updatedAt={project.updatedAt} />
+              <ProjectSummary projectId={project.id} createdAt={project.createdAt} updatedAt={project.updatedAt} />
             </aside>
           </div>
         )}
