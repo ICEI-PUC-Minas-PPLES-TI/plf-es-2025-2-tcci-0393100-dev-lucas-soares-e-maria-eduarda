@@ -13,6 +13,7 @@ import java.util.UUID;
 
 import static br.pucminas.graphtest.application.domain.gfc.rules.GfcDomainRules.JAVA_LANGUAGE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -29,7 +30,7 @@ class GfcTest {
         GfcEdge edgeOne = new GfcEdge(UUID.randomUUID(), "N1", "N2", GfcEdgeTypeEnum.SEQUENTIAL, null);
         GfcEdge edgeTwo = new GfcEdge(UUID.randomUUID(), "N2", "N3", GfcEdgeTypeEnum.TRUE_BRANCH, "true");
 
-        Gfc gfc = new Gfc(
+        Gfc gfc = Gfc.persisted(
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 sourceFileId,
@@ -57,7 +58,7 @@ class GfcTest {
 
         InvalidGfcModelException exception = assertThrows(
                 InvalidGfcModelException.class,
-                () -> new Gfc(
+                () -> Gfc.persisted(
                         UUID.randomUUID(),
                         UUID.randomUUID(),
                         sourceFileId,
@@ -79,7 +80,7 @@ class GfcTest {
 
         InvalidGfcModelException exception = assertThrows(
                 InvalidGfcModelException.class,
-                () -> new Gfc(
+                () -> Gfc.persisted(
                         UUID.randomUUID(),
                         UUID.randomUUID(),
                         null,
@@ -112,6 +113,70 @@ class GfcTest {
 
         assertNull(preview.getSourceFileId());
         assertEquals("void metodo()", preview.getMethodSignature());
+        assertNotNull(preview.getCreatedAt());
+    }
+
+    @Test
+    void shouldCreatePersistedGraphWithCreatedAt() {
+        Gfc persisted = Gfc.persisted(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                sourceFileId,
+                "void metodo()",
+                "Metodo",
+                null,
+                "Java",
+                List.of(GfcNode.start(UUID.randomUUID(), "N0", "Inicio")),
+                List.of()
+        );
+
+        assertNotNull(persisted.getCreatedAt());
+        assertNull(persisted.getUpdatedAt());
+    }
+
+    @Test
+    void shouldReconstitutePersistedGraphPreservingAuditFields() {
+        java.time.LocalDateTime createdAt = java.time.LocalDateTime.now().minusDays(1);
+        java.time.LocalDateTime updatedAt = java.time.LocalDateTime.now();
+
+        Gfc reconstituted = Gfc.reconstitute(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                sourceFileId,
+                "void metodo()",
+                "Metodo",
+                null,
+                "Java",
+                List.of(GfcNode.start(UUID.randomUUID(), "N0", "Inicio")),
+                List.of(),
+                createdAt,
+                updatedAt
+        );
+
+        assertEquals(createdAt, reconstituted.getCreatedAt());
+        assertEquals(updatedAt, reconstituted.getUpdatedAt());
+    }
+
+    @Test
+    void shouldRejectReconstitutedGraphWithoutCreatedAt() {
+        InvalidGfcModelException exception = assertThrows(
+                InvalidGfcModelException.class,
+                () -> Gfc.reconstitute(
+                        UUID.randomUUID(),
+                        UUID.randomUUID(),
+                        sourceFileId,
+                        "void metodo()",
+                        "Metodo",
+                        null,
+                        "Java",
+                        List.of(GfcNode.start(UUID.randomUUID(), "N0", "Inicio")),
+                        List.of(),
+                        null,
+                        null
+                )
+        );
+
+        assertTrue(exception.getMessage().contains("data de criacao"));
     }
 
     @Test
@@ -121,7 +186,7 @@ class GfcTest {
 
         InvalidGfcModelException exception = assertThrows(
                 InvalidGfcModelException.class,
-                () -> new Gfc(
+                () -> Gfc.persisted(
                         UUID.randomUUID(),
                         UUID.randomUUID(),
                         sourceFileId,
@@ -144,7 +209,7 @@ class GfcTest {
 
         InvalidGfcModelException exception = assertThrows(
                 InvalidGfcModelException.class,
-                () -> new Gfc(
+                () -> Gfc.persisted(
                         UUID.randomUUID(),
                         UUID.randomUUID(),
                         sourceFileId,
@@ -185,7 +250,7 @@ class GfcTest {
         GfcNode decision = GfcNode.decision(UUID.randomUUID(), "N1", "while (ativo)", 3, 3);
         GfcEdge loop = new GfcEdge(UUID.randomUUID(), "N1", "N1", GfcEdgeTypeEnum.LOOP_BACK, "loop");
 
-        Gfc gfc = new Gfc(
+        Gfc gfc = Gfc.persisted(
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 sourceFileId,

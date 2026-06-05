@@ -50,7 +50,7 @@ public class CreateGfcUseCaseImpl implements CreateGfcUseCasePort {
         ));
 
         Gfc savedGfc = gfcRepositoryPort.save(generatedGfc);
-        return new CreateGfcOutput(savedGfc.getId());
+        return new CreateGfcOutput(savedGfc.getId(), savedGfc.getCreatedAt());
     }
 
     private void ensureSourceFileBelongsToProject(GfcSourceFile sourceFile, CreateGfcInput input) {

@@ -77,6 +77,7 @@ public class GfcDtoConverterUtil {
                 output.name(),
                 output.description(),
                 output.language(),
+                output.createdAt(),
                 output.nodes().stream().map(GfcDtoConverterUtil::toDto).toList(),
                 output.edges().stream().map(GfcDtoConverterUtil::toDto).toList()
         );
@@ -158,7 +159,8 @@ public class GfcDtoConverterUtil {
                 output.methodSignature(),
                 output.name(),
                 output.description(),
-                output.language()
+                output.language(),
+                output.createdAt()
         );
     }
 
@@ -189,7 +191,8 @@ public class GfcDtoConverterUtil {
         return new CreateGfcResponseDTO(
                 output.gfcId(),
                 MSG_GFC_CRIADO,
-                status
+                status,
+                output.createdAt()
         );
     }
 }

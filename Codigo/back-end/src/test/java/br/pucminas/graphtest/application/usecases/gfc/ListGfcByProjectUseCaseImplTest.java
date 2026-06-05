@@ -11,6 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,6 +37,8 @@ class ListGfcByProjectUseCaseImplTest {
         UUID projectId = UUID.randomUUID();
         UUID firstGfcId = UUID.randomUUID();
         UUID secondGfcId = UUID.randomUUID();
+        LocalDateTime firstCreatedAt = LocalDateTime.now().minusMinutes(1);
+        LocalDateTime secondCreatedAt = LocalDateTime.now();
         Gfc firstGfc = Gfc.persisted(
                 firstGfcId,
                 projectId,
@@ -47,6 +50,7 @@ class ListGfcByProjectUseCaseImplTest {
                 List.of(),
                 List.of()
         );
+        firstGfc.setCreatedAt(firstCreatedAt);
         Gfc secondGfc = Gfc.persisted(
                 secondGfcId,
                 projectId,
@@ -58,6 +62,7 @@ class ListGfcByProjectUseCaseImplTest {
                 List.of(),
                 List.of()
         );
+        secondGfc.setCreatedAt(secondCreatedAt);
         when(projectAccessService.findAuthorizedProject(projectId))
                 .thenReturn(new Project(projectId, "Projeto", "Descricao", UUID.randomUUID()));
         when(gfcRepositoryPort.findAllByProjectId(projectId)).thenReturn(List.of(firstGfc, secondGfc));
@@ -69,8 +74,10 @@ class ListGfcByProjectUseCaseImplTest {
         assertEquals(2, output.size());
         assertEquals(firstGfcId, output.get(0).id());
         assertEquals("GFC soma", output.get(0).name());
+        assertEquals(firstCreatedAt, output.get(0).createdAt());
         assertEquals(secondGfcId, output.get(1).id());
         assertEquals("void executar()", output.get(1).methodSignature());
+        assertEquals(secondCreatedAt, output.get(1).createdAt());
     }
 
     @Test

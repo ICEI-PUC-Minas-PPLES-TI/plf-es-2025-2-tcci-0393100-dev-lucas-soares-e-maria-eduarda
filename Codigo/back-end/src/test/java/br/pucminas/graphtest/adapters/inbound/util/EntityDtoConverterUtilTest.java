@@ -1,8 +1,11 @@
 package br.pucminas.graphtest.adapters.inbound.util;
 
 import br.pucminas.graphtest.adapters.inbound.dto.project.ProjectDTO;
+import br.pucminas.graphtest.adapters.inbound.dto.project.ProjectArtifactDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.user.UserDTO;
+import br.pucminas.graphtest.application.port.input.project.records.ProjectArtifactOutput;
 import br.pucminas.graphtest.application.port.input.project.records.ProjectOutput;
+import br.pucminas.graphtest.application.port.input.project.records.RelatedArtifactOutput;
 import br.pucminas.graphtest.application.port.input.user.records.UserOutput;
 import org.junit.jupiter.api.Test;
 
@@ -58,5 +61,32 @@ class EntityDtoConverterUtilTest {
         assertEquals(output.description(), dto.description());
         assertEquals(createdAt, dto.createdAt());
         assertEquals(updatedAt, dto.updatedAt());
+    }
+
+    @Test
+    void shouldConvertProjectArtifactOutputWithRelatedArtifact() {
+        UUID artifactId = UUID.randomUUID();
+        UUID relatedArtifactId = UUID.randomUUID();
+        LocalDateTime createdAt = LocalDateTime.now().minusHours(2);
+        LocalDateTime updatedAt = LocalDateTime.now().minusMinutes(10);
+        ProjectArtifactOutput output = new ProjectArtifactOutput(
+                artifactId,
+                "DECISION_TABLE",
+                "Tabela Login",
+                createdAt,
+                updatedAt,
+                new RelatedArtifactOutput("GCE", relatedArtifactId, "GCE Login")
+        );
+
+        ProjectArtifactDTO dto = EntityDtoConverterUtil.toDto(output);
+
+        assertEquals(artifactId, dto.id());
+        assertEquals("DECISION_TABLE", dto.type());
+        assertEquals("Tabela Login", dto.name());
+        assertEquals(createdAt, dto.createdAt());
+        assertEquals(updatedAt, dto.updatedAt());
+        assertEquals("GCE", dto.relatedArtifact().type());
+        assertEquals(relatedArtifactId, dto.relatedArtifact().id());
+        assertEquals("GCE Login", dto.relatedArtifact().name());
     }
 }

@@ -105,7 +105,7 @@ public class GfcMapperBase implements BasePersistenceMapper<Gfc, Neo4jGfcEntity>
             }
         }
 
-        return new Gfc(
+        return Gfc.reconstitute(
                 entity.getId(),
                 entity.getProjectId(),
                 entity.getSourceFileId(),

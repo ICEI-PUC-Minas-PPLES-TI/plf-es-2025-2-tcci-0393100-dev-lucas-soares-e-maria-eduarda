@@ -2,6 +2,7 @@ package br.pucminas.graphtest.application.port.input.gfc.records;
 
 import br.pucminas.graphtest.application.domain.gfc.model.Gfc;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
@@ -14,7 +15,8 @@ public record GfcSummaryOutput(
         String methodSignature,
         String name,
         String description,
-        String language
+        String language,
+        LocalDateTime createdAt
 ) {
 
     public static GfcSummaryOutput from(Gfc gfc) {
@@ -25,7 +27,8 @@ public record GfcSummaryOutput(
                 gfc.getMethodSignature(),
                 gfc.getName(),
                 gfc.getDescription(),
-                gfc.getLanguage()
+                gfc.getLanguage(),
+                gfc.getCreatedAt()
         );
     }
 }

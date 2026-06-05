@@ -1,5 +1,6 @@
 package br.pucminas.graphtest.adapters.inbound.dto.gfc;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -14,6 +15,7 @@ public record GfcDTO(
         String name,
         String description,
         String language,
+        LocalDateTime createdAt,
         List<GfcNodeDTO> nodes,
         List<GfcEdgeDTO> edges
 ) {

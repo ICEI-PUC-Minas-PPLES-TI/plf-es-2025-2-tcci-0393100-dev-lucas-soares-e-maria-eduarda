@@ -14,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.List;
 import java.util.UUID;
@@ -39,8 +40,10 @@ class GfcRepositoryAdapterTest {
         UUID gfcId = UUID.randomUUID();
         UUID projectId = UUID.randomUUID();
         UUID sourceFileId = UUID.randomUUID();
+        LocalDateTime createdAt = LocalDateTime.now().minusDays(1);
         Neo4jGfcEntity entity = new Neo4jGfcEntity();
         entity.setId(gfcId);
+        entity.setCreatedAt(createdAt);
         entity.setProjectId(projectId);
         entity.setSourceFileId(sourceFileId);
         entity.setMethodSignature("int soma(int a, int b)");
@@ -57,6 +60,7 @@ class GfcRepositoryAdapterTest {
         assertEquals(projectId, result.get().getProjectId());
         assertEquals(sourceFileId, result.get().getSourceFileId());
         assertEquals("int soma(int a, int b)", result.get().getMethodSignature());
+        assertEquals(createdAt, result.get().getCreatedAt());
     }
 
     @Test
@@ -65,8 +69,11 @@ class GfcRepositoryAdapterTest {
         UUID projectId = UUID.randomUUID();
         UUID firstGfcId = UUID.randomUUID();
         UUID secondGfcId = UUID.randomUUID();
+        LocalDateTime firstCreatedAt = LocalDateTime.now();
+        LocalDateTime secondCreatedAt = firstCreatedAt.minusDays(1);
         Neo4jGfcEntity firstEntity = new Neo4jGfcEntity();
         firstEntity.setId(firstGfcId);
+        firstEntity.setCreatedAt(firstCreatedAt);
         firstEntity.setProjectId(projectId);
         firstEntity.setSourceFileId(UUID.randomUUID());
         firstEntity.setMethodSignature("void recente()");
@@ -74,6 +81,7 @@ class GfcRepositoryAdapterTest {
         firstEntity.setLanguage(JAVA_LANGUAGE);
         Neo4jGfcEntity secondEntity = new Neo4jGfcEntity();
         secondEntity.setId(secondGfcId);
+        secondEntity.setCreatedAt(secondCreatedAt);
         secondEntity.setProjectId(projectId);
         secondEntity.setSourceFileId(UUID.randomUUID());
         secondEntity.setMethodSignature("void antigo()");
@@ -86,7 +94,9 @@ class GfcRepositoryAdapterTest {
 
         verify(neo4jGfcRepository).findAllByProjectIdOrderByCreatedAtDesc(projectId);
         assertEquals(firstGfcId, result.get(0).getId());
+        assertEquals(firstCreatedAt, result.get(0).getCreatedAt());
         assertEquals(secondGfcId, result.get(1).getId());
+        assertEquals(secondCreatedAt, result.get(1).getCreatedAt());
     }
 
     @Test
@@ -130,7 +140,8 @@ class GfcRepositoryAdapterTest {
         GfcNode loopNode = new GfcNode(UUID.randomUUID(), "N1", "while (ativo)", GfcNodeTypeEnum.LOOP, 3, 3);
         GfcNode statementNode = GfcNode.statement(UUID.randomUUID(), "N2", "executar();", 4, 4);
         GfcEdge loopBodyEdge = new GfcEdge(UUID.randomUUID(), "N1", "N2", GfcEdgeTypeEnum.LOOP_BODY, "body");
-        Gfc graph = new Gfc(
+        LocalDateTime createdAt = LocalDateTime.now();
+        Gfc graph = Gfc.reconstitute(
                 graphId,
                 projectId,
                 sourceFileId,
@@ -139,11 +150,14 @@ class GfcRepositoryAdapterTest {
                 "Descricao",
                 JAVA_LANGUAGE,
                 List.of(loopNode, statementNode),
-                List.of(loopBodyEdge)
+                List.of(loopBodyEdge),
+                createdAt,
+                null
         );
 
         Neo4jGfcEntity entity = mapper.toEntity(graph);
 
+        assertEquals(createdAt, entity.getCreatedAt());
         Neo4jGfcNodeEntity mappedLoopNode = entity.getNodes().stream()
                 .filter(node -> "N1".equals(node.getCode()))
                 .findFirst()

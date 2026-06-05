@@ -455,8 +455,10 @@ class GfcPreviewGenerationServiceImplTest {
                 && edge.getType() == GfcEdgeTypeEnum.CASE_BRANCH
                 && edge.getLabel().contains("case 1")
                 && graph.findNode(edge.getTargetNodeCode()).orElseThrow().getType() == GfcNodeTypeEnum.CASE_BLOCK));
+        assertTrue(hasImplicitDefaultVisualEdge(graph));
         assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getSourceNodeCode().equals(switchCode)
-                && edge.getType() == GfcEdgeTypeEnum.SEQUENTIAL
+                && edge.getType() == GfcEdgeTypeEnum.DEFAULT_BRANCH
+                && edge.getLabel().equals("implicit default")
                 && graph.findNode(edge.getTargetNodeCode()).orElseThrow().getLabel().contains("proximo")));
     }
 
@@ -511,6 +513,10 @@ class GfcPreviewGenerationServiceImplTest {
                 && graph.findNode(edge.getTargetNodeCode()).orElseThrow().getLabel().contains("proximo")));
         assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getSourceNodeCode().equals(caseTwoBlockCode)
                 && graph.findNode(edge.getTargetNodeCode()).orElseThrow().getLabel().contains("proximo")));
+        assertTrue(hasImplicitDefaultVisualEdge(graph));
+        assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getType() == GfcEdgeTypeEnum.DEFAULT_BRANCH
+                && edge.getLabel().equals("implicit default")
+                && graph.findNode(edge.getTargetNodeCode()).orElseThrow().getLabel().contains("proximo")));
     }
 
     @Test
@@ -537,25 +543,26 @@ class GfcPreviewGenerationServiceImplTest {
 
         Gfc graph = service.generate(input);
 
-        String caseThreeTargetCode = graph.getEdges().stream()
+        String groupedCaseTargetCode = graph.getEdges().stream()
                 .filter(edge -> edge.getType() == GfcEdgeTypeEnum.CASE_BRANCH)
-                .filter(edge -> edge.getLabel().equals("case 3"))
-                .findFirst()
-                .orElseThrow()
-                .getTargetNodeCode();
-        String caseFourTargetCode = graph.getEdges().stream()
-                .filter(edge -> edge.getType() == GfcEdgeTypeEnum.CASE_BRANCH)
-                .filter(edge -> edge.getLabel().equals("case 4"))
+                .filter(edge -> edge.getLabel().equals("case 3, case 4"))
                 .findFirst()
                 .orElseThrow()
                 .getTargetNodeCode();
 
         assertEquals(1, graph.getNodes().stream().filter(node -> node.getType() == GfcNodeTypeEnum.CASE_BLOCK).count());
         assertEquals(0, graph.getNodes().stream().filter(node -> node.getType() == GfcNodeTypeEnum.CASE).count());
-        assertEquals(caseThreeTargetCode, caseFourTargetCode);
-        assertEquals(GfcNodeTypeEnum.CASE_BLOCK, graph.findNode(caseThreeTargetCode).orElseThrow().getType());
-        assertTrue(graph.findNode(caseThreeTargetCode).orElseThrow().getLabel().contains("Numero tres ou quatro"));
-        assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getSourceNodeCode().equals(caseThreeTargetCode)
+        assertEquals(1, graph.getEdges().stream()
+                .filter(edge -> edge.getType() == GfcEdgeTypeEnum.CASE_BRANCH)
+                .filter(edge -> edge.getLabel().contains("case 3") || edge.getLabel().contains("case 4"))
+                .count());
+        assertEquals(GfcNodeTypeEnum.CASE_BLOCK, graph.findNode(groupedCaseTargetCode).orElseThrow().getType());
+        assertTrue(graph.findNode(groupedCaseTargetCode).orElseThrow().getLabel().contains("Numero tres ou quatro"));
+        assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getSourceNodeCode().equals(groupedCaseTargetCode)
+                && graph.findNode(edge.getTargetNodeCode()).orElseThrow().getLabel().contains("proximo")));
+        assertTrue(hasImplicitDefaultVisualEdge(graph));
+        assertTrue(graph.getEdges().stream().anyMatch(edge -> edge.getType() == GfcEdgeTypeEnum.DEFAULT_BRANCH
+                && edge.getLabel().equals("implicit default")
                 && graph.findNode(edge.getTargetNodeCode()).orElseThrow().getLabel().contains("proximo")));
     }
 
@@ -1433,6 +1440,13 @@ class GfcPreviewGenerationServiceImplTest {
         return graph.getEdges().stream().anyMatch(edge ->
                 graph.findNode(edge.getSourceNodeCode()).orElseThrow().getType() == GfcNodeTypeEnum.TRY
                         && graph.findNode(edge.getTargetNodeCode()).orElseThrow().getType() == GfcNodeTypeEnum.FINALLY
+        );
+    }
+
+    private boolean hasImplicitDefaultVisualEdge(Gfc graph) {
+        return graph.getEdges().stream().anyMatch(edge ->
+                edge.getType() == GfcEdgeTypeEnum.DEFAULT_BRANCH
+                        && "implicit default".equals(edge.getLabel())
         );
     }
 }

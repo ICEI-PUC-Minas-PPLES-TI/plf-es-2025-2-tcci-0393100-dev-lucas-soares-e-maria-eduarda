@@ -1,5 +1,6 @@
 package br.pucminas.graphtest.adapters.inbound.dto.gfc;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
@@ -12,6 +13,7 @@ public record GfcSummaryDTO(
         String methodSignature,
         String name,
         String description,
-        String language
+        String language,
+        LocalDateTime createdAt
 ) {
 }

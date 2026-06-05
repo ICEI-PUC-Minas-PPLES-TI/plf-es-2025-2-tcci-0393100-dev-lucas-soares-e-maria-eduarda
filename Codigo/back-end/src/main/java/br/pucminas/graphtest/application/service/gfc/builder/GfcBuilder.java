@@ -214,25 +214,19 @@ public class GfcBuilder {
         List<PendingEdge> breaks = new ArrayList<>();
         List<PendingEdge> propagatedControlExits = new ArrayList<>();
         Collection<PendingEdge> fallThroughExits = List.of();
-        boolean hasDefault = false;
-        List<String> pendingEmptyBranchLabels = new ArrayList<>();
 
-        for (SwitchEntry entry : statement.getEntries()) {
-            hasDefault = hasDefault || entry.getLabels().isEmpty();
-            List<String> entryBranchLabels = branchLabelsForSwitchEntry(entry);
-            if (entry.getStatements().isEmpty()) {
-                pendingEmptyBranchLabels.addAll(entryBranchLabels);
+        List<SwitchOutcome> outcomes = switchOutcomes(statement);
+        List<PendingEdge> exits = new ArrayList<>();
+
+        for (SwitchOutcome outcome : outcomes) {
+            if (outcome.hasNoExecutableBlock()) {
+                exits.add(new PendingEdge(switchNode.getCode(), outcome.edgeType(), outcome.edgeLabel()));
                 continue;
             }
 
-            List<String> branchLabels = new ArrayList<>(pendingEmptyBranchLabels);
-            branchLabels.addAll(entryBranchLabels);
-            pendingEmptyBranchLabels.clear();
-
+            SwitchEntry entry = outcome.entry();
             GfcNode caseBlockNode = createNode(GfcNodeTypeEnum.CASE_BLOCK, labelForCaseBlock(entry), entry);
-            for (String branchLabel : branchLabels) {
-                connectSwitchCaseBranch(switchNode, branchLabel, caseBlockNode);
-            }
+            connectSwitchOutcomeBranch(switchNode, outcome, caseBlockNode);
             connectPendingEdges(normalExits(fallThroughExits), caseBlockNode.getCode());
 
             Collection<PendingEdge> caseExits = processCaseBlock(entry, caseBlockNode);
@@ -241,22 +235,48 @@ public class GfcBuilder {
             fallThroughExits = normalExits(caseExits);
         }
 
-        List<PendingEdge> exits = new ArrayList<>();
-        if (!hasDefault) {
-            exits.add(new PendingEdge(switchNode.getCode(), GfcEdgeTypeEnum.SEQUENTIAL, null));
-        }
         exits.addAll(normalExits(fallThroughExits));
         exits.addAll(breakExitsAsNormal(breaks));
         exits.addAll(propagatedControlExits);
         return exits;
     }
 
-    private void connectSwitchCaseBranch(GfcNode switchNode, String branchLabel, GfcNode caseBlockNode) {
+    private List<SwitchOutcome> switchOutcomes(SwitchStmt statement) {
+        List<SwitchOutcome> outcomes = new ArrayList<>();
+        List<String> pendingLabels = new ArrayList<>();
+        boolean hasDefault = false;
+
+        for (SwitchEntry entry : statement.getEntries()) {
+            boolean defaultEntry = entry.getLabels().isEmpty();
+            hasDefault = hasDefault || defaultEntry;
+
+            List<String> entryLabels = branchLabelsForSwitchEntry(entry);
+            if (entry.getStatements().isEmpty()) {
+                pendingLabels.addAll(entryLabels);
+                continue;
+            }
+
+            List<String> outcomeLabels = new ArrayList<>(pendingLabels);
+            outcomeLabels.addAll(entryLabels);
+            outcomes.add(new SwitchOutcome(outcomeLabels, entry, defaultEntry || pendingLabels.contains("default"), false));
+            pendingLabels.clear();
+        }
+
+        if (!pendingLabels.isEmpty()) {
+            outcomes.add(new SwitchOutcome(List.copyOf(pendingLabels), null, pendingLabels.contains("default"), false));
+        }
+        if (!hasDefault) {
+            outcomes.add(SwitchOutcome.implicitDefaultOutcome());
+        }
+        return outcomes;
+    }
+
+    private void connectSwitchOutcomeBranch(GfcNode switchNode, SwitchOutcome outcome, GfcNode caseBlockNode) {
         addEdge(
                 switchNode.getCode(),
                 caseBlockNode.getCode(),
-                branchLabel.equals("default") ? GfcEdgeTypeEnum.DEFAULT_BRANCH : GfcEdgeTypeEnum.CASE_BRANCH,
-                branchLabel
+                outcome.edgeType(),
+                outcome.edgeLabel()
         );
     }
 
@@ -691,5 +711,27 @@ public class GfcBuilder {
         clone.getAllContainedComments().forEach(Comment::remove);
         clone.removeComment();
         return clone.toString();
+    }
+
+    private record SwitchOutcome(List<String> labelsAssociados,
+                                 SwitchEntry entry,
+                                 boolean explicitDefaultBranch,
+                                 boolean implicitDefaultBranch) {
+
+        private static SwitchOutcome implicitDefaultOutcome() {
+            return new SwitchOutcome(List.of("implicit default"), null, false, true);
+        }
+
+        private boolean hasNoExecutableBlock() {
+            return entry == null;
+        }
+
+        private String edgeLabel() {
+            return String.join(", ", labelsAssociados);
+        }
+
+        private GfcEdgeTypeEnum edgeType() {
+            return explicitDefaultBranch || implicitDefaultBranch ? GfcEdgeTypeEnum.DEFAULT_BRANCH : GfcEdgeTypeEnum.CASE_BRANCH;
+        }
     }
 }
