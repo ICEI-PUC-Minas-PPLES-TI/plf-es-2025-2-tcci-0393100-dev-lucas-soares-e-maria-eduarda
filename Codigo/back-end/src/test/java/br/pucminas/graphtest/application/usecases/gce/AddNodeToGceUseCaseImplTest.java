@@ -13,6 +13,7 @@ import br.pucminas.graphtest.application.port.output.repositories.GceRepositoryP
 import br.pucminas.graphtest.application.service.gce.GceMutationServiceImpl;
 import br.pucminas.graphtest.application.service.gce.interfaces.GceMutationService;
 import br.pucminas.graphtest.application.service.gce.interfaces.GceValidationResultService;
+import br.pucminas.graphtest.application.service.decisiontable.interfaces.DecisionTableSyncStatusUpdateService;
 import br.pucminas.graphtest.application.service.project.interfaces.ProjectAccessService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,6 +43,9 @@ class AddNodeToGceUseCaseImplTest {
 
     @Mock
     private GceValidationResultService gceValidationResultService;
+
+    @Mock
+    private DecisionTableSyncStatusUpdateService decisionTableSyncStatusUpdateService;
 
     @Spy
     private GceMutationService gceMutationService = new GceMutationServiceImpl();
@@ -77,6 +81,7 @@ class AddNodeToGceUseCaseImplTest {
         when(gceRepository.save(any(Gce.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         GceOutput output = useCase.execute(new AddNodeToGceInput(
+                projectId,
                 graphId,
                 "O1",
                 "Operador",

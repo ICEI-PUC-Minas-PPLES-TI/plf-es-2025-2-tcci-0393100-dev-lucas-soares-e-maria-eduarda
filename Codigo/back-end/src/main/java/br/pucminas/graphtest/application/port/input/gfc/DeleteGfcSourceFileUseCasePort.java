@@ -4,5 +4,5 @@ import java.util.UUID;
 
 public interface DeleteGfcSourceFileUseCasePort {
 
-    void execute(UUID sourceFileId);
+    void execute(UUID projectId, UUID sourceFileId);
 }

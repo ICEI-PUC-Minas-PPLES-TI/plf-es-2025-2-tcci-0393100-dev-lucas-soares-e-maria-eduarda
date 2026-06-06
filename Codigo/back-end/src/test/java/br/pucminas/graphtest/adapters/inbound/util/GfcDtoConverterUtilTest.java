@@ -41,7 +41,7 @@ class GfcDtoConverterUtilTest {
         UUID projectId = UUID.randomUUID();
         PreviewGfcDTO dto = new PreviewGfcDTO(projectId, "GFC", "Descricao", "int x = 1;", "void m()");
 
-        PreviewGfcInput input = GfcDtoConverterUtil.toPreviewInput(dto);
+        PreviewGfcInput input = GfcDtoConverterUtil.toPreviewInput(projectId, dto);
 
         assertEquals(projectId, input.projectId());
         assertEquals("GFC", input.name());
@@ -71,7 +71,7 @@ class GfcDtoConverterUtilTest {
         UUID sourceFileId = UUID.randomUUID();
         CreateGfcDTO dto = new CreateGfcDTO(projectId, sourceFileId, "int soma(int a, int b)", "GFC", "Descricao");
 
-        CreateGfcInput input = GfcDtoConverterUtil.toCreateGfcInput(dto);
+        CreateGfcInput input = GfcDtoConverterUtil.toCreateGfcInput(projectId, dto);
 
         assertEquals(projectId, input.projectId());
         assertEquals(sourceFileId, input.sourceFileId());

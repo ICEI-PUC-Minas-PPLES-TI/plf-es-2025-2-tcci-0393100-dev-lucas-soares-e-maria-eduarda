@@ -6,5 +6,5 @@ import java.util.UUID;
 
 public interface GetGfcSourceMethodDetailsUseCasePort {
 
-    GfcSourceMethodDetailsOutput execute(UUID sourceFileId, String methodSignature);
+    GfcSourceMethodDetailsOutput execute(UUID projectId, UUID sourceFileId, String methodSignature);
 }

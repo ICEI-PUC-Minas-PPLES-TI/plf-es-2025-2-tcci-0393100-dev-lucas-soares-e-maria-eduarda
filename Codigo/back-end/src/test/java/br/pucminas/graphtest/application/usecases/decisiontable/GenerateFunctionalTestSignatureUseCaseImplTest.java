@@ -106,7 +106,7 @@ class GenerateFunctionalTestSignatureUseCaseImplTest {
     void shouldThrowNotFoundWhenDecisionTableDoesNotExist() {
         when(decisionTableRepositoryPort.findById(TABLE_ID)).thenReturn(Optional.empty());
 
-        assertThrows(EntityNotFoundException.class, () -> useCase.execute(TABLE_ID));
+        assertThrows(EntityNotFoundException.class, () -> useCase.execute(PROJECT_ID, TABLE_ID));
 
         verifyNoInteractions(projectAccessService);
     }
@@ -118,7 +118,7 @@ class GenerateFunctionalTestSignatureUseCaseImplTest {
         doThrow(new UnauthorizedUserException("Sem permissao"))
                 .when(projectAccessService).findAuthorizedProject(PROJECT_ID);
 
-        assertThrows(UnauthorizedUserException.class, () -> useCase.execute(TABLE_ID));
+        assertThrows(UnauthorizedUserException.class, () -> useCase.execute(PROJECT_ID, TABLE_ID));
     }
 
     @Test
@@ -126,13 +126,23 @@ class GenerateFunctionalTestSignatureUseCaseImplTest {
         DecisionTable table = tableWithRules(0, DecisionTableSyncStatusEnum.UP_TO_DATE);
         when(decisionTableRepositoryPort.findById(TABLE_ID)).thenReturn(Optional.of(table));
 
-        assertThrows(DecisionTableHasNoRulesException.class, () -> useCase.execute(TABLE_ID));
+        assertThrows(DecisionTableHasNoRulesException.class, () -> useCase.execute(PROJECT_ID, TABLE_ID));
+    }
+
+    @Test
+    void shouldThrowNotFoundWhenDecisionTableDoesNotBelongToProject() {
+        DecisionTable table = tableWithRules(1, DecisionTableSyncStatusEnum.UP_TO_DATE);
+        UUID wrongProjectId = UUID.randomUUID();
+        when(decisionTableRepositoryPort.findById(TABLE_ID)).thenReturn(Optional.of(table));
+
+        assertThrows(EntityNotFoundException.class, () -> useCase.execute(wrongProjectId, TABLE_ID));
+        verify(projectAccessService).findAuthorizedProject(PROJECT_ID);
     }
 
     private GenerateFunctionalTestSignatureOutput executeFor(DecisionTable table) {
         when(decisionTableRepositoryPort.findById(TABLE_ID)).thenReturn(Optional.of(table));
 
-        GenerateFunctionalTestSignatureOutput output = useCase.execute(TABLE_ID);
+        GenerateFunctionalTestSignatureOutput output = useCase.execute(PROJECT_ID, TABLE_ID);
 
         verify(projectAccessService).findAuthorizedProject(PROJECT_ID);
         return output;

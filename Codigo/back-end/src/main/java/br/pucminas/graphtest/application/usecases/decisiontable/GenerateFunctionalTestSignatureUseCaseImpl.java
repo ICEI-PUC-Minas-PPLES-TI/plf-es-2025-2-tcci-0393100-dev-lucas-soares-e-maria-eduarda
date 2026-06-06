@@ -40,10 +40,13 @@ public class GenerateFunctionalTestSignatureUseCaseImpl implements GenerateFunct
     }
 
     @Override
-    public GenerateFunctionalTestSignatureOutput execute(UUID decisionTableId) {
+    public GenerateFunctionalTestSignatureOutput execute(UUID projectId, UUID decisionTableId) {
         DecisionTable decisionTable = decisionTableRepositoryPort.findById(decisionTableId)
                 .orElseThrow(() -> new EntityNotFoundException(DECISION_TABLE_NOT_FOUND_MESSAGE));
         projectAccessService.findAuthorizedProject(decisionTable.getProjectId());
+        if (!decisionTable.getProjectId().equals(projectId)) {
+            throw new EntityNotFoundException(DECISION_TABLE_NOT_FOUND_MESSAGE);
+        }
 
         List<DecisionTableRule> rules = decisionTable.getRules().stream()
                 .sorted(Comparator.comparingInt(DecisionTableRule::getOrderIndex))

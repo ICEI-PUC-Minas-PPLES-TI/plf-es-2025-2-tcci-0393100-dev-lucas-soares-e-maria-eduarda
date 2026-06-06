@@ -34,13 +34,16 @@ public class GenerateStructuralTestSignatureUseCaseImpl implements GenerateStruc
     }
 
     @Override
-    public GenerateStructuralTestSignatureOutput execute(UUID gfcId) {
+    public GenerateStructuralTestSignatureOutput execute(UUID projectId, UUID gfcId) {
         Gfc gfc = gfcRepositoryPort.findById(gfcId)
                 .orElseThrow(GfcNotFoundException::new);
 
         projectAccessService.findAuthorizedProject(gfc.getProjectId());
+        if (!gfc.getProjectId().equals(projectId)) {
+            throw new GfcNotFoundException();
+        }
 
-        CyclomaticComplexityOutput complexityOutput = calculateCyclomaticComplexityUseCasePort.execute(gfcId);
+        CyclomaticComplexityOutput complexityOutput = calculateCyclomaticComplexityUseCasePort.execute(projectId, gfcId);
 
         int cyclomaticComplexity = complexityOutput.cyclomaticComplexityByEdgesAndNodes();
         validateComplexity(cyclomaticComplexity);

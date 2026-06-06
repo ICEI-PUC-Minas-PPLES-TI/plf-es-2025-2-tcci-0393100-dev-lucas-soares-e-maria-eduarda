@@ -1,7 +1,6 @@
 package br.pucminas.graphtest.adapters.inbound.controller;
 
 import br.pucminas.graphtest.adapters.inbound.controller.interfaces.DecisionTableController;
-import br.pucminas.graphtest.adapters.inbound.controller.interfaces.OperacoesCRUDController;
 import br.pucminas.graphtest.adapters.inbound.dto.decisiontable.DecisionTableDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.decisiontable.GenerateFunctionalTestSignatureResponseDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.decisiontable.UpdateDecisionTableDetailsDTO;
@@ -12,7 +11,6 @@ import br.pucminas.graphtest.application.port.input.decisiontable.FindDecisionTa
 import br.pucminas.graphtest.application.port.input.decisiontable.FindDecisionTableStatusByIdUseCasePort;
 import br.pucminas.graphtest.application.port.input.decisiontable.GenerateDecisionTableUseCasePort;
 import br.pucminas.graphtest.application.port.input.decisiontable.GenerateFunctionalTestSignatureUseCasePort;
-import br.pucminas.graphtest.application.port.input.decisiontable.ListDecisionTablesUseCasePort;
 import br.pucminas.graphtest.application.port.input.decisiontable.ListDecisionTablesByProjectUseCasePort;
 import br.pucminas.graphtest.application.port.input.decisiontable.PatchDecisionTableDetailsUseCasePort;
 import br.pucminas.graphtest.application.port.input.decisiontable.PreviewDecisionTableUseCasePort;
@@ -44,15 +42,14 @@ import static br.pucminas.graphtest.adapters.inbound.util.DecisionTableDtoConver
 import static br.pucminas.graphtest.adapters.inbound.util.DecisionTableDtoConverterUtil.toGenerateInput;
 import static br.pucminas.graphtest.adapters.inbound.util.DecisionTableDtoConverterUtil.toListByProjectInput;
 import static br.pucminas.graphtest.adapters.inbound.util.JsonResponseBuilderUtil.buildJsonResponse;
-import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.DECISION_TABLE;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.DECISION_TABLE_BY_GCE;
+import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.DECISION_TABLE_ID;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.DECISION_TABLE_GENERATE;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.DECISION_TABLE_FUNCTIONAL_TEST_SIGNATURE;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.DECISION_TABLE_PREVIEW;
-import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.DECISION_TABLE_PROJECT;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.DECISION_TABLE_REFRESH;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.DECISION_TABLE_STATUS;
-import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.ID;
+import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.PROJECT_DECISION_TABLE;
 import static br.pucminas.graphtest.shared.LogTopicsUtil.TABELA_DECISAO_CONTROLLER;
 import static java.util.Arrays.asList;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -61,11 +58,10 @@ import static org.springframework.http.HttpStatus.OK;
 @Slf4j(topic = TABELA_DECISAO_CONTROLLER)
 @RestController
 @Validated
-@RequestMapping(DECISION_TABLE)
+@RequestMapping(PROJECT_DECISION_TABLE)
 @AllArgsConstructor
-public class DecisionTableControllerImpl implements DecisionTableController, OperacoesCRUDController<UUID, DecisionTableDTO> {
+public class DecisionTableControllerImpl implements DecisionTableController {
 
-    private final ListDecisionTablesUseCasePort listDecisionTablesUseCasePort;
     private final GenerateDecisionTableUseCasePort generateDecisionTableUseCasePort;
     private final FindDecisionTableByIdUseCasePort findDecisionTableByIdUseCasePort;
     private final FindDecisionTableStatusByIdUseCasePort findDecisionTableStatusByIdUseCasePort;
@@ -79,83 +75,73 @@ public class DecisionTableControllerImpl implements DecisionTableController, Ope
 
     @Override
     @PostMapping(DECISION_TABLE_GENERATE)
-    public ResponseEntity<DecisionTableDTO> create(@PathVariable UUID gceId) {
+    public ResponseEntity<DecisionTableDTO> create(@PathVariable UUID projectId, @PathVariable UUID gceId) {
         log.info(">>> criar: recebendo requisicao para criar tabela de decisao a partir do GCE");
 
-        var decisionTable = generateDecisionTableUseCasePort.execute(toGenerateInput(gceId));
+        var decisionTable = generateDecisionTableUseCasePort.execute(toGenerateInput(projectId, gceId));
 
-        return ResponseEntity.created(URI.create(DECISION_TABLE + "/" + decisionTable.id()))
+        return ResponseEntity.created(URI.create("/projeto/" + projectId + "/tabela-de-decisao/" + decisionTable.id()))
                 .body(toDto(decisionTable));
     }
 
     @Override
-    @GetMapping(ID)
-    public ResponseEntity<DecisionTableDTO> findById(@PathVariable UUID id) {
+    @GetMapping(DECISION_TABLE_ID)
+    public ResponseEntity<DecisionTableDTO> findById(@PathVariable UUID projectId,
+                                                     @PathVariable("decisionTableId") UUID id) {
         log.info(">>> encontrarPorId: recebendo requisicao para encontrar tabela de decisao por id");
 
-        return ResponseEntity.ok(toDto(findDecisionTableByIdUseCasePort.execute(toByIdInput(id))));
+        return ResponseEntity.ok(toDto(findDecisionTableByIdUseCasePort.execute(toByIdInput(projectId, id))));
     }
 
     @Override
-    @GetMapping
-    public ResponseEntity<List<DecisionTableDTO>> listAll() {
-        log.info(">>> listarTodos: recebendo requisicao para listar tabelas de decisao do usuario autenticado");
-
-        List<DecisionTableDTO> decisionTables = listDecisionTablesUseCasePort.execute().stream()
-                .map(DecisionTableDtoConverterUtil::toDto)
-                .toList();
-
-        return ResponseEntity.ok(decisionTables);
-    }
-
-
-    @Override
-    @GetMapping(DECISION_TABLE_STATUS)
-    public ResponseEntity<Boolean> findStatusById(@PathVariable UUID id) {
+    @GetMapping(DECISION_TABLE_ID + "/status")
+    public ResponseEntity<Boolean> findStatusById(@PathVariable UUID projectId,
+                                                  @PathVariable("decisionTableId") UUID id) {
         log.info(">>> encontrarStatusPorId: recebendo requisicao para consultar status da tabela de decisao");
 
-        return ResponseEntity.ok(findDecisionTableStatusByIdUseCasePort.execute(toByIdInput(id)));
+        return ResponseEntity.ok(findDecisionTableStatusByIdUseCasePort.execute(toByIdInput(projectId, id)));
     }
 
     @Override
-    @PatchMapping(ID)
-    public ResponseEntity<DecisionTableDTO> patchDetails(@PathVariable UUID id,
+    @PatchMapping(DECISION_TABLE_ID)
+    public ResponseEntity<DecisionTableDTO> patchDetails(@PathVariable UUID projectId,
+                                                         @PathVariable("decisionTableId") UUID id,
                                                          @RequestBody UpdateDecisionTableDetailsDTO decisionTable) {
         log.info(">>> atualizarDetalhes: recebendo requisicao para atualizar nome e descricao da tabela de decisao");
 
         return ResponseEntity.ok(
                 toDto(patchDecisionTableDetailsUseCasePort.execute(
-                        DecisionTableDtoConverterUtil.toUpdateDetailsInput(id, decisionTable)
+                        DecisionTableDtoConverterUtil.toUpdateDetailsInput(projectId, id, decisionTable)
                 ))
         );
     }
 
     @Override
     @GetMapping(DECISION_TABLE_BY_GCE)
-    public ResponseEntity<DecisionTableDTO> findByGceId(@PathVariable UUID gceId) {
+    public ResponseEntity<DecisionTableDTO> findByGceId(@PathVariable UUID projectId, @PathVariable UUID gceId) {
         log.info(">>> encontrarPorGceId: recebendo requisicao para encontrar tabela de decisao por GCE");
 
-        return ResponseEntity.ok(toDto(findDecisionTableByGceIdUseCasePort.execute(toByGceIdInput(gceId))));
+        return ResponseEntity.ok(toDto(findDecisionTableByGceIdUseCasePort.execute(toByGceIdInput(projectId, gceId))));
     }
 
     @Override
     @GetMapping(DECISION_TABLE_PREVIEW)
-    public ResponseEntity<DecisionTableDTO> preview(@PathVariable UUID gceId) {
+    public ResponseEntity<DecisionTableDTO> preview(@PathVariable UUID projectId, @PathVariable UUID gceId) {
         log.info(">>> preVisualizar: recebendo requisicao para pre-visualizar tabela de decisao a partir do GCE");
 
-        return ResponseEntity.ok(toDto(previewDecisionTableUseCasePort.execute(toByGceIdInput(gceId))));
+        return ResponseEntity.ok(toDto(previewDecisionTableUseCasePort.execute(toByGceIdInput(projectId, gceId))));
     }
 
     @Override
     @PutMapping(DECISION_TABLE_REFRESH)
-    public ResponseEntity<DecisionTableDTO> refresh(@PathVariable UUID gceId) {
+    public ResponseEntity<DecisionTableDTO> refresh(@PathVariable UUID projectId, @PathVariable UUID gceId) {
         log.info(">>> sincronizar: recebendo requisicao para sincronizar tabela de decisao com o GCE");
 
-        return ResponseEntity.ok(toDto(refreshDecisionTableUseCasePort.execute(toByGceIdInput(gceId))));
+        return ResponseEntity.ok(toDto(refreshDecisionTableUseCasePort.execute(toByGceIdInput(projectId, gceId))));
     }
 
     @Override
-    @GetMapping(DECISION_TABLE_PROJECT)
+    @GetMapping
     public ResponseEntity<List<DecisionTableDTO>> listByProject(@PathVariable UUID projectId) {
         log.info(">>> listarPorProjeto: recebendo requisicao para listar tabelas de decisao por projeto");
 
@@ -168,11 +154,12 @@ public class DecisionTableControllerImpl implements DecisionTableController, Ope
     }
 
     @Override
-    @DeleteMapping(ID)
-    public ResponseEntity<Map<String, Object>> delete(@PathVariable UUID id) {
+    @DeleteMapping(DECISION_TABLE_ID)
+    public ResponseEntity<Map<String, Object>> delete(@PathVariable UUID projectId,
+                                                      @PathVariable("decisionTableId") UUID id) {
         log.info(">>> deletar: recebendo requisicao para deletar tabela de decisao");
 
-        deleteDecisionTableByIdUseCasePort.execute(toByIdInput(id));
+        deleteDecisionTableByIdUseCasePort.execute(toByIdInput(projectId, id));
 
         return ResponseEntity.ok().body(buildJsonResponse(
                 CHAVES_TABELA_DECISAO_CONTROLLER,
@@ -181,12 +168,13 @@ public class DecisionTableControllerImpl implements DecisionTableController, Ope
     }
 
     @Override
-    @GetMapping(DECISION_TABLE_FUNCTIONAL_TEST_SIGNATURE)
+    @GetMapping(DECISION_TABLE_ID + "/assinatura-teste-funcional")
     public ResponseEntity<GenerateFunctionalTestSignatureResponseDTO> generateFunctionalTestSignature(
+            @PathVariable UUID projectId,
             @PathVariable UUID decisionTableId
     ) {
         log.info(">>> gerarAssinaturaTesteFuncional: recebendo requisicao para gerar assinaturas de teste funcional");
 
-        return ResponseEntity.ok(toDto(generateFunctionalTestSignatureUseCasePort.execute(decisionTableId)));
+        return ResponseEntity.ok(toDto(generateFunctionalTestSignatureUseCasePort.execute(projectId, decisionTableId)));
     }
 }

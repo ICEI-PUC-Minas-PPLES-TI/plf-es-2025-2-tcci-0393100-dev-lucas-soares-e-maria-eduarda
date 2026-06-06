@@ -46,7 +46,7 @@ class DeleteGfcSourceFileUseCaseImplTest {
         when(projectAccessService.findAuthorizedProject(projectId))
                 .thenReturn(new Project(projectId, "Projeto", "Descricao", userId));
 
-        useCase.execute(sourceFileId);
+        useCase.execute(projectId, sourceFileId);
 
         InOrder inOrder = inOrder(projectAccessService, gfcRepositoryPort, gfcSourceFileRepositoryPort);
         inOrder.verify(projectAccessService).findAuthorizedProject(projectId);
@@ -59,7 +59,7 @@ class DeleteGfcSourceFileUseCaseImplTest {
         UUID sourceFileId = UUID.randomUUID();
         when(gfcSourceFileRepositoryPort.findById(sourceFileId)).thenReturn(Optional.empty());
 
-        assertThrows(GfcSourceFileNotFoundException.class, () -> useCase.execute(sourceFileId));
+        assertThrows(GfcSourceFileNotFoundException.class, () -> useCase.execute(UUID.randomUUID(), sourceFileId));
         verifyNoInteractions(projectAccessService, gfcRepositoryPort);
     }
 }

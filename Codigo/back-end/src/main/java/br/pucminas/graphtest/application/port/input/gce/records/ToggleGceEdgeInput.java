@@ -6,6 +6,7 @@ import java.util.UUID;
  * Dados para inverter uma aresta existente do GCE.
  */
 public record ToggleGceEdgeInput(
+        UUID projectId,
         UUID gceId,
         UUID edgeId
 ) {

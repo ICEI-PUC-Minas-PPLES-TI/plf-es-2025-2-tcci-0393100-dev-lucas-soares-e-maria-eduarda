@@ -63,7 +63,7 @@ class ListGfcSourceMethodsUseCaseImplTest {
                 .thenReturn(new Project(projectId, "Projeto", "Descricao", userId));
         when(gfcSourceMethodListingService.listMethods(sourceCode)).thenReturn(List.of(firstMethod, secondMethod));
 
-        List<GfcSourceMethodOutput> methods = useCase.execute(sourceFileId);
+        List<GfcSourceMethodOutput> methods = useCase.execute(projectId, sourceFileId);
 
         verify(projectAccessService).findAuthorizedProject(projectId);
         verify(gfcSourceMethodListingService).listMethods(sourceCode);
@@ -79,7 +79,7 @@ class ListGfcSourceMethodsUseCaseImplTest {
         UUID sourceFileId = UUID.randomUUID();
         when(gfcSourceFileRepositoryPort.findById(sourceFileId)).thenReturn(Optional.empty());
 
-        assertThrows(GfcSourceFileNotFoundException.class, () -> useCase.execute(sourceFileId));
+        assertThrows(GfcSourceFileNotFoundException.class, () -> useCase.execute(UUID.randomUUID(), sourceFileId));
         verifyNoInteractions(projectAccessService, gfcSourceMethodListingService);
     }
 
@@ -92,7 +92,7 @@ class ListGfcSourceMethodsUseCaseImplTest {
         when(projectAccessService.findAuthorizedProject(projectId))
                 .thenThrow(new UnauthorizedUserException("Usuario nao possui permissao para acessar o projeto"));
 
-        assertThrows(UnauthorizedUserException.class, () -> useCase.execute(sourceFileId));
+        assertThrows(UnauthorizedUserException.class, () -> useCase.execute(projectId, sourceFileId));
         verify(projectAccessService).findAuthorizedProject(projectId);
         verifyNoInteractions(gfcSourceMethodListingService);
     }

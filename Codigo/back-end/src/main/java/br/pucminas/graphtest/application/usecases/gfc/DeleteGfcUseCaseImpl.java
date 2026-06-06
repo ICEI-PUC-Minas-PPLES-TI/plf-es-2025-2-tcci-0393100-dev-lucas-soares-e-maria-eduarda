@@ -23,10 +23,13 @@ public class DeleteGfcUseCaseImpl implements DeleteGfcUseCasePort {
     }
 
     @Override
-    public void execute(UUID gfcId) {
+    public void execute(UUID projectId, UUID gfcId) {
         Gfc gfc = gfcRepositoryPort.findById(gfcId)
                 .orElseThrow(GfcNotFoundException::new);
         projectAccessService.findAuthorizedProject(gfc.getProjectId());
+        if (!gfc.getProjectId().equals(projectId)) {
+            throw new GfcNotFoundException();
+        }
         gfcRepositoryPort.deleteById(gfc.getId());
     }
 }

@@ -15,6 +15,7 @@ import br.pucminas.graphtest.application.port.output.repositories.GceRepositoryP
 import br.pucminas.graphtest.application.service.gce.GceMutationServiceImpl;
 import br.pucminas.graphtest.application.service.gce.interfaces.GceMutationService;
 import br.pucminas.graphtest.application.service.gce.interfaces.GceValidationResultService;
+import br.pucminas.graphtest.application.service.decisiontable.interfaces.DecisionTableSyncStatusUpdateService;
 import br.pucminas.graphtest.application.service.project.interfaces.ProjectAccessService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,6 +50,9 @@ class UpdateGceUseCaseImplTest {
 
     @Spy
     private GceMutationService gceMutationService = new GceMutationServiceImpl();
+
+    @Mock
+    private DecisionTableSyncStatusUpdateService decisionTableSyncStatusUpdateService;
 
     @InjectMocks
     private UpdateGceUseCaseImpl useCase;
@@ -89,6 +93,8 @@ class UpdateGceUseCaseImplTest {
                 .thenReturn(new Project(projectId, "Projeto", "Descricao", userId));
         when(gceValidationResultService.validate(any(Gce.class)))
                 .thenReturn(new br.pucminas.graphtest.application.port.input.gce.records.ValidationGceOutput(List.of(), List.of()));
+        when(decisionTableSyncStatusUpdateService.hasDecisionTableRelevantChanges(any(Gce.class), any(Gce.class)))
+                .thenReturn(false);
         when(gceRepository.save(any(Gce.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         GceOutput output = useCase.execute(new UpdateGceInput(

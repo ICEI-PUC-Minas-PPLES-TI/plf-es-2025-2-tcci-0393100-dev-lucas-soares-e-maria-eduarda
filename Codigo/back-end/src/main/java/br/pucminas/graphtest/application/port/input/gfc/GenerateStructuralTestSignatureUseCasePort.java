@@ -6,5 +6,5 @@ import java.util.UUID;
 
 public interface GenerateStructuralTestSignatureUseCasePort {
 
-    GenerateStructuralTestSignatureOutput execute(UUID gfcId);
+    GenerateStructuralTestSignatureOutput execute(UUID projectId, UUID gfcId);
 }

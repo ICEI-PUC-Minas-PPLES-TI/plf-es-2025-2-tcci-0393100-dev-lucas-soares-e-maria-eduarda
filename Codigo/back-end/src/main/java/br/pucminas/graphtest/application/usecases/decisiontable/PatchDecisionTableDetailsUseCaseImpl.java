@@ -27,6 +27,9 @@ public class PatchDecisionTableDetailsUseCaseImpl implements PatchDecisionTableD
                 .orElseThrow(() -> new EntityNotFoundException("Tabela de decisao nao encontrada"));
 
         projectAccessService.findAuthorizedProject(decisionTable.getProjectId());
+        if (!decisionTable.getProjectId().equals(input.projectId())) {
+            throw new EntityNotFoundException("Tabela de decisao nao encontrada");
+        }
         decisionTable.updateDetails(input.name(), input.description());
         decisionTable.setUpdatedAt(LocalDateTime.now());
         return DecisionTableOutput.from(decisionTableRepository.save(decisionTable));

@@ -8,7 +8,6 @@ import br.pucminas.graphtest.application.port.input.decisiontable.FindDecisionTa
 import br.pucminas.graphtest.application.port.input.decisiontable.GenerateDecisionTableUseCasePort;
 import br.pucminas.graphtest.application.port.input.decisiontable.GenerateFunctionalTestSignatureUseCasePort;
 import br.pucminas.graphtest.application.port.input.decisiontable.ListDecisionTablesByProjectUseCasePort;
-import br.pucminas.graphtest.application.port.input.decisiontable.ListDecisionTablesUseCasePort;
 import br.pucminas.graphtest.application.port.input.decisiontable.PatchDecisionTableDetailsUseCasePort;
 import br.pucminas.graphtest.application.port.input.decisiontable.PreviewDecisionTableUseCasePort;
 import br.pucminas.graphtest.application.port.input.decisiontable.RefreshDecisionTableUseCasePort;
@@ -32,8 +31,6 @@ import static org.springframework.http.HttpStatus.OK;
 @ExtendWith(MockitoExtension.class)
 class DecisionTableControllerImplTest {
 
-    @Mock
-    private ListDecisionTablesUseCasePort listDecisionTablesUseCasePort;
     @Mock
     private GenerateDecisionTableUseCasePort generateDecisionTableUseCasePort;
     @Mock
@@ -60,6 +57,7 @@ class DecisionTableControllerImplTest {
 
     @Test
     void shouldGenerateFunctionalTestSignatureThroughInputPort() {
+        UUID projectId = UUID.randomUUID();
         UUID tableId = UUID.randomUUID();
         String code = "@Test\nvoid testeFuncional01() {\n\n}";
         GenerateFunctionalTestSignatureOutput output = new GenerateFunctionalTestSignatureOutput(
@@ -72,11 +70,11 @@ class DecisionTableControllerImplTest {
                 code,
                 List.of()
         );
-        when(generateFunctionalTestSignatureUseCasePort.execute(tableId)).thenReturn(output);
+        when(generateFunctionalTestSignatureUseCasePort.execute(projectId, tableId)).thenReturn(output);
 
-        ResponseEntity<GenerateFunctionalTestSignatureResponseDTO> response = controller.generateFunctionalTestSignature(tableId);
+        ResponseEntity<GenerateFunctionalTestSignatureResponseDTO> response = controller.generateFunctionalTestSignature(projectId, tableId);
 
-        verify(generateFunctionalTestSignatureUseCasePort).execute(tableId);
+        verify(generateFunctionalTestSignatureUseCasePort).execute(projectId, tableId);
         assertEquals(OK, response.getStatusCode());
         assertEquals(tableId, response.getBody().decisionTableId());
         assertEquals(1, response.getBody().rulesCount());

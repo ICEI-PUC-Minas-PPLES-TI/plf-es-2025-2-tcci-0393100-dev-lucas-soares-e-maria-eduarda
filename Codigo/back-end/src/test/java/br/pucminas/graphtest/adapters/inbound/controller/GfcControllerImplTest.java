@@ -85,7 +85,7 @@ class GfcControllerImplTest {
         when(createGfcUseCasePort.execute(org.mockito.ArgumentMatchers.any(CreateGfcInput.class)))
                 .thenReturn(new CreateGfcOutput(gfcId, createdAt));
 
-        ResponseEntity<CreateGfcResponseDTO> response = controller.create(request);
+        ResponseEntity<CreateGfcResponseDTO> response = controller.create(projectId, request);
 
         ArgumentCaptor<CreateGfcInput> inputCaptor = ArgumentCaptor.forClass(CreateGfcInput.class);
         verify(createGfcUseCasePort).execute(inputCaptor.capture());
@@ -117,11 +117,11 @@ class GfcControllerImplTest {
                 List.of(),
                 List.of()
         );
-        when(findGfcByIdUseCasePort.execute(gfcId)).thenReturn(output);
+        when(findGfcByIdUseCasePort.execute(projectId, gfcId)).thenReturn(output);
 
-        ResponseEntity<GfcDTO> response = controller.findById(gfcId);
+        ResponseEntity<GfcDTO> response = controller.findById(projectId, gfcId);
 
-        verify(findGfcByIdUseCasePort).execute(gfcId);
+        verify(findGfcByIdUseCasePort).execute(projectId, gfcId);
         assertEquals(gfcId, response.getBody().id());
         assertEquals(projectId, response.getBody().projectId());
         assertEquals(sourceFileId, response.getBody().sourceFileId());
@@ -133,11 +133,12 @@ class GfcControllerImplTest {
     @Test
     void shouldDeleteGfcThroughInputPort() {
         UUID gfcId = UUID.randomUUID();
-        doNothing().when(deleteGfcUseCasePort).execute(gfcId);
+        UUID projectId = UUID.randomUUID();
+        doNothing().when(deleteGfcUseCasePort).execute(projectId, gfcId);
 
-        ResponseEntity<DeleteGfcResponseDTO> response = controller.delete(gfcId);
+        ResponseEntity<DeleteGfcResponseDTO> response = controller.delete(projectId, gfcId);
 
-        verify(deleteGfcUseCasePort).execute(gfcId);
+        verify(deleteGfcUseCasePort).execute(projectId, gfcId);
         assertEquals(OK, response.getStatusCode());
         assertEquals("Grafo de Fluxo de Controle removido com sucesso", response.getBody().mensagem());
         assertEquals(OK.value(), response.getBody().status());
@@ -192,7 +193,7 @@ class GfcControllerImplTest {
         when(previewGfcUseCasePort.execute(org.mockito.ArgumentMatchers.any(PreviewGfcInput.class)))
                 .thenReturn(output);
 
-        ResponseEntity<GfcDTO> response = controller.preview(request);
+        ResponseEntity<GfcDTO> response = controller.preview(projectId, request);
 
         ArgumentCaptor<PreviewGfcInput> inputCaptor = ArgumentCaptor.forClass(PreviewGfcInput.class);
         verify(previewGfcUseCasePort).execute(inputCaptor.capture());
@@ -211,6 +212,7 @@ class GfcControllerImplTest {
     @Test
     void shouldCalculateCyclomaticComplexityThroughInputPort() {
         UUID gfcId = UUID.randomUUID();
+        UUID projectId = UUID.randomUUID();
         CyclomaticComplexityOutput output = new CyclomaticComplexityOutput(
                 gfcId,
                 10,
@@ -222,11 +224,11 @@ class GfcControllerImplTest {
                 "V(G) = P + 1",
                 List.of("Aviso")
         );
-        when(calculateCyclomaticComplexityUseCasePort.execute(gfcId)).thenReturn(output);
+        when(calculateCyclomaticComplexityUseCasePort.execute(projectId, gfcId)).thenReturn(output);
 
-        ResponseEntity<CyclomaticComplexityResponseDTO> response = controller.calculateCyclomaticComplexity(gfcId);
+        ResponseEntity<CyclomaticComplexityResponseDTO> response = controller.calculateCyclomaticComplexity(projectId, gfcId);
 
-        verify(calculateCyclomaticComplexityUseCasePort).execute(gfcId);
+        verify(calculateCyclomaticComplexityUseCasePort).execute(projectId, gfcId);
         assertEquals(OK, response.getStatusCode());
         assertEquals(gfcId, response.getBody().gfcId());
         assertEquals(10, response.getBody().nodesCount());
@@ -242,6 +244,7 @@ class GfcControllerImplTest {
     @Test
     void shouldGenerateStructuralTestSignatureThroughInputPort() {
         UUID gfcId = UUID.randomUUID();
+        UUID projectId = UUID.randomUUID();
         String code = "@Test\nvoid teste01() {\n\n}";
         GenerateStructuralTestSignatureOutput output = new GenerateStructuralTestSignatureOutput(
                 gfcId,
@@ -250,11 +253,11 @@ class GfcControllerImplTest {
                 List.of(new StructuralTestMethodSignatureOutput("teste01", code)),
                 code
         );
-        when(generateStructuralTestSignatureUseCasePort.execute(gfcId)).thenReturn(output);
+        when(generateStructuralTestSignatureUseCasePort.execute(projectId, gfcId)).thenReturn(output);
 
-        ResponseEntity<GenerateStructuralTestSignatureResponseDTO> response = controller.generateStructuralTestSignature(gfcId);
+        ResponseEntity<GenerateStructuralTestSignatureResponseDTO> response = controller.generateStructuralTestSignature(projectId, gfcId);
 
-        verify(generateStructuralTestSignatureUseCasePort).execute(gfcId);
+        verify(generateStructuralTestSignatureUseCasePort).execute(projectId, gfcId);
         assertEquals(OK, response.getStatusCode());
         assertEquals(gfcId, response.getBody().gfcId());
         assertEquals("void executar()", response.getBody().methodSignature());

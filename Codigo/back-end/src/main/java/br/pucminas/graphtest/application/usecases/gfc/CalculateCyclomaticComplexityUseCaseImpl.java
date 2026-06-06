@@ -34,10 +34,13 @@ public class CalculateCyclomaticComplexityUseCaseImpl implements CalculateCyclom
     }
 
     @Override
-    public CyclomaticComplexityOutput execute(UUID gfcId) {
+    public CyclomaticComplexityOutput execute(UUID projectId, UUID gfcId) {
         Gfc gfc = gfcRepositoryPort.findById(gfcId)
                 .orElseThrow(GfcNotFoundException::new);
         projectAccessService.findAuthorizedProject(gfc.getProjectId());
+        if (!gfc.getProjectId().equals(projectId)) {
+            throw new GfcNotFoundException();
+        }
 
         String startNodeCode = findStartNodeCode(gfc);
         int nodesCount = countNodesForEdgesAndNodesFormula(gfc);

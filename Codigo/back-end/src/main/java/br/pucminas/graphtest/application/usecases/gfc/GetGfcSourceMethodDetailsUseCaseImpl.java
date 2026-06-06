@@ -25,10 +25,13 @@ public class GetGfcSourceMethodDetailsUseCaseImpl implements GetGfcSourceMethodD
     }
 
     @Override
-    public GfcSourceMethodDetailsOutput execute(UUID sourceFileId, String methodSignature) {
+    public GfcSourceMethodDetailsOutput execute(UUID projectId, UUID sourceFileId, String methodSignature) {
         GfcSourceFile sourceFile = gfcSourceFileRepositoryPort.findById(sourceFileId)
                 .orElseThrow(GfcSourceFileNotFoundException::new);
         projectAccessService.findAuthorizedProject(sourceFile.getProjectId());
+        if (!sourceFile.getProjectId().equals(projectId)) {
+            throw new GfcSourceFileNotFoundException();
+        }
 
         return gfcSourceMethodDetailsService.getDetails(sourceFile.getContent(), methodSignature);
     }

@@ -2,6 +2,7 @@ package br.pucminas.graphtest.application.usecases.gce;
 
 import br.pucminas.graphtest.application.domain.gce.model.Gce;
 import br.pucminas.graphtest.application.domain.gce.model.GceNode;
+import br.pucminas.graphtest.application.exception.EntityNotFoundException;
 import br.pucminas.graphtest.application.port.input.gce.UpdateGceNodeUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.records.GceOutput;
 import br.pucminas.graphtest.application.port.input.gce.records.UpdateGceNodeInput;
@@ -39,6 +40,9 @@ public class UpdateGceNodeUseCaseImpl implements UpdateGceNodeUseCasePort {
     @Override
     public GceOutput execute(UpdateGceNodeInput input) {
         Gce graph = gceMutationService.loadAuthorizedGraph(input.gceId(), gceRepository, projectAccessService);
+        if (!graph.getProjectId().equals(input.projectId())) {
+            throw new EntityNotFoundException("GCE nao encontrado");
+        }
         GceNode currentNode = graph.findNode(input.nodeCode())
                 .orElseThrow(() -> new IllegalArgumentException("No inexistente: " + input.nodeCode()));
 
