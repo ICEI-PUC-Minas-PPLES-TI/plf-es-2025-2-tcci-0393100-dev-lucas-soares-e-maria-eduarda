@@ -1,6 +1,7 @@
 package br.pucminas.graphtest.application.port.input.decisiontable.records;
 
-import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTableAction;
+import br.pucminas.graphtest.application.domain.decisiontable.enums.DecisionTableElementEnum;
+import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTableElement;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -18,7 +19,10 @@ public record DecisionTableActionOutput(
         LocalDateTime updatedAt
 ) {
 
-    public static DecisionTableActionOutput from(DecisionTableAction action) {
+    public static DecisionTableActionOutput from(DecisionTableElement action) {
+        if (action.getType() != DecisionTableElementEnum.ACTION) {
+            throw new IllegalArgumentException("Elemento nao e uma acao.");
+        }
         return new DecisionTableActionOutput(
                 action.getId(),
                 action.getDecisionTableId(),

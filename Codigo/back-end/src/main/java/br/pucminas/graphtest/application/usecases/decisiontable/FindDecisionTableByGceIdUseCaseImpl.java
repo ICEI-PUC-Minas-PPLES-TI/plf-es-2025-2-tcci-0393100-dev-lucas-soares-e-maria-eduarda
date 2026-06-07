@@ -27,6 +27,9 @@ public class FindDecisionTableByGceIdUseCaseImpl implements FindDecisionTableByG
                 .orElseThrow(() -> new EntityNotFoundException("Tabela de decisao nao encontrada"));
 
         projectAccessService.findAuthorizedProject(decisionTable.getProjectId());
+        if (!decisionTable.getProjectId().equals(input.projectId())) {
+            throw new EntityNotFoundException("Tabela de decisao nao encontrada");
+        }
         return DecisionTableOutput.from(decisionTable);
     }
 }

@@ -2,6 +2,7 @@ package br.pucminas.graphtest.application.usecases.decisiontable;
 
 import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTable;
 import br.pucminas.graphtest.application.domain.gce.model.Gce;
+import br.pucminas.graphtest.application.exception.EntityNotFoundException;
 import br.pucminas.graphtest.application.port.input.decisiontable.PreviewDecisionTableUseCasePort;
 import br.pucminas.graphtest.application.port.input.decisiontable.records.DecisionTableByGceIdInput;
 import br.pucminas.graphtest.application.port.input.decisiontable.records.DecisionTableOutput;
@@ -37,6 +38,9 @@ public class PreviewDecisionTableUseCaseImpl implements PreviewDecisionTableUseC
     @Override
     public DecisionTableOutput execute(DecisionTableByGceIdInput input) {
         Gce graph = gceMutationService.loadAuthorizedGraph(input.gceId(), gceRepository, projectAccessService);
+        if (!graph.getProjectId().equals(input.projectId())) {
+            throw new EntityNotFoundException("GCE nao encontrado");
+        }
         DecisionTable currentTable = decisionTableRepository.findByGceId(input.gceId()).orElse(null);
         DecisionTable previewTable = decisionTableDerivationService.derive(graph, currentTable);
         return DecisionTableOutput.from(previewTable);

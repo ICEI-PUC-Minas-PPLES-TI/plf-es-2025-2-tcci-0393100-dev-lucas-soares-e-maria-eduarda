@@ -17,43 +17,48 @@ import java.util.Map;
 import java.util.UUID;
 
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.DECISION_TABLE_BY_GCE;
+import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.DECISION_TABLE_ID;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.DECISION_TABLE_GENERATE;
-import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.DECISION_TABLE_FUNCTIONAL_TEST_SIGNATURE;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.DECISION_TABLE_PREVIEW;
-import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.DECISION_TABLE_PROJECT;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.DECISION_TABLE_REFRESH;
-import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.DECISION_TABLE_STATUS;
-import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.ID;
 
 public interface DecisionTableController {
 
     @PostMapping(DECISION_TABLE_GENERATE)
-    ResponseEntity<DecisionTableDTO> create(@PathVariable UUID gceId);
+    ResponseEntity<DecisionTableDTO> create(@PathVariable UUID projectId, @PathVariable UUID gceId);
 
-    @GetMapping(ID)
-    ResponseEntity<DecisionTableDTO> findById(@PathVariable UUID id);
+    @GetMapping(DECISION_TABLE_ID)
+    ResponseEntity<DecisionTableDTO> findById(@PathVariable UUID projectId,
+                                              @PathVariable("decisionTableId") UUID id);
 
-    @GetMapping(DECISION_TABLE_STATUS)
-    ResponseEntity<Boolean> findStatusById(@PathVariable UUID id);
+    @GetMapping(DECISION_TABLE_ID + "/status")
+    ResponseEntity<Boolean> findStatusById(@PathVariable UUID projectId,
+                                           @PathVariable("decisionTableId") UUID id);
 
-    @PatchMapping(ID)
-    ResponseEntity<DecisionTableDTO> patchDetails(@PathVariable UUID id, @RequestBody UpdateDecisionTableDetailsDTO decisionTable);
+    @PatchMapping(DECISION_TABLE_ID)
+    ResponseEntity<DecisionTableDTO> patchDetails(@PathVariable UUID projectId,
+                                                  @PathVariable("decisionTableId") UUID id,
+                                                  @RequestBody UpdateDecisionTableDetailsDTO decisionTable);
 
     @GetMapping(DECISION_TABLE_BY_GCE)
-    ResponseEntity<DecisionTableDTO> findByGceId(@PathVariable UUID gceId);
+    ResponseEntity<DecisionTableDTO> findByGceId(@PathVariable UUID projectId, @PathVariable UUID gceId);
 
     @GetMapping(DECISION_TABLE_PREVIEW)
-    ResponseEntity<DecisionTableDTO> preview(@PathVariable UUID gceId);
+    ResponseEntity<DecisionTableDTO> preview(@PathVariable UUID projectId, @PathVariable UUID gceId);
 
     @PutMapping(DECISION_TABLE_REFRESH)
-    ResponseEntity<DecisionTableDTO> refresh(@PathVariable UUID gceId);
+    ResponseEntity<DecisionTableDTO> refresh(@PathVariable UUID projectId, @PathVariable UUID gceId);
 
-    @GetMapping(DECISION_TABLE_PROJECT)
+    @GetMapping
     ResponseEntity<List<DecisionTableDTO>> listByProject(@PathVariable UUID projectId);
 
-    @DeleteMapping(ID)
-    ResponseEntity<Map<String, Object>> delete(@PathVariable UUID id);
+    @DeleteMapping(DECISION_TABLE_ID)
+    ResponseEntity<Map<String, Object>> delete(@PathVariable UUID projectId,
+                                               @PathVariable("decisionTableId") UUID id);
 
-    @GetMapping(DECISION_TABLE_FUNCTIONAL_TEST_SIGNATURE)
-    ResponseEntity<GenerateFunctionalTestSignatureResponseDTO> generateFunctionalTestSignature(@PathVariable UUID decisionTableId);
+    @GetMapping(DECISION_TABLE_ID + "/assinatura-teste-funcional")
+    ResponseEntity<GenerateFunctionalTestSignatureResponseDTO> generateFunctionalTestSignature(
+            @PathVariable UUID projectId,
+            @PathVariable UUID decisionTableId
+    );
 }

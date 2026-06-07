@@ -6,6 +6,7 @@ import br.pucminas.graphtest.application.domain.gce.model.GceNode;
 import br.pucminas.graphtest.application.domain.project.model.Project;
 import br.pucminas.graphtest.application.domain.gce.enums.GceEdgeTypeEnum;
 import br.pucminas.graphtest.application.domain.gce.enums.GceOperatorTypeEnum;
+import br.pucminas.graphtest.application.exception.EntityNotFoundException;
 import br.pucminas.graphtest.application.port.input.gce.records.FindGceByIdInput;
 import br.pucminas.graphtest.application.port.input.gce.records.GceOutput;
 import br.pucminas.graphtest.application.port.output.repositories.GceRepositoryPort;
@@ -21,6 +22,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -63,9 +65,32 @@ class FindGceByIdUseCaseImplTest {
         when(projectAccessService.findAuthorizedProject(projectId))
                 .thenReturn(new Project(projectId, "Projeto", "Descricao", userId));
 
-        GceOutput output = useCase.execute(new FindGceByIdInput(graphId));
+        GceOutput output = useCase.execute(new FindGceByIdInput(projectId, graphId));
 
         assertEquals(graphId, output.id());
         verify(projectAccessService).findAuthorizedProject(projectId);
+    }
+
+    @Test
+    void shouldThrowNotFoundWhenGceDoesNotBelongToProject() {
+        UUID graphId = UUID.randomUUID();
+        UUID persistedProjectId = UUID.randomUUID();
+        UUID requestedProjectId = UUID.randomUUID();
+        Gce graph = new Gce(
+                graphId,
+                persistedProjectId,
+                "GCE",
+                "Descricao",
+                false,
+                List.of(GceNode.cause(UUID.randomUUID(), "C1", "Causa")),
+                List.of(),
+                List.of()
+        );
+        when(gceRepository.findById(graphId)).thenReturn(Optional.of(graph));
+        when(projectAccessService.findAuthorizedProject(persistedProjectId))
+                .thenReturn(new Project(persistedProjectId, "Projeto", "Descricao", UUID.randomUUID()));
+
+        assertThrows(EntityNotFoundException.class, () -> useCase.execute(new FindGceByIdInput(requestedProjectId, graphId)));
+        verify(projectAccessService).findAuthorizedProject(persistedProjectId);
     }
 }

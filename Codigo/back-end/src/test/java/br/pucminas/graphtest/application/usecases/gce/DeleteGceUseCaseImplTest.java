@@ -6,6 +6,7 @@ import br.pucminas.graphtest.application.domain.gce.model.Gce;
 import br.pucminas.graphtest.application.domain.gce.model.GceEdge;
 import br.pucminas.graphtest.application.domain.gce.model.GceNode;
 import br.pucminas.graphtest.application.port.input.gce.records.DeleteGceInput;
+import br.pucminas.graphtest.application.port.output.repositories.DecisionTableRepositoryPort;
 import br.pucminas.graphtest.application.port.output.repositories.GceRepositoryPort;
 import br.pucminas.graphtest.application.service.gce.GceMutationServiceImpl;
 import br.pucminas.graphtest.application.service.gce.interfaces.GceMutationService;
@@ -34,6 +35,9 @@ class DeleteGceUseCaseImplTest {
 
     @Mock
     private ProjectAccessService projectAccessService;
+
+    @Mock
+    private DecisionTableRepositoryPort decisionTableRepository;
 
     @Spy
     private GceMutationService gceMutationService = new GceMutationServiceImpl();
@@ -66,12 +70,14 @@ class DeleteGceUseCaseImplTest {
         );
 
         when(gceRepository.findById(graphId)).thenReturn(Optional.of(graph));
+        when(decisionTableRepository.findByGceId(graphId)).thenReturn(Optional.empty());
 
-        useCase.execute(new DeleteGceInput(graphId));
+        useCase.execute(new DeleteGceInput(projectId, graphId));
 
-        InOrder inOrder = inOrder(gceRepository, projectAccessService);
+        InOrder inOrder = inOrder(gceRepository, projectAccessService, decisionTableRepository);
         inOrder.verify(gceRepository).findById(graphId);
         inOrder.verify(projectAccessService).findAuthorizedProject(projectId);
+        inOrder.verify(decisionTableRepository).findByGceId(graphId);
         inOrder.verify(gceRepository).deleteById(graphId);
         verify(gceRepository).deleteById(graphId);
     }

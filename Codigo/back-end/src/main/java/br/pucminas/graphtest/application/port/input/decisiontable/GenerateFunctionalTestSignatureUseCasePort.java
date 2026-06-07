@@ -6,5 +6,5 @@ import java.util.UUID;
 
 public interface GenerateFunctionalTestSignatureUseCasePort {
 
-    GenerateFunctionalTestSignatureOutput execute(UUID decisionTableId);
+    GenerateFunctionalTestSignatureOutput execute(UUID projectId, UUID decisionTableId);
 }

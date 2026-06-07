@@ -16,5 +16,5 @@ public interface ListGfcSourceMethodsUseCasePort {
      * @param sourceFileId identificador do arquivo-fonte Java persistido
      * @return metodos encontrados
      */
-    List<GfcSourceMethodOutput> execute(UUID sourceFileId);
+    List<GfcSourceMethodOutput> execute(UUID projectId, UUID sourceFileId);
 }

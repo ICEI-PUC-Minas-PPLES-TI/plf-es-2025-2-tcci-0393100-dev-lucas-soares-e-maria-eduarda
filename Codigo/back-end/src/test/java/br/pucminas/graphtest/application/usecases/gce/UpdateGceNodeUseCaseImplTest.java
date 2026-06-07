@@ -13,6 +13,7 @@ import br.pucminas.graphtest.application.port.output.repositories.GceRepositoryP
 import br.pucminas.graphtest.application.service.gce.GceMutationServiceImpl;
 import br.pucminas.graphtest.application.service.gce.interfaces.GceMutationService;
 import br.pucminas.graphtest.application.service.gce.interfaces.GceValidationResultService;
+import br.pucminas.graphtest.application.service.decisiontable.interfaces.DecisionTableSyncStatusUpdateService;
 import br.pucminas.graphtest.application.service.project.interfaces.ProjectAccessService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,6 +45,9 @@ class UpdateGceNodeUseCaseImplTest {
 
     @Mock
     private GceValidationResultService gceValidationResultService;
+
+    @Mock
+    private DecisionTableSyncStatusUpdateService decisionTableSyncStatusUpdateService;
 
     @Spy
     private GceMutationService gceMutationService = new GceMutationServiceImpl();
@@ -94,7 +98,7 @@ class UpdateGceNodeUseCaseImplTest {
                 .thenReturn(new ValidationGceOutput(List.of(), List.of()));
         when(gceRepository.save(any(Gce.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        GceOutput output = useCase.execute(new UpdateGceNodeInput(graphId, "O1", "Operador OR", GceOperatorTypeEnum.OR));
+        GceOutput output = useCase.execute(new UpdateGceNodeInput(projectId, graphId, "O1", "Operador OR", GceOperatorTypeEnum.OR));
         ArgumentCaptor<Gce> graphCaptor = ArgumentCaptor.forClass(Gce.class);
 
         assertEquals("(C1 OR C2)", output.nodes().stream().filter(node -> node.code().equals("O1")).findFirst().orElseThrow().label());

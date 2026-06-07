@@ -56,8 +56,8 @@ public class DecisionTableDtoConverterUtil {
                 .build();
     }
 
-    public static GenerateDecisionTableInput toGenerateInput(UUID gceId) {
-        return new GenerateDecisionTableInput(gceId);
+    public static GenerateDecisionTableInput toGenerateInput(UUID projectId, UUID gceId) {
+        return new GenerateDecisionTableInput(projectId, gceId);
     }
 
     public static GenerateFunctionalTestSignatureResponseDTO toDto(GenerateFunctionalTestSignatureOutput output) {
@@ -73,20 +73,20 @@ public class DecisionTableDtoConverterUtil {
         );
     }
 
-    public static DecisionTableByGceIdInput toByGceIdInput(UUID gceId) {
-        return new DecisionTableByGceIdInput(gceId);
+    public static DecisionTableByGceIdInput toByGceIdInput(UUID projectId, UUID gceId) {
+        return new DecisionTableByGceIdInput(projectId, gceId);
     }
 
-    public static DecisionTableByIdInput toByIdInput(UUID id) {
-        return new DecisionTableByIdInput(id);
+    public static DecisionTableByIdInput toByIdInput(UUID projectId, UUID id) {
+        return new DecisionTableByIdInput(projectId, id);
     }
 
     public static ListDecisionTablesByProjectInput toListByProjectInput(UUID projectId) {
         return new ListDecisionTablesByProjectInput(projectId);
     }
 
-    public static UpdateDecisionTableDetailsInput toUpdateDetailsInput(UUID id, UpdateDecisionTableDetailsDTO dto) {
-        return new UpdateDecisionTableDetailsInput(id, dto.name(), dto.description());
+    public static UpdateDecisionTableDetailsInput toUpdateDetailsInput(UUID projectId, UUID id, UpdateDecisionTableDetailsDTO dto) {
+        return new UpdateDecisionTableDetailsInput(projectId, id, dto.name(), dto.description());
     }
 
     private static DecisionTableDTO.DecisionTableConditionDTO toConditionDto(DecisionTableConditionOutput output) {

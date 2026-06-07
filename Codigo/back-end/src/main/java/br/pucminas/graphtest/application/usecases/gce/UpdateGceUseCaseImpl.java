@@ -1,6 +1,7 @@
 package br.pucminas.graphtest.application.usecases.gce;
 
 import br.pucminas.graphtest.application.domain.gce.model.Gce;
+import br.pucminas.graphtest.application.exception.EntityNotFoundException;
 import br.pucminas.graphtest.application.port.input.gce.UpdateGceUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.records.GceOutput;
 import br.pucminas.graphtest.application.port.input.gce.records.UpdateGceInput;
@@ -40,7 +41,7 @@ public class UpdateGceUseCaseImpl implements UpdateGceUseCasePort {
         Gce currentGraph = gceMutationService.loadAuthorizedGraph(input.id(), gceRepository, projectAccessService);
 
         if (!currentGraph.getProjectId().equals(input.projectId())) {
-            throw new IllegalArgumentException("Não é permitido alterar o projeto do GCE.");
+            throw new EntityNotFoundException("GCE nao encontrado");
         }
 
         Gce updatedGraph = buildUpdatedGraph(currentGraph, input);

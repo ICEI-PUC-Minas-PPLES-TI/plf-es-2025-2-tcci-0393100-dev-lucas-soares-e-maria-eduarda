@@ -51,7 +51,7 @@ class GetGfcSourceCodeUseCaseImplTest {
         when(projectAccessService.findAuthorizedProject(projectId))
                 .thenReturn(new Project(projectId, "Projeto", "Descricao", userId));
 
-        GfcSourceCodeOutput output = useCase.execute(sourceFileId);
+        GfcSourceCodeOutput output = useCase.execute(projectId, sourceFileId);
 
         verify(projectAccessService).findAuthorizedProject(projectId);
         assertEquals(sourceCode, output.sourceCode());
@@ -62,7 +62,7 @@ class GetGfcSourceCodeUseCaseImplTest {
         UUID sourceFileId = UUID.randomUUID();
         when(gfcSourceFileRepositoryPort.findById(sourceFileId)).thenReturn(Optional.empty());
 
-        assertThrows(GfcSourceFileNotFoundException.class, () -> useCase.execute(sourceFileId));
+        assertThrows(GfcSourceFileNotFoundException.class, () -> useCase.execute(UUID.randomUUID(), sourceFileId));
         verifyNoInteractions(projectAccessService);
     }
 
@@ -81,7 +81,7 @@ class GetGfcSourceCodeUseCaseImplTest {
         when(projectAccessService.findAuthorizedProject(projectId))
                 .thenThrow(new UnauthorizedUserException("Usuario nao possui permissao para acessar o projeto"));
 
-        assertThrows(UnauthorizedUserException.class, () -> useCase.execute(sourceFileId));
+        assertThrows(UnauthorizedUserException.class, () -> useCase.execute(projectId, sourceFileId));
         verify(projectAccessService).findAuthorizedProject(projectId);
     }
 }

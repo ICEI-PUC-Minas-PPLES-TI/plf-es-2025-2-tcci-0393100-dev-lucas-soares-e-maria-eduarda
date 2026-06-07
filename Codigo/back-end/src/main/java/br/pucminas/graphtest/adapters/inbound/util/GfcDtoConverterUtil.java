@@ -44,9 +44,9 @@ public class GfcDtoConverterUtil {
     private static final String MSG_GFC_SOURCE_FILE_CRIADO = "arquivo cadastrado com sucesso";
     private static final String MSG_GFC_CRIADO = "Grafo de Fluxo de Controle criado com sucesso";
 
-    public static CreateGfcInput toCreateGfcInput(CreateGfcDTO dto) {
+    public static CreateGfcInput toCreateGfcInput(UUID projectId, CreateGfcDTO dto) {
         return new CreateGfcInput(
-                dto.projectId(),
+                projectId,
                 dto.sourceFileId(),
                 dto.methodSignature(),
                 dto.name(),
@@ -58,9 +58,9 @@ public class GfcDtoConverterUtil {
         return new CreateGfcSourceFileInput(projectId, fileName, content);
     }
 
-    public static PreviewGfcInput toPreviewInput(PreviewGfcDTO dto) {
+    public static PreviewGfcInput toPreviewInput(UUID projectId, PreviewGfcDTO dto) {
         return new PreviewGfcInput(
-                dto.projectId(),
+                projectId,
                 dto.name(),
                 dto.description(),
                 dto.sourceCode(),

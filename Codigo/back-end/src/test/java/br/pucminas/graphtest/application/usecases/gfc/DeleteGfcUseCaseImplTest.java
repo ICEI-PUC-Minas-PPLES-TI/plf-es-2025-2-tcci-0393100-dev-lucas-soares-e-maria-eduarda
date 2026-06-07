@@ -53,7 +53,7 @@ class DeleteGfcUseCaseImplTest {
         when(projectAccessService.findAuthorizedProject(projectId))
                 .thenReturn(new Project(projectId, "Projeto", "Descricao", UUID.randomUUID()));
 
-        useCase.execute(gfcId);
+        useCase.execute(projectId, gfcId);
 
         InOrder inOrder = inOrder(gfcRepositoryPort, projectAccessService);
         inOrder.verify(gfcRepositoryPort).findById(gfcId);
@@ -66,7 +66,7 @@ class DeleteGfcUseCaseImplTest {
         UUID gfcId = UUID.randomUUID();
         when(gfcRepositoryPort.findById(gfcId)).thenReturn(Optional.empty());
 
-        assertThrows(GfcNotFoundException.class, () -> useCase.execute(gfcId));
+        assertThrows(GfcNotFoundException.class, () -> useCase.execute(UUID.randomUUID(), gfcId));
         verifyNoInteractions(projectAccessService);
     }
 }

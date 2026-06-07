@@ -33,10 +33,10 @@ import static java.lang.String.format;
 @Slf4j(topic = CONVERSOR_ENTIDADE_DTO_UTIL)
 public class GceDtoConverterUtil {
 
-    public static CreateGceInput toCreateInput(@NotNull GceInputDTO graph) {
-        log.info(format(">>> toCreateInput: convertendo GceInputDTO para CreateGceInput (projectId: %s)", graph.projectId()));
+    public static CreateGceInput toCreateInput(UUID projectId, @NotNull GceInputDTO graph) {
+        log.info(format(">>> toCreateInput: convertendo GceInputDTO para CreateGceInput (projectId: %s)", projectId));
         return new CreateGceInput(
-                graph.projectId(),
+                projectId,
                 graph.name(),
                 graph.description(),
                 graph.selected(),
@@ -46,10 +46,10 @@ public class GceDtoConverterUtil {
         );
     }
 
-    public static UpdateGceInput toUpdateInput(UUID id, @NotNull GceInputDTO graph) {
+    public static UpdateGceInput toUpdateInput(UUID projectId, UUID id, @NotNull GceInputDTO graph) {
         return new UpdateGceInput(
                 id,
-                graph.projectId(),
+                projectId,
                 graph.name(),
                 graph.description(),
                 graph.selected(),
@@ -59,13 +59,13 @@ public class GceDtoConverterUtil {
         );
     }
 
-    public static UpdateGceDetailsInput toUpdateDetailsInput(UUID id, @NotNull UpdateGceDetailsDTO graph) {
-        return new UpdateGceDetailsInput(id, graph.name(), graph.description());
+    public static UpdateGceDetailsInput toUpdateDetailsInput(UUID projectId, UUID id, @NotNull UpdateGceDetailsDTO graph) {
+        return new UpdateGceDetailsInput(projectId, id, graph.name(), graph.description());
     }
 
-    public static ValidateGceInput toValidateInput(@NotNull GceInputDTO graph) {
+    public static ValidateGceInput toValidateInput(UUID projectId, @NotNull GceInputDTO graph) {
         return new ValidateGceInput(
-                graph.projectId(),
+                projectId,
                 graph.name(),
                 graph.description(),
                 graph.selected(),
@@ -75,8 +75,9 @@ public class GceDtoConverterUtil {
         );
     }
 
-    public static AddNodeToGceInput toAddNodeInput(UUID gceId, @NotNull AddGceNodeDTO node) {
+    public static AddNodeToGceInput toAddNodeInput(UUID projectId, UUID gceId, @NotNull AddGceNodeDTO node) {
         return new AddNodeToGceInput(
+                projectId,
                 gceId,
                 node.code(),
                 node.label(),
@@ -87,12 +88,12 @@ public class GceDtoConverterUtil {
         );
     }
 
-    public static UpdateGceNodeInput toUpdateNodeInput(UUID gceId, String nodeCode, @NotNull UpdateGceNodeDTO node) {
-        return new UpdateGceNodeInput(gceId, nodeCode, node.label(), node.operatorType());
+    public static UpdateGceNodeInput toUpdateNodeInput(UUID projectId, UUID gceId, String nodeCode, @NotNull UpdateGceNodeDTO node) {
+        return new UpdateGceNodeInput(projectId, gceId, nodeCode, node.label(), node.operatorType());
     }
 
-    public static ToggleGceEdgeInput toToggleEdgeInput(UUID gceId, UUID edgeId) {
-        return new ToggleGceEdgeInput(gceId, edgeId);
+    public static ToggleGceEdgeInput toToggleEdgeInput(UUID projectId, UUID gceId, UUID edgeId) {
+        return new ToggleGceEdgeInput(projectId, gceId, edgeId);
     }
 
     public static GceDTO toDto(@NotNull GceOutput graph) {

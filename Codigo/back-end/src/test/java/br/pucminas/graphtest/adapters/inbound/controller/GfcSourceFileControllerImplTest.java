@@ -102,11 +102,11 @@ class GfcSourceFileControllerImplTest {
         LocalDateTime createdAt = LocalDateTime.now();
         LocalDateTime updatedAt = createdAt.plusMinutes(1);
         GfcSourceFileOutput output = new GfcSourceFileOutput(sourceFileId, projectId, "Exemplo.java", "Java", createdAt, updatedAt);
-        when(findGfcSourceFileByIdUseCasePort.execute(sourceFileId)).thenReturn(output);
+        when(findGfcSourceFileByIdUseCasePort.execute(projectId, sourceFileId)).thenReturn(output);
 
-        ResponseEntity<GfcSourceFileDTO> response = controller.findById(sourceFileId);
+        ResponseEntity<GfcSourceFileDTO> response = controller.findById(projectId, sourceFileId);
 
-        verify(findGfcSourceFileByIdUseCasePort).execute(sourceFileId);
+        verify(findGfcSourceFileByIdUseCasePort).execute(projectId, sourceFileId);
         assertEquals(sourceFileId, response.getBody().id());
         assertEquals(projectId, response.getBody().projectId());
         assertEquals("Exemplo.java", response.getBody().fileName());
@@ -140,25 +140,27 @@ class GfcSourceFileControllerImplTest {
     @Test
     void shouldReturnPersistedSourceCodeThroughInputPort() {
         UUID sourceFileId = UUID.randomUUID();
+        UUID projectId = UUID.randomUUID();
         String sourceCode = "class Exemplo { int soma(int a, int b) { return a + b; } }";
-        when(getGfcSourceCodeUseCasePort.execute(sourceFileId))
+        when(getGfcSourceCodeUseCasePort.execute(projectId, sourceFileId))
                 .thenReturn(new GfcSourceCodeOutput(sourceCode));
 
-        ResponseEntity<GfcSourceCodeDTO> response = controller.getSourceCode(sourceFileId);
+        ResponseEntity<GfcSourceCodeDTO> response = controller.getSourceCode(projectId, sourceFileId);
 
-        verify(getGfcSourceCodeUseCasePort).execute(sourceFileId);
+        verify(getGfcSourceCodeUseCasePort).execute(projectId, sourceFileId);
         assertEquals(sourceCode, response.getBody().sourceCode());
     }
 
     @Test
     void shouldListMethodsFromPersistedSourceFileThroughInputPort() {
         UUID sourceFileId = UUID.randomUUID();
+        UUID projectId = UUID.randomUUID();
         GfcSourceMethodOutput methodOutput = new GfcSourceMethodOutput("soma", "int soma(int a, int b)", 1, 1);
-        when(listGfcSourceMethodsUseCasePort.execute(sourceFileId)).thenReturn(List.of(methodOutput));
+        when(listGfcSourceMethodsUseCasePort.execute(projectId, sourceFileId)).thenReturn(List.of(methodOutput));
 
-        ResponseEntity<List<GfcSourceMethodDTO>> response = controller.listMethods(sourceFileId);
+        ResponseEntity<List<GfcSourceMethodDTO>> response = controller.listMethods(projectId, sourceFileId);
 
-        verify(listGfcSourceMethodsUseCasePort).execute(sourceFileId);
+        verify(listGfcSourceMethodsUseCasePort).execute(projectId, sourceFileId);
         assertEquals("soma", response.getBody().getFirst().name());
         assertEquals("int soma(int a, int b)", response.getBody().getFirst().signature());
     }
@@ -166,6 +168,7 @@ class GfcSourceFileControllerImplTest {
     @Test
     void shouldReturnMethodDetailsFromPersistedSourceFileThroughInputPort() {
         UUID sourceFileId = UUID.randomUUID();
+        UUID projectId = UUID.randomUUID();
         String signature = "int soma(int a, int b)";
         String methodSourceCode = """
                 int soma(int a, int b) {
@@ -178,11 +181,11 @@ class GfcSourceFileControllerImplTest {
                 4,
                 methodSourceCode
         );
-        when(getGfcSourceMethodDetailsUseCasePort.execute(sourceFileId, signature)).thenReturn(output);
+        when(getGfcSourceMethodDetailsUseCasePort.execute(projectId, sourceFileId, signature)).thenReturn(output);
 
-        ResponseEntity<GfcSourceMethodDetailsDTO> response = controller.getMethodDetails(sourceFileId, signature);
+        ResponseEntity<GfcSourceMethodDetailsDTO> response = controller.getMethodDetails(projectId, sourceFileId, signature);
 
-        verify(getGfcSourceMethodDetailsUseCasePort).execute(sourceFileId, signature);
+        verify(getGfcSourceMethodDetailsUseCasePort).execute(projectId, sourceFileId, signature);
         assertEquals("soma", response.getBody().name());
         assertEquals(signature, response.getBody().signature());
         assertEquals(2, response.getBody().startLine());
@@ -193,11 +196,12 @@ class GfcSourceFileControllerImplTest {
     @Test
     void shouldDeleteSourceFileThroughInputPort() {
         UUID sourceFileId = UUID.randomUUID();
-        doNothing().when(deleteGfcSourceFileUseCasePort).execute(sourceFileId);
+        UUID projectId = UUID.randomUUID();
+        doNothing().when(deleteGfcSourceFileUseCasePort).execute(projectId, sourceFileId);
 
-        ResponseEntity<DeleteGfcSourceFileResponseDTO> response = controller.delete(sourceFileId);
+        ResponseEntity<DeleteGfcSourceFileResponseDTO> response = controller.delete(projectId, sourceFileId);
 
-        verify(deleteGfcSourceFileUseCasePort).execute(sourceFileId);
+        verify(deleteGfcSourceFileUseCasePort).execute(projectId, sourceFileId);
         assertEquals(OK, response.getStatusCode());
         assertEquals("Arquivo-fonte removido com sucesso", response.getBody().mensagem());
         assertEquals(OK.value(), response.getBody().status());

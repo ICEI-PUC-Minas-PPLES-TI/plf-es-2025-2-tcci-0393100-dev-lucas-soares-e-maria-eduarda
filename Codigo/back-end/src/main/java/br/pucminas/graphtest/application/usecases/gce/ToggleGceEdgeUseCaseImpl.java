@@ -3,6 +3,7 @@ package br.pucminas.graphtest.application.usecases.gce;
 import br.pucminas.graphtest.application.domain.gce.model.Gce;
 import br.pucminas.graphtest.application.domain.gce.model.GceEdge;
 import br.pucminas.graphtest.application.domain.gce.enums.GceEdgeTypeEnum;
+import br.pucminas.graphtest.application.exception.EntityNotFoundException;
 import br.pucminas.graphtest.application.port.input.gce.ToggleGceEdgeUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.records.GceOutput;
 import br.pucminas.graphtest.application.port.input.gce.records.ToggleGceEdgeInput;
@@ -40,6 +41,9 @@ public class ToggleGceEdgeUseCaseImpl implements ToggleGceEdgeUseCasePort {
     @Override
     public GceOutput execute(ToggleGceEdgeInput input) {
         Gce graph = gceMutationService.loadAuthorizedGraph(input.gceId(), gceRepository, projectAccessService);
+        if (!graph.getProjectId().equals(input.projectId())) {
+            throw new EntityNotFoundException("GCE nao encontrado");
+        }
         GceEdge currentEdge = graph.findEdge(input.edgeId())
                 .orElseThrow(() -> new IllegalArgumentException("Aresta inexistente: " + input.edgeId()));
 

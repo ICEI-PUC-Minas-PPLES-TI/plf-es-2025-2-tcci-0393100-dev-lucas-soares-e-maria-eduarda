@@ -49,7 +49,7 @@ import static org.springframework.http.HttpStatus.OK;
 @Slf4j(topic = GFC_CONTROLLER)
 @RestController
 @Validated
-@RequestMapping(GFC)
+@RequestMapping(PROJECT_GFC)
 @AllArgsConstructor
 public class GfcControllerImpl implements GfcController {
 
@@ -65,34 +65,35 @@ public class GfcControllerImpl implements GfcController {
 
     @Override
     @PostMapping
-    public ResponseEntity<CreateGfcResponseDTO> create(@Validated @RequestBody CreateGfcDTO request) {
+    public ResponseEntity<CreateGfcResponseDTO> create(@PathVariable UUID projectId,
+                                                       @Validated @RequestBody CreateGfcDTO request) {
         log.info(">>> criarGfc: recebendo requisicao para criar GFC persistido");
 
-        CreateGfcOutput output = createGfcUseCasePort.execute(toCreateGfcInput(request));
-        return ResponseEntity.created(URI.create(GFC + "/" + output.gfcId()))
+        CreateGfcOutput output = createGfcUseCasePort.execute(toCreateGfcInput(projectId, request));
+        return ResponseEntity.created(URI.create("/projeto/" + projectId + "/gfc/" + output.gfcId()))
                 .body(toDto(output, CREATED.value()));
     }
 
     @Override
-    @GetMapping("/{gfcId}")
-    public ResponseEntity<GfcDTO> findById(@PathVariable UUID gfcId) {
+    @GetMapping(GFC_ID)
+    public ResponseEntity<GfcDTO> findById(@PathVariable UUID projectId, @PathVariable UUID gfcId) {
         log.info(">>> buscarGfcPorId: recebendo requisicao para buscar GFC persistido");
 
-        GfcOutput output = findGfcByIdUseCasePort.execute(gfcId);
+        GfcOutput output = findGfcByIdUseCasePort.execute(projectId, gfcId);
         return ResponseEntity.ok(toDto(output));
     }
 
     @Override
-    @DeleteMapping("/{gfcId}")
-    public ResponseEntity<DeleteGfcResponseDTO> delete(@PathVariable UUID gfcId) {
+    @DeleteMapping(GFC_ID)
+    public ResponseEntity<DeleteGfcResponseDTO> delete(@PathVariable UUID projectId, @PathVariable UUID gfcId) {
         log.info(">>> removerGfc: recebendo requisicao para remover GFC persistido");
 
-        deleteGfcUseCasePort.execute(gfcId);
+        deleteGfcUseCasePort.execute(projectId, gfcId);
         return ResponseEntity.ok(new DeleteGfcResponseDTO(MSG_GFC_REMOVIDO, OK.value()));
     }
 
     @Override
-    @GetMapping(GFC_PROJECT)
+    @GetMapping
     public ResponseEntity<List<GfcSummaryDTO>> listByProject(@PathVariable UUID projectId) {
         log.info(">>> listarGfcsPorProjeto: recebendo requisicao para listar GFCs por projeto");
 
@@ -102,28 +103,30 @@ public class GfcControllerImpl implements GfcController {
 
     @Override
     @PostMapping(GFC_PREVIEW)
-    public ResponseEntity<GfcDTO> preview(@Validated @RequestBody PreviewGfcDTO request) {
+    public ResponseEntity<GfcDTO> preview(@PathVariable UUID projectId, @Validated @RequestBody PreviewGfcDTO request) {
         log.info(">>> preVisualizar: recebendo requisicao para pre-visualizar GFC");
 
-        GfcOutput graph = previewGfcUseCasePort.execute(toPreviewInput(request));
+        GfcOutput graph = previewGfcUseCasePort.execute(toPreviewInput(projectId, request));
         return ResponseEntity.ok(toDto(graph));
     }
 
     @Override
     @GetMapping(GFC_CYCLOMATIC_COMPLEXITY)
-    public ResponseEntity<CyclomaticComplexityResponseDTO> calculateCyclomaticComplexity(@PathVariable UUID gfcId) {
+    public ResponseEntity<CyclomaticComplexityResponseDTO> calculateCyclomaticComplexity(@PathVariable UUID projectId,
+                                                                                         @PathVariable UUID gfcId) {
         log.info(">>> calcularComplexidadeCiclomatica: recebendo requisicao para calcular complexidade ciclomatica");
 
-        CyclomaticComplexityOutput output = calculateCyclomaticComplexityUseCasePort.execute(gfcId);
+        CyclomaticComplexityOutput output = calculateCyclomaticComplexityUseCasePort.execute(projectId, gfcId);
         return ResponseEntity.ok(toDto(output));
     }
 
     @Override
     @GetMapping(GFC_STRUCTURAL_TEST_SIGNATURE)
-    public ResponseEntity<GenerateStructuralTestSignatureResponseDTO> generateStructuralTestSignature(@PathVariable UUID gfcId) {
+    public ResponseEntity<GenerateStructuralTestSignatureResponseDTO> generateStructuralTestSignature(@PathVariable UUID projectId,
+                                                                                                      @PathVariable UUID gfcId) {
         log.info(">>> gerarAssinaturaTesteEstrutural: recebendo requisicao para gerar assinaturas de teste estrutural");
 
-        GenerateStructuralTestSignatureOutput output = generateStructuralTestSignatureUseCasePort.execute(gfcId);
+        GenerateStructuralTestSignatureOutput output = generateStructuralTestSignatureUseCasePort.execute(projectId, gfcId);
         return ResponseEntity.ok(toDto(output));
     }
 }

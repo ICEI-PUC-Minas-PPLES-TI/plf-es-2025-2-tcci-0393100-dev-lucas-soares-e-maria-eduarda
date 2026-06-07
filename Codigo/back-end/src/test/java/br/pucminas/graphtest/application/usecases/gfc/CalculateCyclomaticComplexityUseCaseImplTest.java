@@ -479,14 +479,14 @@ class CalculateCyclomaticComplexityUseCaseImplTest {
         UUID gfcId = UUID.randomUUID();
         when(gfcRepositoryPort.findById(gfcId)).thenReturn(Optional.empty());
 
-        assertThrows(GfcNotFoundException.class, () -> useCase.execute(gfcId));
+        assertThrows(GfcNotFoundException.class, () -> useCase.execute(UUID.randomUUID(), gfcId));
         verifyNoInteractions(projectAccessService);
     }
 
     private CyclomaticComplexityOutput executeFor(Gfc gfc) {
         when(gfcRepositoryPort.findById(gfc.getId())).thenReturn(Optional.of(gfc));
 
-        CyclomaticComplexityOutput output = useCase.execute(gfc.getId());
+        CyclomaticComplexityOutput output = useCase.execute(gfc.getProjectId(), gfc.getId());
 
         verify(projectAccessService).findAuthorizedProject(gfc.getProjectId());
         assertEquals(gfc.getId(), output.gfcId());

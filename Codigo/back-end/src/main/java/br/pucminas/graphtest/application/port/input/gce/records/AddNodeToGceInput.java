@@ -10,6 +10,7 @@ import java.util.UUID;
  * Dados para adicionar um novo no ao GCE.
  */
 public record AddNodeToGceInput(
+        UUID projectId,
         UUID gceId,
         String code,
         String label,

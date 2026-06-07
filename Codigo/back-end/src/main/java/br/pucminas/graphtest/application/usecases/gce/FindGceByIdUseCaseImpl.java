@@ -37,7 +37,14 @@ public class FindGceByIdUseCaseImpl implements FindGceByIdUseCasePort {
         Gce graph = gceRepository.findById(input.id())
                 .orElseThrow(() -> new EntityNotFoundException("GCE nao encontrado"));
         projectAccessService.findAuthorizedProject(graph.getProjectId());
+        ensureGraphBelongsToProject(graph, input.projectId());
 
         return GceOutput.from(graph);
+    }
+
+    private void ensureGraphBelongsToProject(Gce graph, java.util.UUID projectId) {
+        if (!graph.getProjectId().equals(projectId)) {
+            throw new EntityNotFoundException("GCE nao encontrado");
+        }
     }
 }

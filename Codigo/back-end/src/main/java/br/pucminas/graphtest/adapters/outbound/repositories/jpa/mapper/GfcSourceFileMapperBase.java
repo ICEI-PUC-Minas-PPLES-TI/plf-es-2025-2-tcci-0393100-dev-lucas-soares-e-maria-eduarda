@@ -1,9 +1,12 @@
 package br.pucminas.graphtest.adapters.outbound.repositories.jpa.mapper;
 
 import br.pucminas.graphtest.adapters.outbound.entities.jpa.gfc.JpaGfcSourceFileEntity;
+import br.pucminas.graphtest.adapters.outbound.entities.jpa.project.JpaProjectEntity;
 import br.pucminas.graphtest.adapters.outbound.repositories.shared.BasePersistenceMapper;
 import br.pucminas.graphtest.application.domain.gfc.model.GfcSourceFile;
 import org.springframework.stereotype.Component;
+
+import java.util.UUID;
 
 @Component
 public class GfcSourceFileMapperBase implements BasePersistenceMapper<GfcSourceFile, JpaGfcSourceFileEntity> {
@@ -18,7 +21,7 @@ public class GfcSourceFileMapperBase implements BasePersistenceMapper<GfcSourceF
         entity.setId(sourceFile.getId());
         entity.setCreatedAt(sourceFile.getCreatedAt());
         entity.setUpdatedAt(sourceFile.getUpdatedAt());
-        entity.setProjectId(sourceFile.getProjectId());
+        entity.setProject(projectReference(sourceFile.getProjectId()));
         entity.setFileName(sourceFile.getFileName());
         entity.setContent(sourceFile.getContent());
         entity.setLanguage(sourceFile.getLanguage());
@@ -33,12 +36,18 @@ public class GfcSourceFileMapperBase implements BasePersistenceMapper<GfcSourceF
 
         return new GfcSourceFile(
                 entity.getId(),
-                entity.getProjectId(),
+                entity.getProject().getId(),
                 entity.getFileName(),
                 entity.getContent(),
                 entity.getLanguage(),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()
         );
+    }
+
+    private JpaProjectEntity projectReference(UUID projectId) {
+        JpaProjectEntity project = new JpaProjectEntity();
+        project.setId(projectId);
+        return project;
     }
 }
