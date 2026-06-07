@@ -1,7 +1,8 @@
 package br.pucminas.graphtest.application.port.input.decisiontable.records;
 
-import br.pucminas.graphtest.application.domain.decisiontable.enums.DecisionTableConditionValueEnum;
-import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTableConditionCell;
+import br.pucminas.graphtest.application.domain.decisiontable.enums.DecisionTableCellValueEnum;
+import br.pucminas.graphtest.application.domain.decisiontable.enums.DecisionTableElementEnum;
+import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTableCell;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -13,16 +14,19 @@ public record DecisionTableConditionCellOutput(
         UUID id,
         UUID ruleId,
         UUID conditionId,
-        DecisionTableConditionValueEnum value,
+        DecisionTableCellValueEnum value,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
 
-    public static DecisionTableConditionCellOutput from(DecisionTableConditionCell cell) {
+    public static DecisionTableConditionCellOutput from(DecisionTableCell cell) {
+        if (cell.getType() != DecisionTableElementEnum.CONDITION) {
+            throw new IllegalArgumentException("Celula nao e de condicao.");
+        }
         return new DecisionTableConditionCellOutput(
                 cell.getId(),
                 cell.getRuleId(),
-                cell.getConditionId(),
+                cell.getDecisionTableElementId(),
                 cell.getValue(),
                 cell.getCreatedAt(),
                 normalizeUpdatedAt(cell.getCreatedAt(), cell.getUpdatedAt())

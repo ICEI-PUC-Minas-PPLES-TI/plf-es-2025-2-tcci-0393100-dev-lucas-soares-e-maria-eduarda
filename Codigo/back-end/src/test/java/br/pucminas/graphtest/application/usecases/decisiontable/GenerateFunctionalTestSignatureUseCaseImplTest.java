@@ -1,14 +1,11 @@
 package br.pucminas.graphtest.application.usecases.decisiontable;
 
-import br.pucminas.graphtest.application.domain.decisiontable.enums.DecisionTableActionValueEnum;
-import br.pucminas.graphtest.application.domain.decisiontable.enums.DecisionTableConditionValueEnum;
+import br.pucminas.graphtest.application.domain.decisiontable.enums.DecisionTableCellValueEnum;
+import br.pucminas.graphtest.application.domain.decisiontable.enums.DecisionTableElementEnum;
 import br.pucminas.graphtest.application.domain.decisiontable.enums.DecisionTableSyncStatusEnum;
 import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTable;
-import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTableAction;
-import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTableActionCell;
-import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTableCondition;
-import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTableConditionCell;
-import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTableRule;
+import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTableCell;
+import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTableElement;
 import br.pucminas.graphtest.application.exception.DecisionTableHasNoRulesException;
 import br.pucminas.graphtest.application.exception.EntityNotFoundException;
 import br.pucminas.graphtest.application.exception.UnauthorizedUserException;
@@ -77,8 +74,8 @@ class GenerateFunctionalTestSignatureUseCaseImplTest {
                 output.testMethods().getFirst().conditions().stream().map(condition -> condition.code()).toList());
         assertEquals(List.of("E1", "E2"),
                 output.testMethods().getFirst().actions().stream().map(action -> action.code()).toList());
-        assertEquals(DecisionTableConditionValueEnum.NO, output.testMethods().getFirst().conditions().getFirst().value());
-        assertEquals(DecisionTableActionValueEnum.YES, output.testMethods().getFirst().actions().getFirst().value());
+        assertEquals(DecisionTableCellValueEnum.NO, output.testMethods().getFirst().conditions().getFirst().value());
+        assertEquals(DecisionTableCellValueEnum.YES, output.testMethods().getFirst().actions().getFirst().value());
         assertEquals(3, output.generatedCode().lines().filter("@Test"::equals).count());
         assertTrue(output.generatedCode().contains("}\n\n@Test\nvoid testeFuncional02() {\n\n}"));
         assertTrue(output.testMethods().stream().allMatch(method -> method.generatedCode().endsWith("{\n\n}")));
@@ -149,21 +146,28 @@ class GenerateFunctionalTestSignatureUseCaseImplTest {
     }
 
     private DecisionTable tableWithRules(int rulesCount, DecisionTableSyncStatusEnum syncStatus) {
-        DecisionTableCondition c1 = new DecisionTableCondition(UUID.randomUUID(), TABLE_ID, "C1", "usuario valido", 0);
-        DecisionTableCondition c2 = new DecisionTableCondition(UUID.randomUUID(), TABLE_ID, "C2", "senha valida", 1);
-        DecisionTableAction e1 = new DecisionTableAction(UUID.randomUUID(), TABLE_ID, "E1", "permitir login", 0);
-        DecisionTableAction e2 = new DecisionTableAction(UUID.randomUUID(), TABLE_ID, "E2", "negar login", 1);
-        List<DecisionTableRule> rules = new ArrayList<>();
-        List<DecisionTableConditionCell> conditionCells = new ArrayList<>();
-        List<DecisionTableActionCell> actionCells = new ArrayList<>();
+        DecisionTableElement c1 = new DecisionTableElement(UUID.randomUUID(), TABLE_ID, "C1", "usuario valido", 0, DecisionTableElementEnum.CONDITION);
+        DecisionTableElement c2 = new DecisionTableElement(UUID.randomUUID(), TABLE_ID, "C2", "senha valida", 1, DecisionTableElementEnum.CONDITION);
+        DecisionTableElement e1 = new DecisionTableElement(UUID.randomUUID(), TABLE_ID, "E1", "permitir login", 0, DecisionTableElementEnum.ACTION);
+        DecisionTableElement e2 = new DecisionTableElement(UUID.randomUUID(), TABLE_ID, "E2", "negar login", 1, DecisionTableElementEnum.ACTION);
+        List<DecisionTableElement> rules = new ArrayList<>();
+        List<DecisionTableCell> cells = new ArrayList<>();
 
         for (int index = rulesCount; index >= 1; index--) {
-            DecisionTableRule rule = new DecisionTableRule(UUID.randomUUID(), TABLE_ID, "R" + index, null, index - 1);
+            DecisionTableElement rule = new DecisionTableElement(
+                    UUID.randomUUID(),
+                    TABLE_ID,
+                    "R" + index,
+                    null,
+                    "",
+                    index - 1,
+                    DecisionTableElementEnum.RULE
+            );
             rules.add(rule);
-            conditionCells.add(new DecisionTableConditionCell(UUID.randomUUID(), rule.getId(), c2.getId(), DecisionTableConditionValueEnum.YES));
-            conditionCells.add(new DecisionTableConditionCell(UUID.randomUUID(), rule.getId(), c1.getId(), DecisionTableConditionValueEnum.NO));
-            actionCells.add(new DecisionTableActionCell(UUID.randomUUID(), rule.getId(), e2.getId(), DecisionTableActionValueEnum.NO));
-            actionCells.add(new DecisionTableActionCell(UUID.randomUUID(), rule.getId(), e1.getId(), DecisionTableActionValueEnum.YES));
+            cells.add(new DecisionTableCell(UUID.randomUUID(), rule.getId(), c2.getId(), DecisionTableElementEnum.CONDITION, DecisionTableCellValueEnum.YES));
+            cells.add(new DecisionTableCell(UUID.randomUUID(), rule.getId(), c1.getId(), DecisionTableElementEnum.CONDITION, DecisionTableCellValueEnum.NO));
+            cells.add(new DecisionTableCell(UUID.randomUUID(), rule.getId(), e2.getId(), DecisionTableElementEnum.ACTION, DecisionTableCellValueEnum.NO));
+            cells.add(new DecisionTableCell(UUID.randomUUID(), rule.getId(), e1.getId(), DecisionTableElementEnum.ACTION, DecisionTableCellValueEnum.YES));
         }
 
         return new DecisionTable(
@@ -175,11 +179,22 @@ class GenerateFunctionalTestSignatureUseCaseImplTest {
                 "fingerprint",
                 syncStatus,
                 null,
-                List.of(c2, c1),
-                List.of(e2, e1),
-                rules,
-                conditionCells,
-                actionCells
+                joinElements(c2, c1, e2, e1, rules),
+                cells
         );
+    }
+
+    private List<DecisionTableElement> joinElements(DecisionTableElement c2,
+                                                    DecisionTableElement c1,
+                                                    DecisionTableElement e2,
+                                                    DecisionTableElement e1,
+                                                    List<DecisionTableElement> rules) {
+        List<DecisionTableElement> elements = new ArrayList<>();
+        elements.add(c2);
+        elements.add(c1);
+        elements.add(e2);
+        elements.add(e1);
+        elements.addAll(rules);
+        return elements;
     }
 }

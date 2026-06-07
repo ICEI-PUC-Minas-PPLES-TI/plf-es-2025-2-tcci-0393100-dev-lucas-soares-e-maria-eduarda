@@ -30,7 +30,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@ToString(exclude = {"conditions", "actions", "rules", "conditionCells", "actionCells"})
+@ToString(exclude = {"elements", "cells"})
 public class JpaDecisionTableEntity extends JpaAssignedIdEntity implements Persistable<UUID> {
 
     /**
@@ -65,19 +65,10 @@ public class JpaDecisionTableEntity extends JpaAssignedIdEntity implements Persi
     private LocalDateTime sourceGceUpdatedAt;
 
     @OneToMany(mappedBy = "decisionTable", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<JpaDecisionTableConditionEntity> conditions = new ArrayList<>();
+    private List<JpaDecisionTableElementEntity> elements = new ArrayList<>();
 
     @OneToMany(mappedBy = "decisionTable", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<JpaDecisionTableActionEntity> actions = new ArrayList<>();
-
-    @OneToMany(mappedBy = "decisionTable", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<JpaDecisionTableRuleEntity> rules = new ArrayList<>();
-
-    @OneToMany(mappedBy = "decisionTable", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<JpaDecisionTableConditionCellEntity> conditionCells = new ArrayList<>();
-
-    @OneToMany(mappedBy = "decisionTable", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<JpaDecisionTableActionCellEntity> actionCells = new ArrayList<>();
+    private List<JpaDecisionTableCellEntity> cells = new ArrayList<>();
 
     @Override
     public boolean isNew() {

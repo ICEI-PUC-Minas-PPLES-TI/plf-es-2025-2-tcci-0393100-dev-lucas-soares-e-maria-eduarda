@@ -1,6 +1,7 @@
 package br.pucminas.graphtest.application.port.input.decisiontable.records;
 
-import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTableCondition;
+import br.pucminas.graphtest.application.domain.decisiontable.enums.DecisionTableElementEnum;
+import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTableElement;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -18,7 +19,10 @@ public record DecisionTableConditionOutput(
         LocalDateTime updatedAt
 ) {
 
-    public static DecisionTableConditionOutput from(DecisionTableCondition condition) {
+    public static DecisionTableConditionOutput from(DecisionTableElement condition) {
+        if (condition.getType() != DecisionTableElementEnum.CONDITION) {
+            throw new IllegalArgumentException("Elemento nao e uma condicao.");
+        }
         return new DecisionTableConditionOutput(
                 condition.getId(),
                 condition.getDecisionTableId(),

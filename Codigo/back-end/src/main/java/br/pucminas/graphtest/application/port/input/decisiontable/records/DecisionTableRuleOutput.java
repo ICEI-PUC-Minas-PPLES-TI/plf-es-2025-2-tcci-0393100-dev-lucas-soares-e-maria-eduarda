@@ -1,6 +1,7 @@
 package br.pucminas.graphtest.application.port.input.decisiontable.records;
 
-import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTableRule;
+import br.pucminas.graphtest.application.domain.decisiontable.enums.DecisionTableElementEnum;
+import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTableElement;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -18,7 +19,10 @@ public record DecisionTableRuleOutput(
         LocalDateTime updatedAt
 ) {
 
-    public static DecisionTableRuleOutput from(DecisionTableRule rule) {
+    public static DecisionTableRuleOutput from(DecisionTableElement rule) {
+        if (rule.getType() != DecisionTableElementEnum.RULE) {
+            throw new IllegalArgumentException("Elemento nao e regra.");
+        }
         return new DecisionTableRuleOutput(
                 rule.getId(),
                 rule.getDecisionTableId(),
