@@ -1,5 +1,6 @@
 package br.pucminas.graphtest.adapters.outbound.entities.jpa.decisiontable;
 
+import br.pucminas.graphtest.adapters.outbound.entities.jpa.project.JpaProjectEntity;
 import br.pucminas.graphtest.adapters.outbound.entities.jpa.shared.JpaAssignedIdEntity;
 import br.pucminas.graphtest.application.domain.decisiontable.enums.DecisionTableSyncStatusEnum;
 import jakarta.persistence.CascadeType;
@@ -7,6 +8,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PostLoad;
 import jakarta.persistence.PostPersist;
 import jakarta.persistence.OneToMany;
@@ -45,8 +49,9 @@ public class JpaDecisionTableEntity extends JpaAssignedIdEntity implements Persi
     @Column(name = "GCE_ID")
     private UUID gceId;
 
-    @Column(name = "PROJECT_ID", nullable = false)
-    private UUID projectId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "PROJECT_ID", nullable = false)
+    private JpaProjectEntity project;
 
     @Column(name = "NAME", nullable = false, length = 200)
     private String name;

@@ -13,11 +13,11 @@ public interface JpaDecisionTableRepository extends JpaRepository<JpaDecisionTab
 
     Optional<JpaDecisionTableEntity> findByGceId(UUID gceId);
 
-    List<JpaDecisionTableEntity> findAllByProjectId(UUID projectId);
+    List<JpaDecisionTableEntity> findAllByProject_Id(UUID projectId);
 
     void deleteByGceId(UUID gceId);
 
-    void deleteAllByProjectId(UUID projectId);
+    void deleteAllByProject_Id(UUID projectId);
 
     boolean existsByGceId(UUID gceId);
 }

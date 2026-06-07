@@ -3,6 +3,7 @@ package br.pucminas.graphtest.adapters.outbound.repositories.jpa.mapper;
 import br.pucminas.graphtest.adapters.outbound.entities.jpa.decisiontable.JpaDecisionTableCellEntity;
 import br.pucminas.graphtest.adapters.outbound.entities.jpa.decisiontable.JpaDecisionTableElementEntity;
 import br.pucminas.graphtest.adapters.outbound.entities.jpa.decisiontable.JpaDecisionTableEntity;
+import br.pucminas.graphtest.adapters.outbound.entities.jpa.project.JpaProjectEntity;
 import br.pucminas.graphtest.adapters.outbound.repositories.shared.BasePersistenceMapper;
 import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTable;
 import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTableCell;
@@ -29,7 +30,7 @@ public class DecisionTableMapperBase implements BasePersistenceMapper<DecisionTa
         entity.setCreatedAt(decisionTable.getCreatedAt());
         entity.setUpdatedAt(decisionTable.getUpdatedAt());
         entity.setGceId(decisionTable.getGceId());
-        entity.setProjectId(decisionTable.getProjectId());
+        entity.setProject(projectReference(decisionTable.getProjectId()));
         entity.setName(decisionTable.getName());
         entity.setDescription(decisionTable.getDescription());
         entity.setSourceFingerprint(decisionTable.getSourceFingerprint());
@@ -123,7 +124,7 @@ public class DecisionTableMapperBase implements BasePersistenceMapper<DecisionTa
         return new DecisionTable(
                 entity.getId(),
                 entity.getGceId(),
-                entity.getProjectId(),
+                entity.getProject().getId(),
                 entity.getName(),
                 entity.getDescription(),
                 entity.getSourceFingerprint(),
@@ -134,5 +135,11 @@ public class DecisionTableMapperBase implements BasePersistenceMapper<DecisionTa
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()
         );
+    }
+
+    private JpaProjectEntity projectReference(UUID projectId) {
+        JpaProjectEntity project = new JpaProjectEntity();
+        project.setId(projectId);
+        return project;
     }
 }

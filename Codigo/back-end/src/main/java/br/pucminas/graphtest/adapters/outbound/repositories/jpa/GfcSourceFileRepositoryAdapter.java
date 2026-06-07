@@ -33,7 +33,7 @@ public class GfcSourceFileRepositoryAdapter implements GfcSourceFileRepositoryPo
 
     @Override
     public List<GfcSourceFile> findAllByProjectId(UUID projectId) {
-        return jpaGfcSourceFileRepository.findAllByProjectIdOrderByCreatedAtDesc(projectId).stream()
+        return jpaGfcSourceFileRepository.findAllByProject_IdOrderByCreatedAtDesc(projectId).stream()
                 .map(mapper::toDomain)
                 .toList();
     }
@@ -45,6 +45,6 @@ public class GfcSourceFileRepositoryAdapter implements GfcSourceFileRepositoryPo
 
     @Override
     public void deleteAllByProjectId(UUID projectId) {
-        jpaGfcSourceFileRepository.deleteAllByProjectId(projectId);
+        jpaGfcSourceFileRepository.deleteAllByProject_Id(projectId);
     }
 }
