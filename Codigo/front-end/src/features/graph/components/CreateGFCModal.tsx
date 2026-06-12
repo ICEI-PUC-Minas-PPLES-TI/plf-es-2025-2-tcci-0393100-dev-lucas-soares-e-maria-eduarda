@@ -71,7 +71,7 @@ export function CreateGFCModal({ projectId: initialProjectId, onClose }: CreateG
     setError(null);
     try {
       const [fileMethods, gfcs] = await Promise.all([
-        SourceFileService.listarMetodos(sourceFile.id),
+        SourceFileService.listarMetodos(selectedProjectId, sourceFile.id),
         GFCService.listarPorProjeto(selectedProjectId),
       ]);
       setMethods(fileMethods);
@@ -98,7 +98,7 @@ export function CreateGFCModal({ projectId: initialProjectId, onClose }: CreateG
     setError(null);
     try {
       const { id } = await SourceFileService.upload(selectedProjectId, selectedFile);
-      const file = await SourceFileService.buscarPorId(id);
+      const file = await SourceFileService.buscarPorId(selectedProjectId, id);
       await loadMethodsFor(file);
     } catch (err) {
       setError(extractApiErrorMessage(err, 'Erro ao enviar o arquivo.'));
@@ -122,7 +122,7 @@ export function CreateGFCModal({ projectId: initialProjectId, onClose }: CreateG
     setGenerating(true);
     setError(null);
     try {
-      const { id } = await GFCService.criar({
+      const { id } = await GFCService.criar(selectedProjectId, {
         projectId: selectedProjectId,
         sourceFileId: activeSourceFile.id,
         methodSignature: method.signature,

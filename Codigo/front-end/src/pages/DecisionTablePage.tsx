@@ -38,10 +38,10 @@ export function DecisionTablePage() {
     async function load() {
       try {
         const [gce, dto] = await Promise.all([
-          GCEService.buscarPorId(gceId!),
-          DecisionTableService.buscarPorGceId(gceId!).catch(async (err) => {
+          GCEService.buscarPorId(projectId!, gceId!),
+          DecisionTableService.buscarPorGceId(projectId!, gceId!).catch(async (err) => {
             if (err?.response?.status === 404) {
-              return DecisionTableService.criarAPartirDoGCE(gceId!);
+              return DecisionTableService.criarAPartirDoGCE(projectId!, gceId!);
             }
             throw err;
           }),
@@ -60,10 +60,10 @@ export function DecisionTablePage() {
   }, [gceId, projectId]);
 
   const handleSave = useCallback(async () => {
-    if (!table) return;
+    if (!table || !projectId) return;
     setSaveStatus('saving');
     try {
-      const dto = await DecisionTableService.atualizar(table.id, {
+      const dto = await DecisionTableService.atualizar(projectId, table.id, {
         name: table.name,
         description: table.description,
       });
@@ -74,13 +74,13 @@ export function DecisionTablePage() {
       setSaveStatus('error');
       setTimeout(() => setSaveStatus('idle'), 3000);
     }
-  }, [table]);
+  }, [table, projectId]);
 
   const handleRegenerate = useCallback(async () => {
-    if (!gceId) return;
+    if (!gceId || !projectId) return;
     setRegenerateStatus('loading');
     try {
-      const dto = await DecisionTableService.sincronizar(gceId);
+      const dto = await DecisionTableService.sincronizar(projectId, gceId);
       setTable(mapDTOToDecisionTable(dto));
       setSaveStatus('idle');
       setRegenerateStatus('idle');
@@ -93,7 +93,7 @@ export function DecisionTablePage() {
       }
       setTimeout(() => setRegenerateStatus('idle'), 3000);
     }
-  }, [gceId]);
+  }, [gceId, projectId]);
 
   const handleConditionValueChange = useCallback(
     (ruleId: string, conditionId: string, value: ConditionValue) => {
@@ -152,20 +152,20 @@ export function DecisionTablePage() {
   }, [navigate, projectId, gceId]);
 
   const handleGenerateTests = useCallback(async () => {
-    if (!table) return;
+    if (!table || !projectId) return;
     setTestModalOpen(true);
     setTestLoading(true);
     setTestError(null);
     setTestData(null);
     try {
-      const data = await DecisionTableService.gerarAssinaturaTesteFuncional(table.id);
+      const data = await DecisionTableService.gerarAssinaturaTesteFuncional(projectId, table.id);
       setTestData(data);
     } catch (err) {
       setTestError(extractApiErrorMessage(err, 'Erro ao gerar assinaturas de teste.'));
     } finally {
       setTestLoading(false);
     }
-  }, [table]);
+  }, [table, projectId]);
 
   if (loading) {
     return <DecisionTablePageSkeleton projectName={project.name} projectId={projectId ?? ''} />;

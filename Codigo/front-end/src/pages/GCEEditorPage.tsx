@@ -57,19 +57,19 @@ export function GCEEditorPage() {
   const canvasRef = useRef<GCECanvasHandle>(null);
 
   useEffect(() => {
-    if (isNew || !gceId) return;
-    GCEService.buscarPorId(gceId)
+    if (isNew || !gceId || !projectId) return;
+    GCEService.buscarPorId(projectId, gceId)
       .then(setGce)
       .catch(() => setLoadError('GCE não encontrado.'))
       .finally(() => setLoading(false));
-  }, [isNew, gceId]);
+  }, [isNew, gceId, projectId]);
 
   useEffect(() => {
-    if (isNew || !gceId) return;
-    DecisionTableService.buscarPorGceId(gceId)
+    if (isNew || !gceId || !projectId) return;
+    DecisionTableService.buscarPorGceId(projectId, gceId)
       .then(() => setHasDecisionTable(true))
       .catch(() => setHasDecisionTable(false));
-  }, [isNew, gceId]);
+  }, [isNew, gceId, projectId]);
 
   const handleSelectionChange = useCallback((nodeId: string | null, edgeId: string | null) => {
     setSelectedNodeId(nodeId);
@@ -89,8 +89,8 @@ export function GCEEditorPage() {
 
       if (gce.id === 'new') {
         // Primeiro save: cria no backend
-        const { id } = await GCEService.criar(request);
-        const created = await GCEService.buscarPorId(id);
+        const { id } = await GCEService.criar(projectId, request);
+        const created = await GCEService.buscarPorId(projectId, id);
         savePositions(id, state.nodes);
         saveBends(id, state.edges);
         setGce(created);
@@ -100,7 +100,7 @@ export function GCEEditorPage() {
         // Saves seguintes: atualiza
         savePositions(gce.id, state.nodes);
         saveBends(gce.id, state.edges);
-        const updated = await GCEService.atualizar(gce.id, request);
+        const updated = await GCEService.atualizar(projectId, gce.id, request);
         setGce(updated);
       }
 
@@ -128,7 +128,7 @@ export function GCEEditorPage() {
       savePositions(gce.id, state.nodes);
       saveBends(gce.id, state.edges);
       const request = flowToCreateRequest(updatedGce, state.nodes, state.edges, state.restrictions);
-      const updated = await GCEService.atualizar(gce.id, request);
+      const updated = await GCEService.atualizar(projectId, gce.id, request);
       setGce(updated);
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
@@ -146,7 +146,7 @@ export function GCEEditorPage() {
     setShowValidation(true);
     try {
       const request = flowToCreateRequest(gce, state.nodes, state.edges, state.restrictions);
-      const result = await GCEService.validar(request);
+      const result = await GCEService.validar(projectId, request);
       setValidationResult(result);
       setIsValidated(result.valid);
     } catch {

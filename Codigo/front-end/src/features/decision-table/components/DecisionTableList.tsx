@@ -32,7 +32,7 @@ export function DecisionTableList({ projectId }: DecisionTableListProps) {
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
-    await DecisionTableService.deletar(deleteTarget.id);
+    await DecisionTableService.deletar(projectId, deleteTarget.id);
     setTables((prev) => prev.filter((t) => t.id !== deleteTarget.id));
     setDeleteTarget(null);
   };

@@ -61,7 +61,7 @@ export function ValidationWarnings({ projectId }: ValidationWarningsProps) {
         // são silenciadas (GFCs novos podem não ter cálculo ainda).
         const complexities = await Promise.all(
           gfcs.map((g) =>
-            GFCService.obterComplexidade(g.id)
+            GFCService.obterComplexidade(projectId, g.id)
               .then((c) => ({ gfc: g, complexity: c }))
               .catch(() => ({ gfc: g, complexity: null })),
           ),

@@ -48,7 +48,7 @@ export function GFCList({ projectId, onCreateGFC }: GFCListProps) {
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
-    await GFCService.deletar(deleteTarget.id);
+    await GFCService.deletar(projectId, deleteTarget.id);
     setGfcs((prev) => prev.filter((g) => g.id !== deleteTarget.id));
     setDeleteTarget(null);
   };

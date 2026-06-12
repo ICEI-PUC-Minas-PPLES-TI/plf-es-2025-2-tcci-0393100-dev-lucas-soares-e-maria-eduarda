@@ -8,40 +8,41 @@ import type {
   GenerateStructuralTestSignatureResponseDTO,
 } from '../../features/graph/types/gfc';
 
-const BASE = '/grafo-de-fluxo-de-controle';
+const base = (projectId: string) => `/projeto/${projectId}/gfc`;
 
 class GFCService extends BaseService {
-  criar = async (data: CreateGFCRequest): Promise<{ id: string }> => {
-    const res = await this.post<CreateGFCResponse, CreateGFCRequest>(BASE, data);
+  criar = async (projectId: string, data: CreateGFCRequest): Promise<{ id: string }> => {
+    const res = await this.post<CreateGFCResponse, CreateGFCRequest>(base(projectId), data);
     return { id: res.data.id_gfc };
   };
 
-  buscarPorId = async (id: string): Promise<GFCDTO> => {
-    const res = await this.get<GFCDTO>(`${BASE}/${id}`);
+  buscarPorId = async (projectId: string, id: string): Promise<GFCDTO> => {
+    const res = await this.get<GFCDTO>(`${base(projectId)}/${id}`);
     return res.data;
   };
 
   listarPorProjeto = async (projectId: string): Promise<GFCSummaryDTO[]> => {
-    const res = await this.get<GFCSummaryDTO[]>(`${BASE}/projeto/${projectId}`);
+    const res = await this.get<GFCSummaryDTO[]>(base(projectId));
     return res.data;
   };
 
-  deletar = async (id: string): Promise<void> => {
-    await this.delete(`${BASE}/${id}`);
+  deletar = async (projectId: string, id: string): Promise<void> => {
+    await this.delete(`${base(projectId)}/${id}`);
   };
 
-  obterComplexidade = async (gfcId: string): Promise<GFCCyclomaticComplexityDTO> => {
+  obterComplexidade = async (projectId: string, gfcId: string): Promise<GFCCyclomaticComplexityDTO> => {
     const res = await this.get<GFCCyclomaticComplexityDTO>(
-      `${BASE}/${gfcId}/complexidade-ciclomatica`,
+      `${base(projectId)}/${gfcId}/complexidade-ciclomatica`,
     );
     return res.data;
   };
 
   gerarAssinaturaTesteEstrutural = async (
+    projectId: string,
     gfcId: string,
   ): Promise<GenerateStructuralTestSignatureResponseDTO> => {
     const res = await this.get<GenerateStructuralTestSignatureResponseDTO>(
-      `${BASE}/${gfcId}/assinatura-teste-estrutural`,
+      `${base(projectId)}/${gfcId}/assinatura-teste-estrutural`,
     );
     return res.data;
   };

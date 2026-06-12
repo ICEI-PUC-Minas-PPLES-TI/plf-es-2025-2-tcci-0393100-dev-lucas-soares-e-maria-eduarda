@@ -64,22 +64,22 @@ export function GFCViewerPage() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!gfcId) return;
+    if (!gfcId || !projectId) return;
     let cancelled = false;
     setLoading(true);
     setLoadError(null);
 
-    GFCService.buscarPorId(gfcId)
+    GFCService.buscarPorId(projectId, gfcId)
       .then(async (g) => {
         if (cancelled) return;
         const [file, fileMethods, gfcs, graph, complexityResult] = await Promise.all([
-          SourceFileService.buscarPorId(g.sourceFileId),
-          SourceFileService.listarMetodos(g.sourceFileId),
-          GFCService.listarPorProjeto(g.projectId),
+          SourceFileService.buscarPorId(projectId, g.sourceFileId),
+          SourceFileService.listarMetodos(projectId, g.sourceFileId),
+          GFCService.listarPorProjeto(projectId),
           buildFlowGraph(g),
           // Endpoint pode falhar (ex.: GFC novo ainda sem cálculo). Trata silenciosamente —
           // o painel volta a usar o cálculo local de fallback.
-          GFCService.obterComplexidade(g.id).catch(() => null),
+          GFCService.obterComplexidade(projectId, g.id).catch(() => null),
         ]);
         if (cancelled) return;
         setGfc(g);
@@ -100,7 +100,7 @@ export function GFCViewerPage() {
     return () => {
       cancelled = true;
     };
-  }, [gfcId]);
+  }, [gfcId, projectId]);
 
   const stats = useMemo(
     () => (gfc ? computeStats(gfc) : { nodeCount: 0, edgeCount: 0, cyclomaticComplexity: 0 }),
@@ -134,7 +134,7 @@ export function GFCViewerPage() {
       setGeneratingSignature(method.signature);
       setGenerateError(null);
       try {
-        const { id } = await GFCService.criar({
+        const { id } = await GFCService.criar(projectId, {
           projectId,
           sourceFileId: gfc.sourceFileId,
           methodSignature: method.signature,
@@ -152,18 +152,18 @@ export function GFCViewerPage() {
 
   const handleDelete = async () => {
     if (!gfc || !projectId) return;
-    await GFCService.deletar(gfc.id);
+    await GFCService.deletar(projectId, gfc.id);
     navigate(`/projeto/${projectId}`);
   };
 
   const handleGenerateTests = async () => {
-    if (!gfc) return;
+    if (!gfc || !projectId) return;
     setTestModalOpen(true);
     setTestLoading(true);
     setTestError(null);
     setTestData(null);
     try {
-      const data = await GFCService.gerarAssinaturaTesteEstrutural(gfc.id);
+      const data = await GFCService.gerarAssinaturaTesteEstrutural(projectId, gfc.id);
       setTestData(data);
     } catch (err) {
       setTestError(extractApiErrorMessage(err, 'Erro ao gerar assinaturas de teste.'));
@@ -261,6 +261,7 @@ export function GFCViewerPage() {
           />
 
           <MethodCodePanel
+            projectId={projectId ?? ''}
             sourceFileId={sourceFile?.id ?? null}
             methodSignature={gfc.methodSignature}
             fileName={sourceFile?.fileName ?? null}

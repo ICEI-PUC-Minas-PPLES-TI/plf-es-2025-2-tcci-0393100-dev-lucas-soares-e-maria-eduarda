@@ -55,7 +55,7 @@ export function SourceFileList({ projectId }: SourceFileListProps) {
     setOpenError(null);
     try {
       const [methods, gfcs] = await Promise.all([
-        SourceFileService.listarMetodos(file.id),
+        SourceFileService.listarMetodos(projectId, file.id),
         GFCService.listarPorProjeto(projectId),
       ]);
       setOpenedMethods(methods);
@@ -78,7 +78,7 @@ export function SourceFileList({ projectId }: SourceFileListProps) {
     if (!openedFile) return;
     setGeneratingSignature(method.signature);
     try {
-      const { id } = await GFCService.criar({
+      const { id } = await GFCService.criar(projectId, {
         projectId,
         sourceFileId: openedFile.id,
         methodSignature: method.signature,
@@ -97,7 +97,7 @@ export function SourceFileList({ projectId }: SourceFileListProps) {
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
-    await SourceFileService.deletar(deleteTarget.id);
+    await SourceFileService.deletar(projectId, deleteTarget.id);
     setFiles((prev) => prev.filter((f) => f.id !== deleteTarget.id));
     setDeleteTarget(null);
   };
