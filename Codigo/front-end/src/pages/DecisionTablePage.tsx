@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { DecisionTableToolbar } from '../features/decision-table/components/DecisionTableToolbar';
@@ -32,9 +32,15 @@ export function DecisionTablePage() {
   const [testError, setTestError] = useState<string | null>(null);
   const [testData, setTestData] = useState<GenerateFunctionalTestSignatureResponseDTO | null>(null);
 
+  const requestKeyRef = useRef<string | null>(null);
+
   useEffect(() => {
     if (!gceId || !projectId) return;
+    const key = `${projectId}/${gceId}`;
+    if (requestKeyRef.current === key) return;
+    requestKeyRef.current = key;
 
+    setLoading(true);
     async function load() {
       try {
         const [gce, dto] = await Promise.all([
@@ -47,12 +53,14 @@ export function DecisionTablePage() {
           }),
         ]);
 
+        if (requestKeyRef.current !== key) return;
         setGceName(gce.name);
         setTable(mapDTOToDecisionTable(dto));
       } catch {
+        if (requestKeyRef.current !== key) return;
         setLoadError('Erro ao carregar a tabela de decisão.');
       } finally {
-        setLoading(false);
+        if (requestKeyRef.current === key) setLoading(false);
       }
     }
 

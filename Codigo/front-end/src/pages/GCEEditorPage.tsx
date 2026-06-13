@@ -9,16 +9,16 @@ import { PropertiesPanel } from '../features/gce/components/PropertiesPanel';
 import { ValidationPanel } from '../features/gce/components/ValidationPanel';
 import { GCEEditorSkeleton } from '../features/gce/components/GCEEditorSkeleton';
 import {
-  dtoToFlowNodes,
-  dtoToFlowEdges,
-  dtoToRestrictions,
+  buildFlow,
   flowToCreateRequest,
   savePositions,
   saveBends,
+  clearPositions,
+  clearBends,
 } from '../features/gce/utils/gceConverters';
 import GCEService from '../services/GCE/GCEService';
 import DecisionTableService from '../services/DecisionTable/DecisionTableService';
-import type { GCEDTO, GCEValidationResponse, GCERestriction } from '../features/gce/types/gce';
+import type { GCEDTO, GCEValidationResponse, GCERestriction, GCEFlowNode, GCEFlowEdge } from '../features/gce/types/gce';
 import type { ProjectLayoutContext } from './ProjectLayout';
 
 export function GCEEditorPage() {
@@ -38,12 +38,19 @@ export function GCEEditorPage() {
           name: routeState?.name ?? 'Novo GCE',
           description: routeState?.description ?? '',
           selected: false,
+          createdAt: new Date().toISOString(),
+          updatedAt: null,
           nodes: [],
           edges: [],
           restrictions: [],
         }
       : null,
   );
+  const [flow, setFlow] = useState<{ nodes: GCEFlowNode[]; edges: GCEFlowEdge[]; restrictions: GCERestriction[] } | null>(
+    isNew ? { nodes: [], edges: [], restrictions: [] } : null,
+  );
+  const [layoutVersion, setLayoutVersion] = useState(0);
+  const [relayoutLoading, setRelayoutLoading] = useState(false);
   const [loading, setLoading] = useState(!isNew);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
@@ -58,10 +65,21 @@ export function GCEEditorPage() {
 
   useEffect(() => {
     if (isNew || !gceId || !projectId) return;
+    let cancelled = false;
     GCEService.buscarPorId(projectId, gceId)
-      .then(setGce)
-      .catch(() => setLoadError('GCE não encontrado.'))
-      .finally(() => setLoading(false));
+      .then(async (g) => {
+        const built = await buildFlow(g);
+        if (cancelled) return;
+        setGce(g);
+        setFlow(built);
+      })
+      .catch(() => {
+        if (!cancelled) setLoadError('GCE não encontrado.');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true; };
   }, [isNew, gceId, projectId]);
 
   useEffect(() => {
@@ -77,6 +95,23 @@ export function GCEEditorPage() {
   }, []);
 
   const handleGraphChange = useCallback(() => setIsValidated(false), []);
+
+  const handleRelayout = useCallback(async () => {
+    if (!gce) return;
+    setRelayoutLoading(true);
+    try {
+      const state = canvasRef.current?.getState();
+      const source: GCEDTO = state
+        ? { ...gce, ...flowToCreateRequest(gce, state.nodes, state.edges, state.restrictions) }
+        : gce;
+      clearPositions(gce.id);
+      clearBends(gce.id);
+      setFlow(await buildFlow(source));
+      setLayoutVersion((v) => v + 1);
+    } finally {
+      setRelayoutLoading(false);
+    }
+  }, [gce]);
 
   const handleSave = useCallback(async () => {
     if (!gce || !projectId) return;
@@ -185,6 +220,8 @@ export function GCEEditorPage() {
           gceName={gce.name}
           onSave={handleSave}
           onValidate={handleValidate}
+          onRelayout={handleRelayout}
+          relayoutLoading={relayoutLoading}
           onGenerateTable={() => navigate(`/projeto/${projectId}/gce/${gceId}/tabela-decisao`)}
           onNameChange={handleNameChange}
           saveStatus={saveStatus}
@@ -202,15 +239,18 @@ export function GCEEditorPage() {
           />
 
           <div className="flex-1 flex flex-col relative">
-            <GCECanvas
-              ref={canvasRef}
-              initialNodes={dtoToFlowNodes(gce)}
-              initialEdges={dtoToFlowEdges(gce)}
-              initialRestrictions={dtoToRestrictions(gce)}
-              onSelectionChange={handleSelectionChange}
-              onRestrictionsChange={setLiveRestrictions}
-              onChange={handleGraphChange}
-            />
+            {flow && (
+              <GCECanvas
+                key={`${gce.id}:${layoutVersion}`}
+                ref={canvasRef}
+                initialNodes={flow.nodes}
+                initialEdges={flow.edges}
+                initialRestrictions={flow.restrictions}
+                onSelectionChange={handleSelectionChange}
+                onRestrictionsChange={setLiveRestrictions}
+                onChange={handleGraphChange}
+              />
+            )}
 
             {showValidation && (
               <ValidationPanel
