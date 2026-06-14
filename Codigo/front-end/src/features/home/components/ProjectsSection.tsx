@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, Folder, MoreVertical, ExternalLink, Edit2, Trash2, Download } from 'lucide-react';
+import { Folder, MoreVertical, ExternalLink, Edit2, Trash2, Download } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Button } from '../../../components/Button';
 import { SearchBar } from '../../../components/SearchBar';
@@ -56,15 +56,7 @@ export function ProjectsSection() {
             onValueChange={setSearchTerm}
             placeholder="Buscar projeto..."
           />
-          <Button variant="outline">
-            <Calendar className="w-4 h-4" />
-            Filtrar por data
-          </Button>
         </div>
-
-        {loading && (
-          <p className="text-gray-400 text-center py-8">Carregando projetos...</p>
-        )}
 
         {error && (
           <p className="text-red-400 text-center py-8">{error}</p>
@@ -72,6 +64,27 @@ export function ProjectsSection() {
 
         {!loading && !error && filteredProjects.length === 0 && (
           <p className="text-gray-400 text-center py-8">Nenhum projeto encontrado.</p>
+        )}
+
+        {loading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+              <div
+                key={i}
+                className="bg-surface-elevated border border-edge rounded-lg p-5 animate-pulse"
+                style={{ animationDelay: `${i * 80}ms` }}
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className="w-9 h-9 bg-primary/10 rounded-lg" />
+                  <div className="w-4 h-4 bg-surface-hover rounded" />
+                </div>
+                <div className="h-5 bg-surface-hover rounded w-2/3 mb-3" />
+                <div className="h-4 bg-surface-hover rounded w-full mb-2" />
+                <div className="h-4 bg-surface-hover rounded w-4/5 mb-4" />
+                <div className="h-9 bg-surface-hover rounded w-full" />
+              </div>
+            ))}
+          </div>
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
