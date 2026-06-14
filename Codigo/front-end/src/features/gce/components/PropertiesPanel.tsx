@@ -86,12 +86,25 @@ export function PropertiesPanel({ selectedNodeId, selectedEdgeId, restrictions =
           </Field>
 
           <Field label="Rotulo">
-            <input
-              value={label}
-              onChange={(e) => updateNodeData(selectedNode.id, { label: e.target.value })}
-              className="w-full bg-surface-card border border-edge rounded px-3 py-1.5 text-sm text-gray-200 focus:border-primary outline-none"
-              placeholder="Digite o rotulo"
-            />
+            {nodeType === 'OPERATOR' ? (
+              <>
+                <input
+                  value={label}
+                  disabled
+                  className="w-full bg-surface-card border border-edge rounded px-3 py-1.5 text-sm text-gray-400"
+                />
+                <p className="text-xs text-gray-600 mt-1">
+                  Gerado automaticamente a partir das entradas do operador.
+                </p>
+              </>
+            ) : (
+              <input
+                value={label}
+                onChange={(e) => updateNodeData(selectedNode.id, { label: e.target.value })}
+                className="w-full bg-surface-card border border-edge rounded px-3 py-1.5 text-sm text-gray-200 focus:border-primary outline-none"
+                placeholder="Digite o rotulo"
+              />
+            )}
           </Field>
 
           {nodeType === 'OPERATOR' && (
