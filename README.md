@@ -21,8 +21,6 @@ O **GraphTest** é uma aplicação web desenvolvida para apoiar o ensino e a pr�
 
 A plataforma permite trabalhar com **Grafos de Fluxo de Controle (GFC)**, voltados ao teste estrutural, e **Grafos de Causa e Efeito (GCE)**, voltados ao teste funcional. A partir desses modelos, o sistema auxilia na geração de tabelas de decisão, no cálculo de complexidade ciclomática e na produção de assinaturas de testes.
 
-O projeto foi desenvolvido no contexto acadêmico da PUC Minas, integrando documentação, protótipos, diagramas, código-fonte e artefatos de acompanhamento do Trabalho de Conclusão de Curso.
-
 ## Funcionalidades
 
 - Autenticação e cadastro de usuários.
@@ -222,7 +220,7 @@ Tipos comuns:
 - Leonardo Vilela Cardoso
 - Raphael Ramos Dias Costa
 
-## Orientador
+### Orientador
 
 - Cleiton Silva Tavares
 
