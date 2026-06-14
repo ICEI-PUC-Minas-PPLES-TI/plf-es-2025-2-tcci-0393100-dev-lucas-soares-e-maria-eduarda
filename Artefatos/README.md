@@ -19,6 +19,8 @@ Este diretório mantém os artefatos (memoriais, diagramas, documentos, modelos 
   - [/diagramas/diagrama-de-estado](./diagramas/diagrama-de-estado): versões do diagrama de estado em `.png` e `.astah`.
   - [/diagramas/diagrama-de-pacotes](./diagramas/diagrama-de-pacotes): versões do diagrama de pacotes em `.png` e `.astah`.
 - [/prototipos](prototipos): contém os protótipos de tela do sistema
+- [/Videos](Videos): contém os vídeos de demonstração do sistema.
+- [imagens](imagens): contém as imagens produzidas para o projeto.
 
 ## Arquivos
 
