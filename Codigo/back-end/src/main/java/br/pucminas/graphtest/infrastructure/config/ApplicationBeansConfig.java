@@ -7,7 +7,6 @@ import br.pucminas.graphtest.application.port.input.decisiontable.FindDecisionTa
 import br.pucminas.graphtest.application.port.input.decisiontable.FindDecisionTableStatusByIdUseCasePort;
 import br.pucminas.graphtest.application.port.input.decisiontable.GenerateDecisionTableUseCasePort;
 import br.pucminas.graphtest.application.port.input.decisiontable.GenerateFunctionalTestSignatureUseCasePort;
-import br.pucminas.graphtest.application.port.input.decisiontable.ListDecisionTablesUseCasePort;
 import br.pucminas.graphtest.application.port.input.decisiontable.ListDecisionTablesByProjectUseCasePort;
 import br.pucminas.graphtest.application.port.input.decisiontable.PatchDecisionTableDetailsUseCasePort;
 import br.pucminas.graphtest.application.port.input.decisiontable.PreviewDecisionTableUseCasePort;
@@ -22,7 +21,6 @@ import br.pucminas.graphtest.application.port.input.project.UpdateProjectUseCase
 import br.pucminas.graphtest.application.port.input.gce.CreateGceUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.DeleteGceUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.FindGceByIdUseCasePort;
-import br.pucminas.graphtest.application.port.input.gce.ListGcesUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.ListGcesByProjectUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.PatchGceDetailsUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.AddNodeToGceUseCasePort;
@@ -94,7 +92,6 @@ import br.pucminas.graphtest.application.service.user.interfaces.UserEmailUnique
 import br.pucminas.graphtest.application.usecases.gce.CreateGceUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gce.DeleteGceUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gce.FindGceByIdUseCaseImpl;
-import br.pucminas.graphtest.application.usecases.gce.ListGcesUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gce.ListGcesByProjectUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gce.PatchGceDetailsUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.gce.AddNodeToGceUseCaseImpl;
@@ -123,7 +120,6 @@ import br.pucminas.graphtest.application.usecases.decisiontable.FindDecisionTabl
 import br.pucminas.graphtest.application.usecases.decisiontable.FindDecisionTableStatusByIdUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.decisiontable.GenerateDecisionTableUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.decisiontable.GenerateFunctionalTestSignatureUseCaseImpl;
-import br.pucminas.graphtest.application.usecases.decisiontable.ListDecisionTablesUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.decisiontable.ListDecisionTablesByProjectUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.decisiontable.PatchDecisionTableDetailsUseCaseImpl;
 import br.pucminas.graphtest.application.usecases.decisiontable.PreviewDecisionTableUseCaseImpl;
@@ -215,13 +211,6 @@ public class ApplicationBeansConfig {
     public FindGceByIdUseCasePort findGceByIdUseCase(GceRepositoryPort gceRepositoryPort,
                                                      ProjectAccessService projectAccessService) {
         return new FindGceByIdUseCaseImpl(gceRepositoryPort, projectAccessService);
-    }
-
-    @Bean
-    public ListGcesUseCasePort listGcesUseCase(GceRepositoryPort gceRepositoryPort,
-                                               ProjectRepositoryPort projectRepositoryPort,
-                                               CurrentUserPort currentUserPort) {
-        return new ListGcesUseCaseImpl(gceRepositoryPort, projectRepositoryPort, currentUserPort);
     }
 
     @Bean
@@ -481,17 +470,6 @@ public class ApplicationBeansConfig {
                 gceRepositoryPort,
                 projectAccessService,
                 decisionTableSyncService
-        );
-    }
-
-    @Bean
-    public ListDecisionTablesUseCasePort listDecisionTablesUseCase(DecisionTableRepositoryPort decisionTableRepositoryPort,
-                                                                   ProjectRepositoryPort projectRepositoryPort,
-                                                                   CurrentUserPort currentUserPort) {
-        return new ListDecisionTablesUseCaseImpl(
-                decisionTableRepositoryPort,
-                projectRepositoryPort,
-                currentUserPort
         );
     }
 

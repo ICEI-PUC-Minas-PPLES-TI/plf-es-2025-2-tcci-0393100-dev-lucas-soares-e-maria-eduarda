@@ -44,8 +44,14 @@ public class RefreshDecisionTableUseCaseImpl implements RefreshDecisionTableUseC
     public DecisionTableOutput execute(DecisionTableByGceIdInput input) {
         DecisionTable currentTable = decisionTableRepository.findByGceId(input.gceId())
                 .orElseThrow(() -> new EntityNotFoundException("Tabela de decisao nao encontrada"));
+        if (!currentTable.getProjectId().equals(input.projectId())) {
+            throw new EntityNotFoundException("Tabela de decisao nao encontrada");
+        }
 
         Gce graph = gceMutationService.loadAuthorizedGraph(input.gceId(), gceRepository, projectAccessService);
+        if (!graph.getProjectId().equals(input.projectId())) {
+            throw new EntityNotFoundException("GCE nao encontrado");
+        }
         ensureDecisionTableIsOutdated(currentTable, graph);
         DecisionTable refreshedTable = decisionTableDerivationService.derive(graph, currentTable);
         return DecisionTableOutput.from(decisionTableRepository.save(refreshedTable));

@@ -17,35 +17,34 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.UUID;
 
-import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GFC_SOURCE_FILE;
-import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GFC_SOURCE_FILE_ID;
-import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GFC_SOURCE_FILE_METHOD_DETAILS;
-import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GFC_SOURCE_FILE_METHODS;
-import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GFC_SOURCE_FILE_PROJECT;
-import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GFC_SOURCE_FILE_SOURCE_CODE;
+import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.JAVA_FILE_ID;
 
 public interface GfcSourceFileController {
 
-    @PostMapping(GFC_SOURCE_FILE)
-    ResponseEntity<CreateGfcSourceFileResponseDTO> createSourceFile(@RequestParam("projectId") UUID projectId,
+    @PostMapping
+    ResponseEntity<CreateGfcSourceFileResponseDTO> createSourceFile(@PathVariable UUID projectId,
                                                                     @RequestParam("file") MultipartFile file);
 
-    @GetMapping(GFC_SOURCE_FILE_ID)
-    ResponseEntity<GfcSourceFileDTO> findById(@PathVariable UUID sourceFileId);
+    @GetMapping(JAVA_FILE_ID)
+    ResponseEntity<GfcSourceFileDTO> findById(@PathVariable UUID projectId, @PathVariable("fileId") UUID sourceFileId);
 
-    @GetMapping(GFC_SOURCE_FILE_PROJECT)
+    @GetMapping
     ResponseEntity<List<GfcSourceFileDTO>> listByProject(@PathVariable UUID projectId);
 
-    @GetMapping(GFC_SOURCE_FILE_SOURCE_CODE)
-    ResponseEntity<GfcSourceCodeDTO> getSourceCode(@PathVariable UUID sourceFileId);
+    @GetMapping(JAVA_FILE_ID + "/source-code")
+    ResponseEntity<GfcSourceCodeDTO> getSourceCode(@PathVariable UUID projectId,
+                                                   @PathVariable("fileId") UUID sourceFileId);
 
-    @GetMapping(GFC_SOURCE_FILE_METHODS)
-    ResponseEntity<List<GfcSourceMethodDTO>> listMethods(@PathVariable UUID sourceFileId);
+    @GetMapping(JAVA_FILE_ID + "/methods")
+    ResponseEntity<List<GfcSourceMethodDTO>> listMethods(@PathVariable UUID projectId,
+                                                         @PathVariable("fileId") UUID sourceFileId);
 
-    @GetMapping(GFC_SOURCE_FILE_METHOD_DETAILS)
-    ResponseEntity<GfcSourceMethodDetailsDTO> getMethodDetails(@PathVariable UUID sourceFileId,
+    @GetMapping(JAVA_FILE_ID + "/method")
+    ResponseEntity<GfcSourceMethodDetailsDTO> getMethodDetails(@PathVariable UUID projectId,
+                                                               @PathVariable("fileId") UUID sourceFileId,
                                                                @RequestParam("signature") String methodSignature);
 
-    @DeleteMapping(GFC_SOURCE_FILE_ID)
-    ResponseEntity<DeleteGfcSourceFileResponseDTO> delete(@PathVariable UUID sourceFileId);
+    @DeleteMapping(JAVA_FILE_ID)
+    ResponseEntity<DeleteGfcSourceFileResponseDTO> delete(@PathVariable UUID projectId,
+                                                          @PathVariable("fileId") UUID sourceFileId);
 }

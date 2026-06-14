@@ -40,13 +40,8 @@ import java.util.UUID;
 import static br.pucminas.graphtest.adapters.inbound.util.GfcDtoConverterUtil.toCreateSourceFileInput;
 import static br.pucminas.graphtest.adapters.inbound.util.GfcDtoConverterUtil.toDto;
 import static br.pucminas.graphtest.adapters.inbound.util.GfcJavaSourceFileUploadUtil.readJavaSourceFile;
-import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GFC;
-import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GFC_SOURCE_FILE;
-import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GFC_SOURCE_FILE_ID;
-import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GFC_SOURCE_FILE_METHOD_DETAILS;
-import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GFC_SOURCE_FILE_METHODS;
-import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GFC_SOURCE_FILE_PROJECT;
-import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GFC_SOURCE_FILE_SOURCE_CODE;
+import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.JAVA_FILE_ID;
+import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.PROJECT_JAVA_FILE;
 import static br.pucminas.graphtest.shared.LogTopicsUtil.GFC_CONTROLLER;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
@@ -54,7 +49,7 @@ import static org.springframework.http.HttpStatus.OK;
 @Slf4j(topic = GFC_CONTROLLER)
 @RestController
 @Validated
-@RequestMapping(GFC)
+@RequestMapping(PROJECT_JAVA_FILE)
 @AllArgsConstructor
 public class GfcSourceFileControllerImpl implements GfcSourceFileController {
 
@@ -69,8 +64,8 @@ public class GfcSourceFileControllerImpl implements GfcSourceFileController {
     private final DeleteGfcSourceFileUseCasePort deleteGfcSourceFileUseCasePort;
 
     @Override
-    @PostMapping(GFC_SOURCE_FILE)
-    public ResponseEntity<CreateGfcSourceFileResponseDTO> createSourceFile(@RequestParam("projectId") UUID projectId,
+    @PostMapping
+    public ResponseEntity<CreateGfcSourceFileResponseDTO> createSourceFile(@PathVariable UUID projectId,
                                                                            @RequestParam("file") MultipartFile file) {
         log.info(">>> cadastrarArquivoFonte: recebendo arquivo Java para cadastrar na feature GFC");
 
@@ -79,21 +74,21 @@ public class GfcSourceFileControllerImpl implements GfcSourceFileController {
                 toCreateSourceFileInput(projectId, file.getOriginalFilename(), sourceCode)
         );
 
-        return ResponseEntity.created(URI.create(GFC + GFC_SOURCE_FILE + "/" + output.sourceFileId()))
+        return ResponseEntity.created(URI.create("/projeto/" + projectId + "/arquivos-java/" + output.sourceFileId()))
                 .body(toDto(output, CREATED.value()));
     }
 
     @Override
-    @GetMapping(GFC_SOURCE_FILE_ID)
-    public ResponseEntity<GfcSourceFileDTO> findById(@PathVariable UUID sourceFileId) {
+    @GetMapping(JAVA_FILE_ID)
+    public ResponseEntity<GfcSourceFileDTO> findById(@PathVariable UUID projectId, @PathVariable("fileId") UUID sourceFileId) {
         log.info(">>> buscarArquivoFonte: recebendo requisicao para buscar metadados de source-file GFC");
 
-        GfcSourceFileOutput output = findGfcSourceFileByIdUseCasePort.execute(sourceFileId);
+        GfcSourceFileOutput output = findGfcSourceFileByIdUseCasePort.execute(projectId, sourceFileId);
         return ResponseEntity.ok(toDto(output));
     }
 
     @Override
-    @GetMapping(GFC_SOURCE_FILE_PROJECT)
+    @GetMapping
     public ResponseEntity<List<GfcSourceFileDTO>> listByProject(@PathVariable UUID projectId) {
         log.info(">>> listarArquivosFontePorProjeto: recebendo requisicao para listar source-files GFC por projeto");
 
@@ -102,39 +97,43 @@ public class GfcSourceFileControllerImpl implements GfcSourceFileController {
     }
 
     @Override
-    @GetMapping(GFC_SOURCE_FILE_SOURCE_CODE)
-    public ResponseEntity<GfcSourceCodeDTO> getSourceCode(@PathVariable UUID sourceFileId) {
+    @GetMapping(JAVA_FILE_ID + "/source-code")
+    public ResponseEntity<GfcSourceCodeDTO> getSourceCode(@PathVariable UUID projectId,
+                                                          @PathVariable("fileId") UUID sourceFileId) {
         log.info(">>> obterCodigoFonte: recebendo requisicao para obter codigo-fonte de source-file GFC");
 
-        GfcSourceCodeOutput output = getGfcSourceCodeUseCasePort.execute(sourceFileId);
+        GfcSourceCodeOutput output = getGfcSourceCodeUseCasePort.execute(projectId, sourceFileId);
         return ResponseEntity.ok(toDto(output));
     }
 
     @Override
-    @GetMapping(GFC_SOURCE_FILE_METHODS)
-    public ResponseEntity<List<GfcSourceMethodDTO>> listMethods(@PathVariable UUID sourceFileId) {
+    @GetMapping(JAVA_FILE_ID + "/methods")
+    public ResponseEntity<List<GfcSourceMethodDTO>> listMethods(@PathVariable UUID projectId,
+                                                                @PathVariable("fileId") UUID sourceFileId) {
         log.info(">>> listarMetodos: recebendo requisicao para listar metodos de source-file GFC");
 
-        List<GfcSourceMethodOutput> methods = listGfcSourceMethodsUseCasePort.execute(sourceFileId);
+        List<GfcSourceMethodOutput> methods = listGfcSourceMethodsUseCasePort.execute(projectId, sourceFileId);
         return ResponseEntity.ok(methods.stream().map(GfcDtoConverterUtil::toDto).toList());
     }
 
     @Override
-    @GetMapping(GFC_SOURCE_FILE_METHOD_DETAILS)
-    public ResponseEntity<GfcSourceMethodDetailsDTO> getMethodDetails(@PathVariable UUID sourceFileId,
+    @GetMapping(JAVA_FILE_ID + "/method")
+    public ResponseEntity<GfcSourceMethodDetailsDTO> getMethodDetails(@PathVariable UUID projectId,
+                                                                      @PathVariable("fileId") UUID sourceFileId,
                                                                       @RequestParam("signature") String methodSignature) {
         log.info(">>> detalharMetodo: recebendo requisicao para detalhar metodo de source-file GFC");
 
-        GfcSourceMethodDetailsOutput output = getGfcSourceMethodDetailsUseCasePort.execute(sourceFileId, methodSignature);
+        GfcSourceMethodDetailsOutput output = getGfcSourceMethodDetailsUseCasePort.execute(projectId, sourceFileId, methodSignature);
         return ResponseEntity.ok(toDto(output));
     }
 
     @Override
-    @DeleteMapping(GFC_SOURCE_FILE_ID)
-    public ResponseEntity<DeleteGfcSourceFileResponseDTO> delete(@PathVariable UUID sourceFileId) {
+    @DeleteMapping(JAVA_FILE_ID)
+    public ResponseEntity<DeleteGfcSourceFileResponseDTO> delete(@PathVariable UUID projectId,
+                                                                 @PathVariable("fileId") UUID sourceFileId) {
         log.info(">>> removerArquivoFonte: recebendo requisicao para remover source-file GFC");
 
-        deleteGfcSourceFileUseCasePort.execute(sourceFileId);
+        deleteGfcSourceFileUseCasePort.execute(projectId, sourceFileId);
         return ResponseEntity.ok(new DeleteGfcSourceFileResponseDTO(MSG_GFC_SOURCE_FILE_REMOVIDO, OK.value()));
     }
 }

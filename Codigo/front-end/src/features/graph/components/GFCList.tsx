@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlertTriangle, FileCode, Plus, Trash2 } from 'lucide-react';
+import { AlertTriangle, Clock, FileCode, Plus, Trash2 } from 'lucide-react';
 import { Button } from '../../../components/Button';
 import { ConfirmModal } from '../../../components/ConfirmModal';
+import { CardGridSkeleton } from '../../../components/CardGridSkeleton';
 import { ARTIFACT_TYPES } from '../../../shared/artifactTypes';
 import GFCService from '../../../services/GFC/GFCService';
 import SourceFileService from '../../../services/GFC/SourceFileService';
+import { formatRelativeDate } from '../../../utils/formatDate';
 import type { GFCSourceFileDTO, GFCSummaryDTO } from '../types/gfc';
 
 interface GFCListProps {
@@ -47,7 +49,7 @@ export function GFCList({ projectId, onCreateGFC }: GFCListProps) {
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
-    await GFCService.deletar(deleteTarget.id);
+    await GFCService.deletar(projectId, deleteTarget.id);
     setGfcs((prev) => prev.filter((g) => g.id !== deleteTarget.id));
     setDeleteTarget(null);
   };
@@ -61,7 +63,11 @@ export function GFCList({ projectId, onCreateGFC }: GFCListProps) {
         <div>
           <h2 className="text-base font-semibold text-gray-200">Grafos de Fluxo de Controle</h2>
           <p className="text-sm text-gray-500 mt-0.5">
-            {loading ? 'Carregando...' : `${gfcs.length} grafo${gfcs.length !== 1 ? 's' : ''}`}
+            {loading ? (
+              <span className="inline-block h-3.5 w-24 bg-surface-hover rounded animate-pulse align-middle" />
+            ) : (
+              `${gfcs.length} grafo${gfcs.length !== 1 ? 's' : ''}`
+            )}
           </p>
         </div>
         <Button size="sm" variant="primary" onClick={onCreateGFC}>
@@ -70,7 +76,9 @@ export function GFCList({ projectId, onCreateGFC }: GFCListProps) {
         </Button>
       </div>
 
-      {!loading && gfcs.length === 0 ? (
+      {loading ? (
+        <CardGridSkeleton />
+      ) : gfcs.length === 0 ? (
         <div className="bg-surface-card border border-edge rounded-lg p-12 flex flex-col items-center gap-3">
           <div className={`w-12 h-12 rounded-lg ${typeConfig.bgColor} flex items-center justify-center`}>
             <Icon className={`w-6 h-6 ${typeConfig.color}`} />
@@ -120,6 +128,13 @@ export function GFCList({ projectId, onCreateGFC }: GFCListProps) {
                 {gfc.language && (
                   <p className="text-xs text-gray-600 mt-1">{gfc.language}</p>
                 )}
+                <p
+                  className="text-xs text-gray-500 mt-1.5 flex items-center gap-1"
+                  title={new Date(gfc.createdAt).toLocaleString('pt-BR')}
+                >
+                  <Clock className="w-3 h-3 shrink-0" />
+                  <span className="truncate">Criado {formatRelativeDate(gfc.createdAt)}</span>
+                </p>
               </div>
 
               <Button

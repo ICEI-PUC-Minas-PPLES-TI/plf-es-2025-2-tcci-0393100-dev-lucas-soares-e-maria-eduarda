@@ -1,5 +1,6 @@
 package br.pucminas.graphtest.application.domain.decisiontable.model;
 
+import br.pucminas.graphtest.application.domain.decisiontable.enums.DecisionTableElementEnum;
 import br.pucminas.graphtest.application.domain.decisiontable.enums.DecisionTableSyncStatusEnum;
 import br.pucminas.graphtest.application.domain.shared.model.BaseEntity;
 
@@ -7,18 +8,17 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Agregado raiz que representa uma tabela de decisao derivada de um GCE.
- *
- * <p>Apesar de derivada do GCE, a tabela possui ciclo de vida proprio e e
- * modelada como entidade relacional normalizada em regras, condicoes, acoes e
- * celulas.</p>
  */
 public class DecisionTable extends BaseEntity {
 
@@ -29,11 +29,8 @@ public class DecisionTable extends BaseEntity {
     private String sourceFingerprint;
     private DecisionTableSyncStatusEnum syncStatus;
     private LocalDateTime sourceGceUpdatedAt;
-    private final List<DecisionTableCondition> conditions;
-    private final List<DecisionTableAction> actions;
-    private final List<DecisionTableRule> rules;
-    private final List<DecisionTableConditionCell> conditionCells;
-    private final List<DecisionTableActionCell> actionCells;
+    private final List<DecisionTableElement> elements;
+    private final List<DecisionTableCell> cells;
 
     public DecisionTable(UUID id,
                          UUID gceId,
@@ -43,28 +40,10 @@ public class DecisionTable extends BaseEntity {
                          String sourceFingerprint,
                          DecisionTableSyncStatusEnum syncStatus,
                          LocalDateTime sourceGceUpdatedAt,
-                         Collection<DecisionTableCondition> conditions,
-                         Collection<DecisionTableAction> actions,
-                         Collection<DecisionTableRule> rules,
-                         Collection<DecisionTableConditionCell> conditionCells,
-                         Collection<DecisionTableActionCell> actionCells) {
-        this(
-                id,
-                gceId,
-                projectId,
-                name,
-                description,
-                sourceFingerprint,
-                syncStatus,
-                sourceGceUpdatedAt,
-                conditions,
-                actions,
-                rules,
-                conditionCells,
-                actionCells,
-                null,
-                null
-        );
+                         Collection<DecisionTableElement> elements,
+                         Collection<DecisionTableCell> cells) {
+        this(id, gceId, projectId, name, description, sourceFingerprint, syncStatus, sourceGceUpdatedAt,
+                elements, cells, null, null);
     }
 
     public DecisionTable(UUID id,
@@ -75,11 +54,8 @@ public class DecisionTable extends BaseEntity {
                          String sourceFingerprint,
                          DecisionTableSyncStatusEnum syncStatus,
                          LocalDateTime sourceGceUpdatedAt,
-                         Collection<DecisionTableCondition> conditions,
-                         Collection<DecisionTableAction> actions,
-                         Collection<DecisionTableRule> rules,
-                         Collection<DecisionTableConditionCell> conditionCells,
-                         Collection<DecisionTableActionCell> actionCells,
+                         Collection<DecisionTableElement> elements,
+                         Collection<DecisionTableCell> cells,
                          LocalDateTime createdAt,
                          LocalDateTime updatedAt) {
         this.id = id;
@@ -92,11 +68,8 @@ public class DecisionTable extends BaseEntity {
         this.sourceFingerprint = requireText(sourceFingerprint, "sourceFingerprint");
         this.syncStatus = Objects.requireNonNull(syncStatus, "syncStatus e obrigatorio.");
         this.sourceGceUpdatedAt = sourceGceUpdatedAt;
-        this.conditions = toList(conditions, "conditions");
-        this.actions = toList(actions, "actions");
-        this.rules = toList(rules, "rules");
-        this.conditionCells = toList(conditionCells, "conditionCells");
-        this.actionCells = toList(actionCells, "actionCells");
+        this.elements = toList(elements, "elements");
+        this.cells = toList(cells, "cells");
 
         validateAggregate();
     }
@@ -130,40 +103,16 @@ public class DecisionTable extends BaseEntity {
     }
 
     private void validateAggregate() {
-        validateConditionUniqueness();
-        validateActionUniqueness();
-        validateRuleUniqueness();
-        validateConditionCells();
-        validateActionCells();
+        validateElementUniqueness(DecisionTableElementEnum.CONDITION, "condition");
+        validateElementUniqueness(DecisionTableElementEnum.ACTION, "action");
+        validateElementUniqueness(DecisionTableElementEnum.RULE, "rule");
+        validateCells();
     }
 
-    private void validateConditionUniqueness() {
-        ensureUniqueCodesAndOrderIndexes(
-                conditions.stream().map(DecisionTableCondition::getCode).toList(),
-                conditions.stream().map(DecisionTableCondition::getOrderIndex).toList(),
-                "condition"
-        );
-    }
-
-    private void validateActionUniqueness() {
-        ensureUniqueCodesAndOrderIndexes(
-                actions.stream().map(DecisionTableAction::getCode).toList(),
-                actions.stream().map(DecisionTableAction::getOrderIndex).toList(),
-                "action"
-        );
-    }
-
-    private void validateRuleUniqueness() {
-        ensureUniqueCodesAndOrderIndexes(
-                rules.stream().map(DecisionTableRule::getCode).toList(),
-                rules.stream().map(DecisionTableRule::getOrderIndex).toList(),
-                "rule"
-        );
-    }
-
-    private void ensureUniqueCodesAndOrderIndexes(List<String> codes, List<Integer> orderIndexes, String type) {
-        ensureUniqueValues(codes, type + " code duplicado.");
-        ensureUniqueValues(orderIndexes, type + " orderIndex duplicado.");
+    private void validateElementUniqueness(DecisionTableElementEnum type, String label) {
+        List<DecisionTableElement> typedElements = elementsByType(type);
+        ensureUniqueValues(typedElements.stream().map(DecisionTableElement::getCode).toList(), label + " code duplicado.");
+        ensureUniqueValues(typedElements.stream().map(DecisionTableElement::getOrderIndex).toList(), label + " orderIndex duplicado.");
     }
 
     private <T> void ensureUniqueValues(List<T> values, String message) {
@@ -175,44 +124,44 @@ public class DecisionTable extends BaseEntity {
         }
     }
 
-    private void validateConditionCells() {
-        Set<UUID> ruleIds = rules.stream().map(DecisionTableRule::getId).filter(Objects::nonNull).collect(java.util.stream.Collectors.toSet());
-        Set<UUID> conditionIds = conditions.stream().map(DecisionTableCondition::getId).filter(Objects::nonNull).collect(java.util.stream.Collectors.toSet());
+    private void validateCells() {
+        Map<UUID, DecisionTableElement> elementsById = elements.stream()
+                .filter(element -> element.getId() != null)
+                .collect(Collectors.toMap(DecisionTableElement::getId, element -> element, (left, right) -> left, HashMap::new));
         Set<String> intersections = new HashSet<>();
 
-        for (DecisionTableConditionCell cell : conditionCells) {
-            if (!ruleIds.isEmpty() && !ruleIds.contains(cell.getRuleId())) {
-                throw new IllegalArgumentException("Condition cell referencia ruleId inexistente no agregado.");
-            }
-            if (!conditionIds.isEmpty() && !conditionIds.contains(cell.getConditionId())) {
-                throw new IllegalArgumentException("Condition cell referencia conditionId inexistente no agregado.");
+        for (DecisionTableCell cell : cells) {
+            if (cell.getType() == DecisionTableElementEnum.RULE) {
+                throw new IllegalArgumentException("Decision table cell nao pode ter tipo RULE.");
             }
 
-            String key = cell.getRuleId() + ":" + cell.getConditionId();
+            DecisionTableElement ruleElement = elementsById.get(cell.getRuleElementId());
+            if (!elementsById.isEmpty() && ruleElement == null) {
+                throw new IllegalArgumentException("Decision table cell referencia ruleElementId inexistente no agregado.");
+            }
+            if (ruleElement != null && ruleElement.getType() != DecisionTableElementEnum.RULE) {
+                throw new IllegalArgumentException("Decision table cell referencia ruleElementId que nao e RULE.");
+            }
+
+            DecisionTableElement element = elementsById.get(cell.getDecisionTableElementId());
+            if (!elementsById.isEmpty() && element == null) {
+                throw new IllegalArgumentException("Decision table cell referencia decisionTableElementId inexistente no agregado.");
+            }
+            if (element != null && element.getType() != cell.getType()) {
+                throw new IllegalArgumentException("Decision table cell referencia elemento de tipo incompativel.");
+            }
+
+            String key = cell.getRuleElementId() + ":" + cell.getDecisionTableElementId() + ":" + cell.getType();
             if (!intersections.add(key)) {
-                throw new IllegalArgumentException("Ja existe condition cell para a mesma intersecao de regra e condicao.");
+                throw new IllegalArgumentException("Ja existe decision table cell para a mesma intersecao de regra e elemento.");
             }
         }
     }
 
-    private void validateActionCells() {
-        Set<UUID> ruleIds = rules.stream().map(DecisionTableRule::getId).filter(Objects::nonNull).collect(java.util.stream.Collectors.toSet());
-        Set<UUID> actionIds = actions.stream().map(DecisionTableAction::getId).filter(Objects::nonNull).collect(java.util.stream.Collectors.toSet());
-        Set<String> intersections = new HashSet<>();
-
-        for (DecisionTableActionCell cell : actionCells) {
-            if (!ruleIds.isEmpty() && !ruleIds.contains(cell.getRuleId())) {
-                throw new IllegalArgumentException("Action cell referencia ruleId inexistente no agregado.");
-            }
-            if (!actionIds.isEmpty() && !actionIds.contains(cell.getActionId())) {
-                throw new IllegalArgumentException("Action cell referencia actionId inexistente no agregado.");
-            }
-
-            String key = cell.getRuleId() + ":" + cell.getActionId();
-            if (!intersections.add(key)) {
-                throw new IllegalArgumentException("Ja existe action cell para a mesma intersecao de regra e acao.");
-            }
-        }
+    private List<DecisionTableElement> elementsByType(DecisionTableElementEnum type) {
+        return elements.stream()
+                .filter(element -> element.getType() == type)
+                .toList();
     }
 
     public boolean isStale() {
@@ -239,16 +188,18 @@ public class DecisionTable extends BaseEntity {
         this.description = normalizeDescription(description);
     }
 
-    public DecisionTableConditionCell findConditionCell(UUID ruleId, UUID conditionId) {
-        return conditionCells.stream()
-                .filter(cell -> cell.getRuleId().equals(ruleId) && cell.getConditionId().equals(conditionId))
-                .findFirst()
-                .orElse(null);
+    public DecisionTableCell findConditionCell(UUID ruleElementId, UUID conditionElementId) {
+        return findCell(ruleElementId, conditionElementId, DecisionTableElementEnum.CONDITION);
     }
 
-    public DecisionTableActionCell findActionCell(UUID ruleId, UUID actionId) {
-        return actionCells.stream()
-                .filter(cell -> cell.getRuleId().equals(ruleId) && cell.getActionId().equals(actionId))
+    public DecisionTableCell findActionCell(UUID ruleElementId, UUID actionElementId) {
+        return findCell(ruleElementId, actionElementId, DecisionTableElementEnum.ACTION);
+    }
+
+    private DecisionTableCell findCell(UUID ruleElementId, UUID elementId, DecisionTableElementEnum type) {
+        return cells.stream()
+                .filter(cell -> cell.getType() == type)
+                .filter(cell -> cell.getRuleElementId().equals(ruleElementId) && cell.getDecisionTableElementId().equals(elementId))
                 .findFirst()
                 .orElse(null);
     }
@@ -281,23 +232,35 @@ public class DecisionTable extends BaseEntity {
         return sourceGceUpdatedAt;
     }
 
-    public List<DecisionTableCondition> getConditions() {
-        return Collections.unmodifiableList(conditions);
+    public List<DecisionTableElement> getElements() {
+        return Collections.unmodifiableList(elements);
     }
 
-    public List<DecisionTableAction> getActions() {
-        return Collections.unmodifiableList(actions);
+    public List<DecisionTableElement> getConditionElements() {
+        return elementsByType(DecisionTableElementEnum.CONDITION);
     }
 
-    public List<DecisionTableRule> getRules() {
-        return Collections.unmodifiableList(rules);
+    public List<DecisionTableElement> getActionElements() {
+        return elementsByType(DecisionTableElementEnum.ACTION);
     }
 
-    public List<DecisionTableConditionCell> getConditionCells() {
-        return Collections.unmodifiableList(conditionCells);
+    public List<DecisionTableElement> getRuleElements() {
+        return elementsByType(DecisionTableElementEnum.RULE);
     }
 
-    public List<DecisionTableActionCell> getActionCells() {
-        return Collections.unmodifiableList(actionCells);
+    public List<DecisionTableCell> getCells() {
+        return Collections.unmodifiableList(cells);
+    }
+
+    public List<DecisionTableCell> getConditionCells() {
+        return cells.stream()
+                .filter(cell -> cell.getType() == DecisionTableElementEnum.CONDITION)
+                .toList();
+    }
+
+    public List<DecisionTableCell> getActionCells() {
+        return cells.stream()
+                .filter(cell -> cell.getType() == DecisionTableElementEnum.ACTION)
+                .toList();
     }
 }

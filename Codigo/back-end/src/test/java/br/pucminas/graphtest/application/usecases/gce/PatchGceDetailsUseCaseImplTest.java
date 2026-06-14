@@ -71,7 +71,7 @@ class PatchGceDetailsUseCaseImplTest {
                 .thenReturn(new Project(projectId, "Projeto", "Descricao", userId));
         when(gceRepository.save(any(Gce.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        GceOutput output = useCase.execute(new UpdateGceDetailsInput(graphId, "Nome novo", "Descricao nova"));
+        GceOutput output = useCase.execute(new UpdateGceDetailsInput(projectId, graphId, "Nome novo", "Descricao nova"));
 
         assertEquals("Nome novo", output.name());
         assertEquals("Descricao nova", output.description());

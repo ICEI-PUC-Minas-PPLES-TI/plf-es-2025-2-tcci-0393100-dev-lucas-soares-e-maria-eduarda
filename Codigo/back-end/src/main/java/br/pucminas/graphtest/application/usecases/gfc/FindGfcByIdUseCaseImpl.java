@@ -24,10 +24,13 @@ public class FindGfcByIdUseCaseImpl implements FindGfcByIdUseCasePort {
     }
 
     @Override
-    public GfcOutput execute(UUID gfcId) {
+    public GfcOutput execute(UUID projectId, UUID gfcId) {
         Gfc gfc = gfcRepositoryPort.findById(gfcId)
                 .orElseThrow(GfcNotFoundException::new);
         projectAccessService.findAuthorizedProject(gfc.getProjectId());
+        if (!gfc.getProjectId().equals(projectId)) {
+            throw new GfcNotFoundException();
+        }
         return GfcOutput.from(gfc);
     }
 }

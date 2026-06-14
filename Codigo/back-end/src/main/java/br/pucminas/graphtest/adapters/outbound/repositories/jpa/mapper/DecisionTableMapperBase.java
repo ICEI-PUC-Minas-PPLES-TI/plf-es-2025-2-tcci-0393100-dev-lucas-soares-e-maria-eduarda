@@ -1,18 +1,13 @@
 package br.pucminas.graphtest.adapters.outbound.repositories.jpa.mapper;
 
-import br.pucminas.graphtest.adapters.outbound.entities.jpa.decisiontable.JpaDecisionTableActionCellEntity;
-import br.pucminas.graphtest.adapters.outbound.entities.jpa.decisiontable.JpaDecisionTableActionEntity;
-import br.pucminas.graphtest.adapters.outbound.entities.jpa.decisiontable.JpaDecisionTableConditionCellEntity;
-import br.pucminas.graphtest.adapters.outbound.entities.jpa.decisiontable.JpaDecisionTableConditionEntity;
+import br.pucminas.graphtest.adapters.outbound.entities.jpa.decisiontable.JpaDecisionTableCellEntity;
+import br.pucminas.graphtest.adapters.outbound.entities.jpa.decisiontable.JpaDecisionTableElementEntity;
 import br.pucminas.graphtest.adapters.outbound.entities.jpa.decisiontable.JpaDecisionTableEntity;
-import br.pucminas.graphtest.adapters.outbound.entities.jpa.decisiontable.JpaDecisionTableRuleEntity;
+import br.pucminas.graphtest.adapters.outbound.entities.jpa.project.JpaProjectEntity;
 import br.pucminas.graphtest.adapters.outbound.repositories.shared.BasePersistenceMapper;
 import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTable;
-import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTableAction;
-import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTableActionCell;
-import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTableCondition;
-import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTableConditionCell;
-import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTableRule;
+import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTableCell;
+import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTableElement;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -35,84 +30,59 @@ public class DecisionTableMapperBase implements BasePersistenceMapper<DecisionTa
         entity.setCreatedAt(decisionTable.getCreatedAt());
         entity.setUpdatedAt(decisionTable.getUpdatedAt());
         entity.setGceId(decisionTable.getGceId());
-        entity.setProjectId(decisionTable.getProjectId());
+        entity.setProject(projectReference(decisionTable.getProjectId()));
         entity.setName(decisionTable.getName());
         entity.setDescription(decisionTable.getDescription());
         entity.setSourceFingerprint(decisionTable.getSourceFingerprint());
         entity.setSyncStatus(decisionTable.getSyncStatus());
         entity.setSourceGceUpdatedAt(decisionTable.getSourceGceUpdatedAt());
 
-        Map<UUID, JpaDecisionTableConditionEntity> conditionsById = new LinkedHashMap<>();
-        for (DecisionTableCondition condition : decisionTable.getConditions()) {
-            JpaDecisionTableConditionEntity conditionEntity = new JpaDecisionTableConditionEntity();
-            conditionEntity.setId(condition.getId());
-            conditionEntity.setCreatedAt(condition.getCreatedAt());
-            conditionEntity.setUpdatedAt(condition.getUpdatedAt());
-            conditionEntity.setDecisionTable(entity);
-            conditionEntity.setCode(condition.getCode());
-            conditionEntity.setLabel(condition.getLabel());
-            conditionEntity.setOrderIndex(condition.getOrderIndex());
-            conditionsById.put(condition.getId(), conditionEntity);
-        }
-
-        Map<UUID, JpaDecisionTableActionEntity> actionsById = new LinkedHashMap<>();
-        for (DecisionTableAction action : decisionTable.getActions()) {
-            JpaDecisionTableActionEntity actionEntity = new JpaDecisionTableActionEntity();
-            actionEntity.setId(action.getId());
-            actionEntity.setCreatedAt(action.getCreatedAt());
-            actionEntity.setUpdatedAt(action.getUpdatedAt());
-            actionEntity.setDecisionTable(entity);
-            actionEntity.setCode(action.getCode());
-            actionEntity.setLabel(action.getLabel());
-            actionEntity.setOrderIndex(action.getOrderIndex());
-            actionsById.put(action.getId(), actionEntity);
-        }
-
-        Map<UUID, JpaDecisionTableRuleEntity> rulesById = new LinkedHashMap<>();
-        for (DecisionTableRule rule : decisionTable.getRules()) {
-            JpaDecisionTableRuleEntity ruleEntity = new JpaDecisionTableRuleEntity();
-            ruleEntity.setId(rule.getId());
-            ruleEntity.setCreatedAt(rule.getCreatedAt());
-            ruleEntity.setUpdatedAt(rule.getUpdatedAt());
-            ruleEntity.setDecisionTable(entity);
-            ruleEntity.setCode(rule.getCode());
-            ruleEntity.setDescription(rule.getDescription());
-            ruleEntity.setOrderIndex(rule.getOrderIndex());
-            rulesById.put(rule.getId(), ruleEntity);
-        }
-
-        List<JpaDecisionTableConditionCellEntity> conditionCellEntities = new ArrayList<>();
-        for (DecisionTableConditionCell conditionCell : decisionTable.getConditionCells()) {
-            JpaDecisionTableConditionCellEntity cellEntity = new JpaDecisionTableConditionCellEntity();
-            cellEntity.setId(conditionCell.getId());
-            cellEntity.setCreatedAt(conditionCell.getCreatedAt());
-            cellEntity.setUpdatedAt(conditionCell.getUpdatedAt());
-            cellEntity.setDecisionTable(entity);
-            cellEntity.setRule(rulesById.get(conditionCell.getRuleId()));
-            cellEntity.setCondition(conditionsById.get(conditionCell.getConditionId()));
-            cellEntity.setValue(conditionCell.getValue());
-            conditionCellEntities.add(cellEntity);
-        }
-
-        List<JpaDecisionTableActionCellEntity> actionCellEntities = new ArrayList<>();
-        for (DecisionTableActionCell actionCell : decisionTable.getActionCells()) {
-            JpaDecisionTableActionCellEntity cellEntity = new JpaDecisionTableActionCellEntity();
-            cellEntity.setId(actionCell.getId());
-            cellEntity.setCreatedAt(actionCell.getCreatedAt());
-            cellEntity.setUpdatedAt(actionCell.getUpdatedAt());
-            cellEntity.setDecisionTable(entity);
-            cellEntity.setRule(rulesById.get(actionCell.getRuleId()));
-            cellEntity.setAction(actionsById.get(actionCell.getActionId()));
-            cellEntity.setValue(actionCell.getValue());
-            actionCellEntities.add(cellEntity);
-        }
-
-        entity.setConditions(new ArrayList<>(conditionsById.values()));
-        entity.setActions(new ArrayList<>(actionsById.values()));
-        entity.setRules(new ArrayList<>(rulesById.values()));
-        entity.setConditionCells(conditionCellEntities);
-        entity.setActionCells(actionCellEntities);
+        Map<UUID, JpaDecisionTableElementEntity> elementsById = mapElements(decisionTable, entity);
+        entity.setElements(new ArrayList<>(elementsById.values()));
+        entity.setCells(mapCells(decisionTable, entity, elementsById));
         return entity;
+    }
+
+    private Map<UUID, JpaDecisionTableElementEntity> mapElements(
+            DecisionTable decisionTable,
+            JpaDecisionTableEntity entity
+    ) {
+        Map<UUID, JpaDecisionTableElementEntity> elementsById = new LinkedHashMap<>();
+        for (DecisionTableElement element : decisionTable.getElements()) {
+            JpaDecisionTableElementEntity elementEntity = new JpaDecisionTableElementEntity();
+            elementEntity.setId(element.getId());
+            elementEntity.setCreatedAt(element.getCreatedAt());
+            elementEntity.setUpdatedAt(element.getUpdatedAt());
+            elementEntity.setDecisionTable(entity);
+            elementEntity.setCode(element.getCode());
+            elementEntity.setLabel(element.getLabel());
+            elementEntity.setDescription(element.getDescription());
+            elementEntity.setOrderIndex(element.getOrderIndex());
+            elementEntity.setType(element.getType());
+            elementsById.put(element.getId(), elementEntity);
+        }
+        return elementsById;
+    }
+
+    private List<JpaDecisionTableCellEntity> mapCells(
+            DecisionTable decisionTable,
+            JpaDecisionTableEntity entity,
+            Map<UUID, JpaDecisionTableElementEntity> elementsById
+    ) {
+        List<JpaDecisionTableCellEntity> cellEntities = new ArrayList<>();
+        for (DecisionTableCell cell : decisionTable.getCells()) {
+            JpaDecisionTableCellEntity cellEntity = new JpaDecisionTableCellEntity();
+            cellEntity.setId(cell.getId());
+            cellEntity.setCreatedAt(cell.getCreatedAt());
+            cellEntity.setUpdatedAt(cell.getUpdatedAt());
+            cellEntity.setDecisionTable(entity);
+            cellEntity.setRuleElement(elementsById.get(cell.getRuleElementId()));
+            cellEntity.setDecisionTableElement(elementsById.get(cell.getDecisionTableElementId()));
+            cellEntity.setType(cell.getType());
+            cellEntity.setValue(cell.getValue());
+            cellEntities.add(cellEntity);
+        }
+        return cellEntities;
     }
 
     @Override
@@ -121,68 +91,30 @@ public class DecisionTableMapperBase implements BasePersistenceMapper<DecisionTa
             return null;
         }
 
-        List<DecisionTableCondition> conditions = entity.getConditions() == null
+        List<DecisionTableElement> elements = entity.getElements() == null
                 ? List.of()
-                : entity.getConditions().stream()
-                .map(condition -> new DecisionTableCondition(
-                        condition.getId(),
+                : entity.getElements().stream()
+                .map(element -> new DecisionTableElement(
+                        element.getId(),
                         entity.getId(),
-                        condition.getCode(),
-                        condition.getLabel(),
-                        condition.getOrderIndex(),
-                        condition.getCreatedAt(),
-                        condition.getUpdatedAt()
+                        element.getCode(),
+                        element.getLabel(),
+                        element.getDescription(),
+                        element.getOrderIndex(),
+                        element.getType(),
+                        element.getCreatedAt(),
+                        element.getUpdatedAt()
                 ))
                 .toList();
 
-        List<DecisionTableAction> actions = entity.getActions() == null
+        List<DecisionTableCell> cells = entity.getCells() == null
                 ? List.of()
-                : entity.getActions().stream()
-                .map(action -> new DecisionTableAction(
-                        action.getId(),
-                        entity.getId(),
-                        action.getCode(),
-                        action.getLabel(),
-                        action.getOrderIndex(),
-                        action.getCreatedAt(),
-                        action.getUpdatedAt()
-                ))
-                .toList();
-
-        List<DecisionTableRule> rules = entity.getRules() == null
-                ? List.of()
-                : entity.getRules().stream()
-                .map(rule -> new DecisionTableRule(
-                        rule.getId(),
-                        entity.getId(),
-                        rule.getCode(),
-                        rule.getDescription(),
-                        rule.getOrderIndex(),
-                        rule.getCreatedAt(),
-                        rule.getUpdatedAt()
-                ))
-                .toList();
-
-        List<DecisionTableConditionCell> conditionCells = entity.getConditionCells() == null
-                ? List.of()
-                : entity.getConditionCells().stream()
-                .map(cell -> new DecisionTableConditionCell(
+                : entity.getCells().stream()
+                .map(cell -> new DecisionTableCell(
                         cell.getId(),
-                        cell.getRule().getId(),
-                        cell.getCondition().getId(),
-                        cell.getValue(),
-                        cell.getCreatedAt(),
-                        cell.getUpdatedAt()
-                ))
-                .toList();
-
-        List<DecisionTableActionCell> actionCells = entity.getActionCells() == null
-                ? List.of()
-                : entity.getActionCells().stream()
-                .map(cell -> new DecisionTableActionCell(
-                        cell.getId(),
-                        cell.getRule().getId(),
-                        cell.getAction().getId(),
+                        cell.getRuleElement().getId(),
+                        cell.getDecisionTableElement().getId(),
+                        cell.getType(),
                         cell.getValue(),
                         cell.getCreatedAt(),
                         cell.getUpdatedAt()
@@ -192,19 +124,22 @@ public class DecisionTableMapperBase implements BasePersistenceMapper<DecisionTa
         return new DecisionTable(
                 entity.getId(),
                 entity.getGceId(),
-                entity.getProjectId(),
+                entity.getProject().getId(),
                 entity.getName(),
                 entity.getDescription(),
                 entity.getSourceFingerprint(),
                 entity.getSyncStatus(),
                 entity.getSourceGceUpdatedAt(),
-                conditions,
-                actions,
-                rules,
-                conditionCells,
-                actionCells,
+                elements,
+                cells,
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()
         );
+    }
+
+    private JpaProjectEntity projectReference(UUID projectId) {
+        JpaProjectEntity project = new JpaProjectEntity();
+        project.setId(projectId);
+        return project;
     }
 }

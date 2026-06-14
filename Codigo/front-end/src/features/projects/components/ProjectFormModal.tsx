@@ -31,7 +31,7 @@ export function ProjectFormModal({ project, onClose, onSuccess }: ProjectFormMod
         onSuccess({ ...project, ...formData });
       } else {
         const response = await ProjectService.criar(formData);
-        onSuccess({ id: response.id_projeto, ...formData });
+        onSuccess({ id: response.id_projeto, ...formData, createdAt: new Date().toISOString(), updatedAt: null });
       }
     } catch {
       setError(

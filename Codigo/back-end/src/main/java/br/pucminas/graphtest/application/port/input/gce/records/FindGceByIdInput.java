@@ -6,6 +6,7 @@ import java.util.UUID;
  * Dados de entrada para busca de um GCE por identificador.
  */
 public record FindGceByIdInput(
+        UUID projectId,
         UUID id
 ) {
 }

@@ -5,43 +5,44 @@ import type {
   GenerateFunctionalTestSignatureResponseDTO,
 } from '../../features/decision-table/types/decisionTableDTO';
 
-const BASE = '/tabela-de-decisao';
+const base = (projectId: string) => `/projeto/${projectId}/tabela-de-decisao`;
 
 class DecisionTableService extends BaseService {
-  criarAPartirDoGCE = async (gceId: string): Promise<DecisionTableDTO> => {
-    const res = await this.post<DecisionTableDTO, null>(`${BASE}/a-partir-do-gce/${gceId}`, null);
+  criarAPartirDoGCE = async (projectId: string, gceId: string): Promise<DecisionTableDTO> => {
+    const res = await this.post<DecisionTableDTO, null>(`${base(projectId)}/a-partir-do-gce/${gceId}`, null);
     return res.data;
   };
 
-  buscarPorGceId = async (gceId: string): Promise<DecisionTableDTO> => {
-    const res = await this.get<DecisionTableDTO>(`${BASE}/gce/${gceId}`);
+  buscarPorGceId = async (projectId: string, gceId: string): Promise<DecisionTableDTO> => {
+    const res = await this.get<DecisionTableDTO>(`${base(projectId)}/gce/${gceId}`);
     return res.data;
   };
 
   listarPorProjeto = async (projectId: string): Promise<DecisionTableDTO[]> => {
-    const res = await this.get<DecisionTableDTO[]>(`${BASE}/projeto/${projectId}`);
+    const res = await this.get<DecisionTableDTO[]>(base(projectId));
     return res.data;
   };
 
-  atualizar = async (id: string, data: UpdateDecisionTableDetailsDTO): Promise<DecisionTableDTO> => {
-    const res = await this.patch<DecisionTableDTO, UpdateDecisionTableDetailsDTO>(`${BASE}/${id}`, data);
+  atualizar = async (projectId: string, id: string, data: UpdateDecisionTableDetailsDTO): Promise<DecisionTableDTO> => {
+    const res = await this.patch<DecisionTableDTO, UpdateDecisionTableDetailsDTO>(`${base(projectId)}/${id}`, data);
     return res.data;
   };
 
-  sincronizar = async (gceId: string): Promise<DecisionTableDTO> => {
-    const res = await this.put<DecisionTableDTO, null>(`${BASE}/sincronizar/a-partir-do-gce/${gceId}`, null);
+  sincronizar = async (projectId: string, gceId: string): Promise<DecisionTableDTO> => {
+    const res = await this.put<DecisionTableDTO, null>(`${base(projectId)}/sincronizar/a-partir-do-gce/${gceId}`, null);
     return res.data;
   };
 
-  deletar = async (id: string): Promise<void> => {
-    await this.delete(`${BASE}/${id}`);
+  deletar = async (projectId: string, id: string): Promise<void> => {
+    await this.delete(`${base(projectId)}/${id}`);
   };
 
   gerarAssinaturaTesteFuncional = async (
+    projectId: string,
     decisionTableId: string,
   ): Promise<GenerateFunctionalTestSignatureResponseDTO> => {
     const res = await this.get<GenerateFunctionalTestSignatureResponseDTO>(
-      `${BASE}/${decisionTableId}/assinatura-teste-funcional`,
+      `${base(projectId)}/${decisionTableId}/assinatura-teste-funcional`,
     );
     return res.data;
   };

@@ -10,7 +10,7 @@ import java.util.UUID;
 @Repository
 public interface JpaGfcSourceFileRepository extends JpaRepository<JpaGfcSourceFileEntity, UUID> {
 
-    List<JpaGfcSourceFileEntity> findAllByProjectIdOrderByCreatedAtDesc(UUID projectId);
+    List<JpaGfcSourceFileEntity> findAllByProject_IdOrderByCreatedAtDesc(UUID projectId);
 
-    void deleteAllByProjectId(UUID projectId);
+    void deleteAllByProject_Id(UUID projectId);
 }

@@ -9,5 +9,5 @@ import java.util.UUID;
  */
 public interface FindGfcByIdUseCasePort {
 
-    GfcOutput execute(UUID gfcId);
+    GfcOutput execute(UUID projectId, UUID gfcId);
 }

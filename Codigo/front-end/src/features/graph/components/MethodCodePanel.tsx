@@ -11,6 +11,7 @@ import type { GFCSourceMethodCodeDTO } from '../types/gfc';
 type ViewMode = 'method' | 'file';
 
 interface MethodCodePanelProps {
+  projectId: string;
   sourceFileId: string | null;
   methodSignature: string | null;
   fileName?: string | null;
@@ -21,6 +22,7 @@ interface MethodCodePanelProps {
 }
 
 export function MethodCodePanel({
+  projectId,
   sourceFileId,
   methodSignature,
   fileName,
@@ -49,7 +51,7 @@ export function MethodCodePanel({
     let cancelled = false;
 
     if (viewMode === 'method' && methodSignature) {
-      SourceFileService.obterMetodo(sourceFileId, methodSignature)
+      SourceFileService.obterMetodo(projectId, sourceFileId, methodSignature)
         .then((data) => {
           if (cancelled) return;
           setMethod(data);
@@ -63,7 +65,7 @@ export function MethodCodePanel({
           setLoadedKey(fetchKey);
         });
     } else if (viewMode === 'file') {
-      SourceFileService.obterCodigoFonte(sourceFileId)
+      SourceFileService.obterCodigoFonte(projectId, sourceFileId)
         .then((code) => {
           if (cancelled) return;
           setFileCode(code);
@@ -81,7 +83,7 @@ export function MethodCodePanel({
     return () => {
       cancelled = true;
     };
-  }, [fetchKey, viewMode, sourceFileId, methodSignature]);
+  }, [fetchKey, viewMode, projectId, sourceFileId, methodSignature]);
 
   const isStale = fetchKey !== null && fetchKey !== loadedKey;
   const displayMethod = !isStale && viewMode === 'method' ? method : null;

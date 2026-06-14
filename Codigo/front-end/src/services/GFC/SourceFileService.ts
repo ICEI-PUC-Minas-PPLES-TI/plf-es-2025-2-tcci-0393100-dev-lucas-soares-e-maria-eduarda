@@ -7,52 +7,52 @@ import type {
   CreateGFCSourceFileResponse,
 } from '../../features/graph/types/gfc';
 
-const BASE = '/grafo-de-fluxo-de-controle/source-file';
+const base = (projectId: string) => `/projeto/${projectId}/arquivos-java`;
 
 class SourceFileService extends BaseService {
   upload = async (projectId: string, file: File): Promise<{ id: string }> => {
     const form = new FormData();
-    form.append('projectId', projectId);
     form.append('file', file);
-    const res = await this.post<CreateGFCSourceFileResponse, FormData>(BASE, form, {
+    const res = await this.post<CreateGFCSourceFileResponse, FormData>(base(projectId), form, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return { id: res.data.id_arquivo };
   };
 
-  buscarPorId = async (sourceFileId: string): Promise<GFCSourceFileDTO> => {
-    const res = await this.get<GFCSourceFileDTO>(`${BASE}/${sourceFileId}`);
+  buscarPorId = async (projectId: string, sourceFileId: string): Promise<GFCSourceFileDTO> => {
+    const res = await this.get<GFCSourceFileDTO>(`${base(projectId)}/${sourceFileId}`);
     return res.data;
   };
 
   listarPorProjeto = async (projectId: string): Promise<GFCSourceFileDTO[]> => {
-    const res = await this.get<GFCSourceFileDTO[]>(`${BASE}/projeto/${projectId}`);
+    const res = await this.get<GFCSourceFileDTO[]>(base(projectId));
     return res.data;
   };
 
-  obterCodigoFonte = async (sourceFileId: string): Promise<string> => {
-    const res = await this.get<GFCSourceCodeDTO>(`${BASE}/${sourceFileId}/source-code`);
+  obterCodigoFonte = async (projectId: string, sourceFileId: string): Promise<string> => {
+    const res = await this.get<GFCSourceCodeDTO>(`${base(projectId)}/${sourceFileId}/source-code`);
     return res.data.sourceCode;
   };
 
-  listarMetodos = async (sourceFileId: string): Promise<GFCSourceMethodDTO[]> => {
-    const res = await this.get<GFCSourceMethodDTO[]>(`${BASE}/${sourceFileId}/methods`);
+  listarMetodos = async (projectId: string, sourceFileId: string): Promise<GFCSourceMethodDTO[]> => {
+    const res = await this.get<GFCSourceMethodDTO[]>(`${base(projectId)}/${sourceFileId}/methods`);
     return res.data;
   };
 
   obterMetodo = async (
+    projectId: string,
     sourceFileId: string,
     signature: string,
   ): Promise<GFCSourceMethodCodeDTO> => {
     const res = await this.get<GFCSourceMethodCodeDTO>(
-      `${BASE}/${sourceFileId}/method`,
+      `${base(projectId)}/${sourceFileId}/method`,
       { params: { signature } },
     );
     return res.data;
   };
 
-  deletar = async (sourceFileId: string): Promise<void> => {
-    await this.delete(`${BASE}/${sourceFileId}`);
+  deletar = async (projectId: string, sourceFileId: string): Promise<void> => {
+    await this.delete(`${base(projectId)}/${sourceFileId}`);
   };
 }
 

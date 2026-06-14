@@ -127,7 +127,7 @@ export function SourceFileViewerModal({
 
   useEffect(() => {
     let cancelled = false;
-    SourceFileService.obterCodigoFonte(sourceFile.id)
+    SourceFileService.obterCodigoFonte(sourceFile.projectId, sourceFile.id)
       .then((src) => {
         if (cancelled) return;
         setCode(src);
@@ -144,7 +144,7 @@ export function SourceFileViewerModal({
     return () => {
       cancelled = true;
     };
-  }, [sourceFile.id]);
+  }, [sourceFile.projectId, sourceFile.id]);
 
   const isStale = loadedFileId !== sourceFile.id;
   const displayCode = isStale ? null : code;

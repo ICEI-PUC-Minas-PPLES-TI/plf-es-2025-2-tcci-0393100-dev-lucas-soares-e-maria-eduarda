@@ -7,5 +7,5 @@ import java.util.UUID;
  */
 public interface DeleteGfcUseCasePort {
 
-    void execute(UUID gfcId);
+    void execute(UUID projectId, UUID gfcId);
 }

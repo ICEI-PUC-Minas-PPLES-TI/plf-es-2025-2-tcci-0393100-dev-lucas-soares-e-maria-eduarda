@@ -6,5 +6,5 @@ import java.util.UUID;
 
 public interface CalculateCyclomaticComplexityUseCasePort {
 
-    CyclomaticComplexityOutput execute(UUID gfcId);
+    CyclomaticComplexityOutput execute(UUID projectId, UUID gfcId);
 }

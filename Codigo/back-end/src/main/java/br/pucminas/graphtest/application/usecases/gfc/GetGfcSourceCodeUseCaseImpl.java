@@ -24,10 +24,13 @@ public class GetGfcSourceCodeUseCaseImpl implements GetGfcSourceCodeUseCasePort 
     }
 
     @Override
-    public GfcSourceCodeOutput execute(UUID sourceFileId) {
+    public GfcSourceCodeOutput execute(UUID projectId, UUID sourceFileId) {
         GfcSourceFile sourceFile = gfcSourceFileRepositoryPort.findById(sourceFileId)
                 .orElseThrow(GfcSourceFileNotFoundException::new);
         projectAccessService.findAuthorizedProject(sourceFile.getProjectId());
+        if (!sourceFile.getProjectId().equals(projectId)) {
+            throw new GfcSourceFileNotFoundException();
+        }
 
         return new GfcSourceCodeOutput(sourceFile.getContent());
     }

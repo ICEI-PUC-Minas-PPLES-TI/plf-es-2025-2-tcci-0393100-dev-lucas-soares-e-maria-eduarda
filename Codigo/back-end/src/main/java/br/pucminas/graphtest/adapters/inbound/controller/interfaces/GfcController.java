@@ -24,23 +24,26 @@ import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.*;
 public interface GfcController {
 
     @PostMapping
-    ResponseEntity<CreateGfcResponseDTO> create(@Validated @RequestBody CreateGfcDTO request);
+    ResponseEntity<CreateGfcResponseDTO> create(@PathVariable UUID projectId,
+                                                @Validated @RequestBody CreateGfcDTO request);
 
-    @GetMapping("/{gfcId}")
-    ResponseEntity<GfcDTO> findById(@PathVariable UUID gfcId);
+    @GetMapping(GFC_ID)
+    ResponseEntity<GfcDTO> findById(@PathVariable UUID projectId, @PathVariable UUID gfcId);
 
-    @DeleteMapping("/{gfcId}")
-    ResponseEntity<DeleteGfcResponseDTO> delete(@PathVariable UUID gfcId);
+    @DeleteMapping(GFC_ID)
+    ResponseEntity<DeleteGfcResponseDTO> delete(@PathVariable UUID projectId, @PathVariable UUID gfcId);
 
-    @GetMapping(GFC_PROJECT)
+    @GetMapping
     ResponseEntity<List<GfcSummaryDTO>> listByProject(@PathVariable UUID projectId);
 
     @PostMapping(GFC_PREVIEW)
-    ResponseEntity<GfcDTO> preview(@Validated @RequestBody PreviewGfcDTO request);
+    ResponseEntity<GfcDTO> preview(@PathVariable UUID projectId, @Validated @RequestBody PreviewGfcDTO request);
 
     @GetMapping(GFC_CYCLOMATIC_COMPLEXITY)
-    ResponseEntity<CyclomaticComplexityResponseDTO> calculateCyclomaticComplexity(@PathVariable UUID gfcId);
+    ResponseEntity<CyclomaticComplexityResponseDTO> calculateCyclomaticComplexity(@PathVariable UUID projectId,
+                                                                                  @PathVariable UUID gfcId);
 
     @GetMapping(GFC_STRUCTURAL_TEST_SIGNATURE)
-    ResponseEntity<GenerateStructuralTestSignatureResponseDTO> generateStructuralTestSignature(@PathVariable UUID gfcId);
+    ResponseEntity<GenerateStructuralTestSignatureResponseDTO> generateStructuralTestSignature(@PathVariable UUID projectId,
+                                                                                               @PathVariable UUID gfcId);
 }

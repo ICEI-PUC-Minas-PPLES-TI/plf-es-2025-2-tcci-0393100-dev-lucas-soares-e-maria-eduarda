@@ -41,6 +41,9 @@ public class GenerateDecisionTableUseCaseImpl implements GenerateDecisionTableUs
         }
 
         Gce graph = gceMutationService.loadAuthorizedGraph(input.gceId(), gceRepository, projectAccessService);
+        if (!graph.getProjectId().equals(input.projectId())) {
+            throw new br.pucminas.graphtest.application.exception.EntityNotFoundException("GCE nao encontrado");
+        }
         var derivedTable = decisionTableDerivationService.derive(graph, null);
         return DecisionTableOutput.from(decisionTableRepository.save(derivedTable));
     }

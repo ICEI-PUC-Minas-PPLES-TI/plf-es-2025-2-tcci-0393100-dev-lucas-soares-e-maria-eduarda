@@ -67,7 +67,7 @@ class FindGfcByIdUseCaseImplTest {
         when(projectAccessService.findAuthorizedProject(projectId))
                 .thenReturn(new Project(projectId, "Projeto", "Descricao", UUID.randomUUID()));
 
-        GfcOutput output = useCase.execute(gfcId);
+        GfcOutput output = useCase.execute(projectId, gfcId);
 
         verify(projectAccessService).findAuthorizedProject(projectId);
         assertEquals(gfcId, output.id());
@@ -84,7 +84,31 @@ class FindGfcByIdUseCaseImplTest {
         UUID gfcId = UUID.randomUUID();
         when(gfcRepositoryPort.findById(gfcId)).thenReturn(Optional.empty());
 
-        assertThrows(GfcNotFoundException.class, () -> useCase.execute(gfcId));
+        assertThrows(GfcNotFoundException.class, () -> useCase.execute(UUID.randomUUID(), gfcId));
         verifyNoInteractions(projectAccessService);
+    }
+
+    @Test
+    void shouldThrowNotFoundWhenGfcDoesNotBelongToProject() {
+        UUID gfcId = UUID.randomUUID();
+        UUID persistedProjectId = UUID.randomUUID();
+        UUID requestedProjectId = UUID.randomUUID();
+        Gfc gfc = Gfc.persisted(
+                gfcId,
+                persistedProjectId,
+                UUID.randomUUID(),
+                "void executar()",
+                "GFC",
+                null,
+                JAVA_LANGUAGE,
+                List.of(GfcNode.start(UUID.randomUUID(), "N0", "Inicio"), GfcNode.end(UUID.randomUUID(), "N_END", "Fim")),
+                List.of()
+        );
+        when(gfcRepositoryPort.findById(gfcId)).thenReturn(Optional.of(gfc));
+        when(projectAccessService.findAuthorizedProject(persistedProjectId))
+                .thenReturn(new Project(persistedProjectId, "Projeto", "Descricao", UUID.randomUUID()));
+
+        assertThrows(GfcNotFoundException.class, () -> useCase.execute(requestedProjectId, gfcId));
+        verify(projectAccessService).findAuthorizedProject(persistedProjectId);
     }
 }

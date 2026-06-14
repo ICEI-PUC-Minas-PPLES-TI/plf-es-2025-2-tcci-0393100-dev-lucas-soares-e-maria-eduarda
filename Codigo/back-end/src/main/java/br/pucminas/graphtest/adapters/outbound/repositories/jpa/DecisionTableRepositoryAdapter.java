@@ -46,14 +46,14 @@ public class DecisionTableRepositoryAdapter implements DecisionTableRepositoryPo
 
     @Override
     public List<DecisionTable> findAllByProjectId(UUID projectId) {
-        return jpaDecisionTableRepository.findAllByProjectId(projectId).stream()
+        return jpaDecisionTableRepository.findAllByProject_Id(projectId).stream()
                 .map(mapper::toDomain)
                 .toList();
     }
 
     @Override
     public void deleteAllByProjectId(UUID projectId) {
-        jpaDecisionTableRepository.deleteAllByProjectId(projectId);
+        jpaDecisionTableRepository.deleteAllByProject_Id(projectId);
     }
 
     @Override

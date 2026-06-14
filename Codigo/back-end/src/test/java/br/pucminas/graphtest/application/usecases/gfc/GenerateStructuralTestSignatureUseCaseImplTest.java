@@ -100,7 +100,7 @@ class GenerateStructuralTestSignatureUseCaseImplTest {
     void shouldThrowNotFoundWhenGfcDoesNotExist() {
         when(gfcRepositoryPort.findById(GFC_ID)).thenReturn(Optional.empty());
 
-        assertThrows(GfcNotFoundException.class, () -> useCase.execute(GFC_ID));
+        assertThrows(GfcNotFoundException.class, () -> useCase.execute(PROJECT_ID, GFC_ID));
 
         verifyNoInteractions(projectAccessService, calculateCyclomaticComplexityUseCasePort);
     }
@@ -108,18 +108,18 @@ class GenerateStructuralTestSignatureUseCaseImplTest {
     @Test
     void shouldRejectComplexityLowerThanOne() {
         when(gfcRepositoryPort.findById(GFC_ID)).thenReturn(Optional.of(gfc()));
-        when(calculateCyclomaticComplexityUseCasePort.execute(GFC_ID)).thenReturn(complexityOutput(0));
+        when(calculateCyclomaticComplexityUseCasePort.execute(PROJECT_ID, GFC_ID)).thenReturn(complexityOutput(0));
 
-        assertThrows(InvalidCyclomaticComplexityException.class, () -> useCase.execute(GFC_ID));
+        assertThrows(InvalidCyclomaticComplexityException.class, () -> useCase.execute(PROJECT_ID, GFC_ID));
 
         verify(projectAccessService).findAuthorizedProject(PROJECT_ID);
     }
 
     private GenerateStructuralTestSignatureOutput executeForComplexity(int complexity) {
         when(gfcRepositoryPort.findById(GFC_ID)).thenReturn(Optional.of(gfc()));
-        when(calculateCyclomaticComplexityUseCasePort.execute(GFC_ID)).thenReturn(complexityOutput(complexity));
+        when(calculateCyclomaticComplexityUseCasePort.execute(PROJECT_ID, GFC_ID)).thenReturn(complexityOutput(complexity));
 
-        GenerateStructuralTestSignatureOutput output = useCase.execute(GFC_ID);
+        GenerateStructuralTestSignatureOutput output = useCase.execute(PROJECT_ID, GFC_ID);
 
         verify(projectAccessService).findAuthorizedProject(PROJECT_ID);
         return output;

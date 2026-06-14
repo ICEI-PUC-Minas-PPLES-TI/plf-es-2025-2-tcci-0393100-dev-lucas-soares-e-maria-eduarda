@@ -21,10 +21,13 @@ public class FindGfcSourceFileByIdUseCaseImpl implements FindGfcSourceFileByIdUs
     }
 
     @Override
-    public GfcSourceFileOutput execute(UUID sourceFileId) {
+    public GfcSourceFileOutput execute(UUID projectId, UUID sourceFileId) {
         GfcSourceFile sourceFile = gfcSourceFileRepositoryPort.findById(sourceFileId)
                 .orElseThrow(GfcSourceFileNotFoundException::new);
         projectAccessService.findAuthorizedProject(sourceFile.getProjectId());
+        if (!sourceFile.getProjectId().equals(projectId)) {
+            throw new GfcSourceFileNotFoundException();
+        }
 
         return GfcSourceFileOutput.from(sourceFile);
     }

@@ -4,6 +4,7 @@ import type {
   CreateProjectRequest,
   UpdateProjectRequest,
   ProjectMutationResponse,
+  ProjectArtifactDTO,
 } from './types/project';
 
 class ProjectService extends BaseService {
@@ -29,6 +30,11 @@ class ProjectService extends BaseService {
 
   public excluir = async (id: string): Promise<ProjectMutationResponse> => {
     const response = await this.delete<ProjectMutationResponse>(`/projeto/${id}`);
+    return response.data;
+  };
+
+  public listarArtefatos = async (projectId: string): Promise<ProjectArtifactDTO[]> => {
+    const response = await this.get<ProjectArtifactDTO[]>(`/projeto/${projectId}/artefatos`);
     return response.data;
   };
 }

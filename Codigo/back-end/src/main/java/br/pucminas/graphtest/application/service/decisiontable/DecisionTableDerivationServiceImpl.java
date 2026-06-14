@@ -1,14 +1,11 @@
 package br.pucminas.graphtest.application.service.decisiontable;
 
-import br.pucminas.graphtest.application.domain.decisiontable.enums.DecisionTableActionValueEnum;
-import br.pucminas.graphtest.application.domain.decisiontable.enums.DecisionTableConditionValueEnum;
+import br.pucminas.graphtest.application.domain.decisiontable.enums.DecisionTableCellValueEnum;
+import br.pucminas.graphtest.application.domain.decisiontable.enums.DecisionTableElementEnum;
 import br.pucminas.graphtest.application.domain.decisiontable.enums.DecisionTableSyncStatusEnum;
 import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTable;
-import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTableAction;
-import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTableActionCell;
-import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTableCondition;
-import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTableConditionCell;
-import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTableRule;
+import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTableCell;
+import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTableElement;
 import br.pucminas.graphtest.application.domain.gce.enums.GceOperatorTypeEnum;
 import br.pucminas.graphtest.application.domain.gce.enums.RestrictionTypeEnum;
 import br.pucminas.graphtest.application.domain.gce.model.Gce;
@@ -49,8 +46,8 @@ public class DecisionTableDerivationServiceImpl implements DecisionTableDerivati
         List<GceNode> orderedCauses = orderedCauseNodes(graph);
         List<GceNode> orderedEffects = orderedEffectNodes(graph);
 
-        List<DecisionTableCondition> conditions = buildConditions(currentTable, tableId, orderedCauses, now);
-        List<DecisionTableAction> actions = buildActions(currentTable, tableId, orderedEffects, now);
+        List<DecisionTableElement> conditions = buildConditions(currentTable, tableId, orderedCauses, now);
+        List<DecisionTableElement> actions = buildActions(currentTable, tableId, orderedEffects, now);
         DerivedRulesData derivedRulesData = buildRulesAndCells(graph, currentTable, tableId, conditions, actions, now);
 
         return buildDecisionTable(
@@ -84,22 +81,23 @@ public class DecisionTableDerivationServiceImpl implements DecisionTableDerivati
                 .toList();
     }
 
-    private List<DecisionTableCondition> buildConditions(DecisionTable currentTable,
-                                                         UUID tableId,
-                                                         List<GceNode> orderedCauses,
-                                                         LocalDateTime now) {
-        List<DecisionTableCondition> conditions = new ArrayList<>();
+    private List<DecisionTableElement> buildConditions(DecisionTable currentTable,
+                                                       UUID tableId,
+                                                       List<GceNode> orderedCauses,
+                                                       LocalDateTime now) {
+        List<DecisionTableElement> conditions = new ArrayList<>();
 
         for (int index = 0; index < orderedCauses.size(); index++) {
             GceNode cause = orderedCauses.get(index);
             UUID existingId = findExistingConditionId(currentTable, cause.getCode());
 
-            conditions.add(new DecisionTableCondition(
+            conditions.add(new DecisionTableElement(
                     ensureId(existingId),
                     tableId,
                     cause.getCode(),
                     cause.getLabel(),
                     index,
+                    DecisionTableElementEnum.CONDITION,
                     findExistingConditionCreatedAt(currentTable, cause.getCode(), now),
                     existingId != null ? now : null
             ));
@@ -108,22 +106,23 @@ public class DecisionTableDerivationServiceImpl implements DecisionTableDerivati
         return conditions;
     }
 
-    private List<DecisionTableAction> buildActions(DecisionTable currentTable,
-                                                   UUID tableId,
-                                                   List<GceNode> orderedEffects,
-                                                   LocalDateTime now) {
-        List<DecisionTableAction> actions = new ArrayList<>();
+    private List<DecisionTableElement> buildActions(DecisionTable currentTable,
+                                                    UUID tableId,
+                                                    List<GceNode> orderedEffects,
+                                                    LocalDateTime now) {
+        List<DecisionTableElement> actions = new ArrayList<>();
 
         for (int index = 0; index < orderedEffects.size(); index++) {
             GceNode effect = orderedEffects.get(index);
             UUID existingId = findExistingActionId(currentTable, effect.getCode());
 
-            actions.add(new DecisionTableAction(
+            actions.add(new DecisionTableElement(
                     ensureId(existingId),
                     tableId,
                     effect.getCode(),
                     effect.getLabel(),
                     index,
+                    DecisionTableElementEnum.ACTION,
                     findExistingActionCreatedAt(currentTable, effect.getCode(), now),
                     existingId != null ? now : null
             ));
@@ -135,13 +134,13 @@ public class DecisionTableDerivationServiceImpl implements DecisionTableDerivati
     private DerivedRulesData buildRulesAndCells(Gce graph,
                                                 DecisionTable currentTable,
                                                 UUID tableId,
-                                                List<DecisionTableCondition> conditions,
-                                                List<DecisionTableAction> actions,
+                                                List<DecisionTableElement> conditions,
+                                                List<DecisionTableElement> actions,
                                                 LocalDateTime now) {
         List<Map<String, Boolean>> validAssignments = enumerateValidAssignments(graph, orderedCauseNodes(graph));
-        List<DecisionTableRule> rules = new ArrayList<>();
-        List<DecisionTableConditionCell> conditionCells = new ArrayList<>();
-        List<DecisionTableActionCell> actionCells = new ArrayList<>();
+        List<DecisionTableElement> rules = new ArrayList<>();
+        List<DecisionTableCell> conditionCells = new ArrayList<>();
+        List<DecisionTableCell> actionCells = new ArrayList<>();
 
         for (int index = 0; index < validAssignments.size(); index++) {
             RuleAssembly ruleAssembly = assembleRule(
@@ -165,13 +164,13 @@ public class DecisionTableDerivationServiceImpl implements DecisionTableDerivati
     private RuleAssembly assembleRule(Gce graph,
                                       DecisionTable currentTable,
                                       UUID tableId,
-                                      List<DecisionTableCondition> conditions,
-                                      List<DecisionTableAction> actions,
+                                      List<DecisionTableElement> conditions,
+                                      List<DecisionTableElement> actions,
                                       Map<String, Boolean> assignment,
                                       int ruleIndex,
                                       LocalDateTime now) {
         String ruleCode = ruleCode(ruleIndex);
-        DecisionTableRule rule = buildRule(currentTable, tableId, ruleCode, ruleIndex, now);
+        DecisionTableElement rule = buildRule(currentTable, tableId, ruleCode, ruleIndex, now);
         Map<String, Boolean> resolvedValues = resolveAssignment(graph, assignment);
 
         return new RuleAssembly(
@@ -185,18 +184,20 @@ public class DecisionTableDerivationServiceImpl implements DecisionTableDerivati
         return "R" + (ruleIndex + 1);
     }
 
-    private DecisionTableRule buildRule(DecisionTable currentTable,
-                                        UUID tableId,
-                                        String ruleCode,
-                                        int orderIndex,
-                                        LocalDateTime now) {
+    private DecisionTableElement buildRule(DecisionTable currentTable,
+                                           UUID tableId,
+                                           String ruleCode,
+                                           int orderIndex,
+                                           LocalDateTime now) {
         UUID existingId = findExistingRuleId(currentTable, ruleCode);
-        return new DecisionTableRule(
+        return new DecisionTableElement(
                 ensureId(existingId),
                 tableId,
                 ruleCode,
+                null,
                 "",
                 orderIndex,
+                DecisionTableElementEnum.RULE,
                 findExistingRuleCreatedAt(currentTable, ruleCode, now),
                 existingId != null ? now : null
         );
@@ -210,22 +211,23 @@ public class DecisionTableDerivationServiceImpl implements DecisionTableDerivati
         return resolvedValues;
     }
 
-    private List<DecisionTableConditionCell> buildConditionCells(DecisionTable currentTable,
-                                                                 DecisionTableRule rule,
-                                                                 List<DecisionTableCondition> conditions,
-                                                                 Map<String, Boolean> assignment,
-                                                                 LocalDateTime now) {
-        List<DecisionTableConditionCell> cells = new ArrayList<>();
+    private List<DecisionTableCell> buildConditionCells(DecisionTable currentTable,
+                                                        DecisionTableElement rule,
+                                                        List<DecisionTableElement> conditions,
+                                                        Map<String, Boolean> assignment,
+                                                        LocalDateTime now) {
+        List<DecisionTableCell> cells = new ArrayList<>();
 
-        for (DecisionTableCondition condition : conditions) {
+        for (DecisionTableElement condition : conditions) {
             UUID existingId = findExistingConditionCellId(currentTable, rule.getCode(), condition.getCode());
-            cells.add(new DecisionTableConditionCell(
+            cells.add(new DecisionTableCell(
                     ensureId(existingId),
                     rule.getId(),
                     condition.getId(),
+                    DecisionTableElementEnum.CONDITION,
                     assignment.getOrDefault(condition.getCode(), false)
-                            ? DecisionTableConditionValueEnum.YES
-                            : DecisionTableConditionValueEnum.NO,
+                            ? DecisionTableCellValueEnum.YES
+                            : DecisionTableCellValueEnum.NO,
                     findExistingConditionCellCreatedAt(currentTable, rule.getCode(), condition.getCode(), now),
                     existingId != null ? now : null
             ));
@@ -234,22 +236,23 @@ public class DecisionTableDerivationServiceImpl implements DecisionTableDerivati
         return cells;
     }
 
-    private List<DecisionTableActionCell> buildActionCells(DecisionTable currentTable,
-                                                           DecisionTableRule rule,
-                                                           List<DecisionTableAction> actions,
-                                                           Map<String, Boolean> resolvedValues,
-                                                           LocalDateTime now) {
-        List<DecisionTableActionCell> cells = new ArrayList<>();
+    private List<DecisionTableCell> buildActionCells(DecisionTable currentTable,
+                                                     DecisionTableElement rule,
+                                                     List<DecisionTableElement> actions,
+                                                     Map<String, Boolean> resolvedValues,
+                                                     LocalDateTime now) {
+        List<DecisionTableCell> cells = new ArrayList<>();
 
-        for (DecisionTableAction action : actions) {
+        for (DecisionTableElement action : actions) {
             UUID existingId = findExistingActionCellId(currentTable, rule.getCode(), action.getCode());
-            cells.add(new DecisionTableActionCell(
+            cells.add(new DecisionTableCell(
                     ensureId(existingId),
                     rule.getId(),
                     action.getId(),
+                    DecisionTableElementEnum.ACTION,
                     resolvedValues.getOrDefault(action.getCode(), false)
-                            ? DecisionTableActionValueEnum.YES
-                            : DecisionTableActionValueEnum.NO,
+                            ? DecisionTableCellValueEnum.YES
+                            : DecisionTableCellValueEnum.NO,
                     findExistingActionCellCreatedAt(currentTable, rule.getCode(), action.getCode(), now),
                     existingId != null ? now : null
             ));
@@ -261,12 +264,20 @@ public class DecisionTableDerivationServiceImpl implements DecisionTableDerivati
     private DecisionTable buildDecisionTable(Gce graph,
                                              DecisionTable currentTable,
                                              UUID tableId,
-                                             List<DecisionTableCondition> conditions,
-                                             List<DecisionTableAction> actions,
-                                             List<DecisionTableRule> rules,
-                                             List<DecisionTableConditionCell> conditionCells,
-                                             List<DecisionTableActionCell> actionCells,
+                                             List<DecisionTableElement> conditions,
+                                             List<DecisionTableElement> actions,
+                                             List<DecisionTableElement> rules,
+                                             List<DecisionTableCell> conditionCells,
+                                             List<DecisionTableCell> actionCells,
                                              LocalDateTime now) {
+        List<DecisionTableElement> elements = new ArrayList<>();
+        elements.addAll(conditions);
+        elements.addAll(actions);
+        elements.addAll(rules);
+        List<DecisionTableCell> cells = new ArrayList<>();
+        cells.addAll(conditionCells);
+        cells.addAll(actionCells);
+
         return new DecisionTable(
                 tableId,
                 graph.getId(),
@@ -276,11 +287,8 @@ public class DecisionTableDerivationServiceImpl implements DecisionTableDerivati
                 buildFingerprint(graph),
                 DecisionTableSyncStatusEnum.UP_TO_DATE,
                 effectiveGraphUpdatedAt(graph),
-                conditions,
-                actions,
-                rules,
-                conditionCells,
-                actionCells,
+                elements,
+                cells,
                 currentTable != null ? currentTable.getCreatedAt() : now,
                 currentTable != null ? now : null
         );
@@ -582,9 +590,9 @@ public class DecisionTableDerivationServiceImpl implements DecisionTableDerivati
         if (currentTable == null) {
             return null;
         }
-        return currentTable.getConditions().stream()
+        return currentTable.getConditionElements().stream()
                 .filter(condition -> condition.getCode().equals(code))
-                .map(DecisionTableCondition::getId)
+                .map(DecisionTableElement::getId)
                 .findFirst()
                 .orElse(null);
     }
@@ -593,9 +601,9 @@ public class DecisionTableDerivationServiceImpl implements DecisionTableDerivati
         if (currentTable == null) {
             return fallback;
         }
-        return currentTable.getConditions().stream()
+        return currentTable.getConditionElements().stream()
                 .filter(condition -> condition.getCode().equals(code))
-                .map(DecisionTableCondition::getCreatedAt)
+                .map(DecisionTableElement::getCreatedAt)
                 .filter(Objects::nonNull)
                 .findFirst()
                 .orElse(fallback);
@@ -605,9 +613,9 @@ public class DecisionTableDerivationServiceImpl implements DecisionTableDerivati
         if (currentTable == null) {
             return null;
         }
-        return currentTable.getActions().stream()
+        return currentTable.getActionElements().stream()
                 .filter(action -> action.getCode().equals(code))
-                .map(DecisionTableAction::getId)
+                .map(DecisionTableElement::getId)
                 .findFirst()
                 .orElse(null);
     }
@@ -616,9 +624,9 @@ public class DecisionTableDerivationServiceImpl implements DecisionTableDerivati
         if (currentTable == null) {
             return fallback;
         }
-        return currentTable.getActions().stream()
+        return currentTable.getActionElements().stream()
                 .filter(action -> action.getCode().equals(code))
-                .map(DecisionTableAction::getCreatedAt)
+                .map(DecisionTableElement::getCreatedAt)
                 .filter(Objects::nonNull)
                 .findFirst()
                 .orElse(fallback);
@@ -628,9 +636,9 @@ public class DecisionTableDerivationServiceImpl implements DecisionTableDerivati
         if (currentTable == null) {
             return null;
         }
-        return currentTable.getRules().stream()
+        return currentTable.getRuleElements().stream()
                 .filter(rule -> rule.getCode().equals(code))
-                .map(DecisionTableRule::getId)
+                .map(DecisionTableElement::getId)
                 .findFirst()
                 .orElse(null);
     }
@@ -639,9 +647,9 @@ public class DecisionTableDerivationServiceImpl implements DecisionTableDerivati
         if (currentTable == null) {
             return fallback;
         }
-        return currentTable.getRules().stream()
+        return currentTable.getRuleElements().stream()
                 .filter(rule -> rule.getCode().equals(code))
-                .map(DecisionTableRule::getCreatedAt)
+                .map(DecisionTableElement::getCreatedAt)
                 .filter(Objects::nonNull)
                 .findFirst()
                 .orElse(fallback);
@@ -656,7 +664,7 @@ public class DecisionTableDerivationServiceImpl implements DecisionTableDerivati
         if (ruleId == null || conditionId == null) {
             return null;
         }
-        DecisionTableConditionCell cell = currentTable.findConditionCell(ruleId, conditionId);
+        DecisionTableCell cell = currentTable.findConditionCell(ruleId, conditionId);
         return cell != null ? cell.getId() : null;
     }
 
@@ -672,7 +680,7 @@ public class DecisionTableDerivationServiceImpl implements DecisionTableDerivati
         if (ruleId == null || conditionId == null) {
             return fallback;
         }
-        DecisionTableConditionCell cell = currentTable.findConditionCell(ruleId, conditionId);
+        DecisionTableCell cell = currentTable.findConditionCell(ruleId, conditionId);
         return cell != null && cell.getCreatedAt() != null ? cell.getCreatedAt() : fallback;
     }
 
@@ -685,7 +693,7 @@ public class DecisionTableDerivationServiceImpl implements DecisionTableDerivati
         if (ruleId == null || actionId == null) {
             return null;
         }
-        DecisionTableActionCell cell = currentTable.findActionCell(ruleId, actionId);
+        DecisionTableCell cell = currentTable.findActionCell(ruleId, actionId);
         return cell != null ? cell.getId() : null;
     }
 
@@ -701,21 +709,22 @@ public class DecisionTableDerivationServiceImpl implements DecisionTableDerivati
         if (ruleId == null || actionId == null) {
             return fallback;
         }
-        DecisionTableActionCell cell = currentTable.findActionCell(ruleId, actionId);
+        DecisionTableCell cell = currentTable.findActionCell(ruleId, actionId);
         return cell != null && cell.getCreatedAt() != null ? cell.getCreatedAt() : fallback;
     }
 
     private record DerivedRulesData(
-            List<DecisionTableRule> rules,
-            List<DecisionTableConditionCell> conditionCells,
-            List<DecisionTableActionCell> actionCells
+            List<DecisionTableElement> rules,
+            List<DecisionTableCell> conditionCells,
+            List<DecisionTableCell> actionCells
     ) {
     }
 
     private record RuleAssembly(
-            DecisionTableRule rule,
-            List<DecisionTableConditionCell> conditionCells,
-            List<DecisionTableActionCell> actionCells
+            DecisionTableElement rule,
+            List<DecisionTableCell> conditionCells,
+            List<DecisionTableCell> actionCells
     ) {
     }
 }
+

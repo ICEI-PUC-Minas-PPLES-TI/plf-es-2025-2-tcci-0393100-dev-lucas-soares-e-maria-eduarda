@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { DecisionTableToolbar } from '../features/decision-table/components/DecisionTableToolbar';
@@ -10,6 +10,7 @@ import { mapDTOToDecisionTable } from '../features/decision-table/utils/decision
 import DecisionTableService from '../services/DecisionTable/DecisionTableService';
 import GCEService from '../services/GCE/GCEService';
 import { TestSignatureModal } from '../features/graph/components/TestSignatureModal';
+import { DecisionTablePageSkeleton } from '../features/decision-table/components/DecisionTablePageSkeleton';
 import { extractApiErrorMessage } from '../utils/apiError';
 import type { DecisionTable, ConditionValue, EffectValue } from '../features/decision-table/types/decisionTable';
 import type { GenerateFunctionalTestSignatureResponseDTO } from '../features/decision-table/types/decisionTableDTO';
@@ -31,27 +32,35 @@ export function DecisionTablePage() {
   const [testError, setTestError] = useState<string | null>(null);
   const [testData, setTestData] = useState<GenerateFunctionalTestSignatureResponseDTO | null>(null);
 
+  const requestKeyRef = useRef<string | null>(null);
+
   useEffect(() => {
     if (!gceId || !projectId) return;
+    const key = `${projectId}/${gceId}`;
+    if (requestKeyRef.current === key) return;
+    requestKeyRef.current = key;
 
+    setLoading(true);
     async function load() {
       try {
         const [gce, dto] = await Promise.all([
-          GCEService.buscarPorId(gceId!),
-          DecisionTableService.buscarPorGceId(gceId!).catch(async (err) => {
+          GCEService.buscarPorId(projectId!, gceId!),
+          DecisionTableService.buscarPorGceId(projectId!, gceId!).catch(async (err) => {
             if (err?.response?.status === 404) {
-              return DecisionTableService.criarAPartirDoGCE(gceId!);
+              return DecisionTableService.criarAPartirDoGCE(projectId!, gceId!);
             }
             throw err;
           }),
         ]);
 
+        if (requestKeyRef.current !== key) return;
         setGceName(gce.name);
         setTable(mapDTOToDecisionTable(dto));
       } catch {
+        if (requestKeyRef.current !== key) return;
         setLoadError('Erro ao carregar a tabela de decisão.');
       } finally {
-        setLoading(false);
+        if (requestKeyRef.current === key) setLoading(false);
       }
     }
 
@@ -59,10 +68,10 @@ export function DecisionTablePage() {
   }, [gceId, projectId]);
 
   const handleSave = useCallback(async () => {
-    if (!table) return;
+    if (!table || !projectId) return;
     setSaveStatus('saving');
     try {
-      const dto = await DecisionTableService.atualizar(table.id, {
+      const dto = await DecisionTableService.atualizar(projectId, table.id, {
         name: table.name,
         description: table.description,
       });
@@ -73,13 +82,13 @@ export function DecisionTablePage() {
       setSaveStatus('error');
       setTimeout(() => setSaveStatus('idle'), 3000);
     }
-  }, [table]);
+  }, [table, projectId]);
 
   const handleRegenerate = useCallback(async () => {
-    if (!gceId) return;
+    if (!gceId || !projectId) return;
     setRegenerateStatus('loading');
     try {
-      const dto = await DecisionTableService.sincronizar(gceId);
+      const dto = await DecisionTableService.sincronizar(projectId, gceId);
       setTable(mapDTOToDecisionTable(dto));
       setSaveStatus('idle');
       setRegenerateStatus('idle');
@@ -92,7 +101,7 @@ export function DecisionTablePage() {
       }
       setTimeout(() => setRegenerateStatus('idle'), 3000);
     }
-  }, [gceId]);
+  }, [gceId, projectId]);
 
   const handleConditionValueChange = useCallback(
     (ruleId: string, conditionId: string, value: ConditionValue) => {
@@ -151,27 +160,23 @@ export function DecisionTablePage() {
   }, [navigate, projectId, gceId]);
 
   const handleGenerateTests = useCallback(async () => {
-    if (!table) return;
+    if (!table || !projectId) return;
     setTestModalOpen(true);
     setTestLoading(true);
     setTestError(null);
     setTestData(null);
     try {
-      const data = await DecisionTableService.gerarAssinaturaTesteFuncional(table.id);
+      const data = await DecisionTableService.gerarAssinaturaTesteFuncional(projectId, table.id);
       setTestData(data);
     } catch (err) {
       setTestError(extractApiErrorMessage(err, 'Erro ao gerar assinaturas de teste.'));
     } finally {
       setTestLoading(false);
     }
-  }, [table]);
+  }, [table, projectId]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-surface flex items-center justify-center">
-        <p className="text-gray-400">Carregando tabela de decisão...</p>
-      </div>
-    );
+    return <DecisionTablePageSkeleton projectName={project.name} projectId={projectId ?? ''} />;
   }
 
   if (loadError || !table) {

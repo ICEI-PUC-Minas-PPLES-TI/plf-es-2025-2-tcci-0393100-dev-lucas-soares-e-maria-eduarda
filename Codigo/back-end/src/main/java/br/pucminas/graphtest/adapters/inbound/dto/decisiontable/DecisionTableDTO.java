@@ -1,7 +1,6 @@
 package br.pucminas.graphtest.adapters.inbound.dto.decisiontable;
 
-import br.pucminas.graphtest.application.domain.decisiontable.enums.DecisionTableActionValueEnum;
-import br.pucminas.graphtest.application.domain.decisiontable.enums.DecisionTableConditionValueEnum;
+import br.pucminas.graphtest.application.domain.decisiontable.enums.DecisionTableCellValueEnum;
 import br.pucminas.graphtest.application.domain.decisiontable.enums.DecisionTableSyncStatusEnum;
 import lombok.Builder;
 
@@ -65,7 +64,7 @@ public record DecisionTableDTO(
             UUID id,
             UUID ruleId,
             UUID conditionId,
-            DecisionTableConditionValueEnum value,
+            DecisionTableCellValueEnum value,
             LocalDateTime createdAt,
             LocalDateTime updatedAt
     ) {
@@ -75,7 +74,7 @@ public record DecisionTableDTO(
             UUID id,
             UUID ruleId,
             UUID actionId,
-            DecisionTableActionValueEnum value,
+            DecisionTableCellValueEnum value,
             LocalDateTime createdAt,
             LocalDateTime updatedAt
     ) {

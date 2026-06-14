@@ -40,9 +40,9 @@ public record DecisionTableOutput(
                 decisionTable.getSourceGceUpdatedAt(),
                 decisionTable.getCreatedAt(),
                 normalizeUpdatedAt(decisionTable.getCreatedAt(), decisionTable.getUpdatedAt()),
-                decisionTable.getConditions().stream().map(DecisionTableConditionOutput::from).toList(),
-                decisionTable.getActions().stream().map(DecisionTableActionOutput::from).toList(),
-                decisionTable.getRules().stream().map(DecisionTableRuleOutput::from).toList(),
+                decisionTable.getConditionElements().stream().map(DecisionTableConditionOutput::from).toList(),
+                decisionTable.getActionElements().stream().map(DecisionTableActionOutput::from).toList(),
+                decisionTable.getRuleElements().stream().map(DecisionTableRuleOutput::from).toList(),
                 decisionTable.getConditionCells().stream().map(DecisionTableConditionCellOutput::from).toList(),
                 decisionTable.getActionCells().stream().map(DecisionTableActionCellOutput::from).toList()
         );

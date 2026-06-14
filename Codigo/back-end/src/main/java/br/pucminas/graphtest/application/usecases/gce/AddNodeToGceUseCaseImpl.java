@@ -1,6 +1,7 @@
 package br.pucminas.graphtest.application.usecases.gce;
 
 import br.pucminas.graphtest.application.domain.gce.model.Gce;
+import br.pucminas.graphtest.application.exception.EntityNotFoundException;
 import br.pucminas.graphtest.application.port.input.gce.AddNodeToGceUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.records.AddNodeToGceInput;
 import br.pucminas.graphtest.application.port.input.gce.records.GceNodeInput;
@@ -39,6 +40,9 @@ public class AddNodeToGceUseCaseImpl implements AddNodeToGceUseCasePort {
     @Override
     public GceOutput execute(AddNodeToGceInput input) {
         Gce graph = gceMutationService.loadAuthorizedGraph(input.gceId(), gceRepository, projectAccessService);
+        if (!graph.getProjectId().equals(input.projectId())) {
+            throw new EntityNotFoundException("GCE nao encontrado");
+        }
         gceMutationService.addNodeWithAutomaticEdges(
                 graph,
                 new GceNodeInput(

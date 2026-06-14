@@ -13,6 +13,7 @@ import br.pucminas.graphtest.application.port.output.repositories.GceRepositoryP
 import br.pucminas.graphtest.application.service.gce.GceMutationServiceImpl;
 import br.pucminas.graphtest.application.service.gce.interfaces.GceMutationService;
 import br.pucminas.graphtest.application.service.gce.interfaces.GceValidationResultService;
+import br.pucminas.graphtest.application.service.decisiontable.interfaces.DecisionTableSyncStatusUpdateService;
 import br.pucminas.graphtest.application.service.project.interfaces.ProjectAccessService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,6 +42,9 @@ class ToggleGceEdgeUseCaseImplTest {
 
     @Mock
     private GceValidationResultService gceValidationResultService;
+
+    @Mock
+    private DecisionTableSyncStatusUpdateService decisionTableSyncStatusUpdateService;
 
     @Spy
     private GceMutationService gceMutationService = new GceMutationServiceImpl();
@@ -79,7 +83,7 @@ class ToggleGceEdgeUseCaseImplTest {
                 .thenReturn(new ValidationGceOutput(List.of(), List.of()));
         when(gceRepository.save(any(Gce.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        GceOutput output = useCase.execute(new ToggleGceEdgeInput(graphId, edgeId));
+        GceOutput output = useCase.execute(new ToggleGceEdgeInput(projectId, graphId, edgeId));
 
         assertEquals(GceEdgeTypeEnum.NEGATED, output.edges().stream().filter(edge -> edge.id().equals(edgeId)).findFirst().orElseThrow().type());
         verify(gceRepository).save(any(Gce.class));

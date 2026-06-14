@@ -1,7 +1,8 @@
 package br.pucminas.graphtest.application.port.input.decisiontable.records;
 
-import br.pucminas.graphtest.application.domain.decisiontable.enums.DecisionTableActionValueEnum;
-import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTableActionCell;
+import br.pucminas.graphtest.application.domain.decisiontable.enums.DecisionTableCellValueEnum;
+import br.pucminas.graphtest.application.domain.decisiontable.enums.DecisionTableElementEnum;
+import br.pucminas.graphtest.application.domain.decisiontable.model.DecisionTableCell;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -13,16 +14,19 @@ public record DecisionTableActionCellOutput(
         UUID id,
         UUID ruleId,
         UUID actionId,
-        DecisionTableActionValueEnum value,
+        DecisionTableCellValueEnum value,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
 
-    public static DecisionTableActionCellOutput from(DecisionTableActionCell cell) {
+    public static DecisionTableActionCellOutput from(DecisionTableCell cell) {
+        if (cell.getType() != DecisionTableElementEnum.ACTION) {
+            throw new IllegalArgumentException("Celula nao e de acao.");
+        }
         return new DecisionTableActionCellOutput(
                 cell.getId(),
                 cell.getRuleId(),
-                cell.getActionId(),
+                cell.getDecisionTableElementId(),
                 cell.getValue(),
                 cell.getCreatedAt(),
                 normalizeUpdatedAt(cell.getCreatedAt(), cell.getUpdatedAt())

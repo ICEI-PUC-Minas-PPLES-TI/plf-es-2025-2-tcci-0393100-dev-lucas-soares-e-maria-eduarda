@@ -45,8 +45,6 @@ export interface GCECanvasHandle {
 const nodeTypes = { cause: CauseNode, effect: EffectNode, operator: OperatorNode };
 const edgeTypes = { negation: NegationEdge, editable: EditableEdge };
 
-let nodeCounter = 100;
-
 export const GCECanvas = forwardRef<GCECanvasHandle, GCECanvasProps>(
   function GCECanvas({ initialNodes, initialEdges, initialRestrictions, onSelectionChange, onRestrictionsChange, onChange }, ref) {
     const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -111,25 +109,31 @@ export const GCECanvas = forwardRef<GCECanvasHandle, GCECanvasProps>(
 
     const addNode = useCallback(
       (type: GCENodeType, operatorType?: OperatorType) => {
-        nodeCounter++;
         const prefix = type === 'CAUSE' ? 'C' : type === 'EFFECT' ? 'E' : 'O';
-        const code = `${prefix}${nodeCounter}`;
         const flowType = type === 'CAUSE' ? 'cause' : type === 'EFFECT' ? 'effect' : 'operator';
         const labels = { CAUSE: 'Nova causa', EFFECT: 'Novo efeito', OPERATOR: operatorType ?? 'OP' };
 
-        const newNode: GCEFlowNode = {
-          id: code,
-          type: flowType,
-          position: { x: 200 + Math.random() * 200, y: 100 + Math.random() * 200 },
-          data: {
-            code,
-            label: labels[type] as string,
-            nodeType: type,
-            operatorType: operatorType ?? null,
-          },
-        };
+        setNodes((nds) => {
+          const maxNum = nds.reduce((max, n) => {
+            const num = parseInt(String(n.data?.code ?? '').replace(/\D/g, ''), 10);
+            return Number.isFinite(num) ? Math.max(max, num) : max;
+          }, 100);
+          const code = `${prefix}${maxNum + 1}`;
 
-        setNodes((nds) => [...nds, newNode]);
+          const newNode: GCEFlowNode = {
+            id: code,
+            type: flowType,
+            position: { x: 200 + Math.random() * 200, y: 100 + Math.random() * 200 },
+            data: {
+              code,
+              label: labels[type] as string,
+              nodeType: type,
+              operatorType: operatorType ?? null,
+            },
+          };
+
+          return [...nds, newNode];
+        });
       },
       [setNodes],
     );

@@ -63,12 +63,12 @@ class GfcSourceFileRepositoryAdapterTest {
                 "class Exemplo {}",
                 "Java"
         );
-        when(jpaGfcSourceFileRepository.findAllByProjectIdOrderByCreatedAtDesc(projectId)).thenReturn(List.of(entity));
+        when(jpaGfcSourceFileRepository.findAllByProject_IdOrderByCreatedAtDesc(projectId)).thenReturn(List.of(entity));
         when(mapper.toDomain(entity)).thenReturn(sourceFile);
 
         List<GfcSourceFile> result = adapter.findAllByProjectId(projectId);
 
-        verify(jpaGfcSourceFileRepository).findAllByProjectIdOrderByCreatedAtDesc(projectId);
+        verify(jpaGfcSourceFileRepository).findAllByProject_IdOrderByCreatedAtDesc(projectId);
         assertEquals(1, result.size());
         assertEquals(sourceFile.getId(), result.getFirst().getId());
     }
@@ -88,6 +88,6 @@ class GfcSourceFileRepositoryAdapterTest {
 
         adapter.deleteAllByProjectId(projectId);
 
-        verify(jpaGfcSourceFileRepository).deleteAllByProjectId(projectId);
+        verify(jpaGfcSourceFileRepository).deleteAllByProject_Id(projectId);
     }
 }

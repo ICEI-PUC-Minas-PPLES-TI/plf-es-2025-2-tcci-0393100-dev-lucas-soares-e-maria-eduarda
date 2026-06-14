@@ -57,7 +57,7 @@ class GetGfcSourceMethodDetailsUseCaseImplTest {
                 .thenReturn(new Project(projectId, "Projeto", "Descricao", userId));
         when(gfcSourceMethodDetailsService.getDetails(sourceCode, signature)).thenReturn(expected);
 
-        GfcSourceMethodDetailsOutput output = useCase.execute(sourceFileId, signature);
+        GfcSourceMethodDetailsOutput output = useCase.execute(projectId, sourceFileId, signature);
 
         verify(projectAccessService).findAuthorizedProject(projectId);
         verify(gfcSourceMethodDetailsService).getDetails(sourceCode, signature);
@@ -69,7 +69,7 @@ class GetGfcSourceMethodDetailsUseCaseImplTest {
         UUID sourceFileId = UUID.randomUUID();
         when(gfcSourceFileRepositoryPort.findById(sourceFileId)).thenReturn(Optional.empty());
 
-        assertThrows(GfcSourceFileNotFoundException.class, () -> useCase.execute(sourceFileId, "void m()"));
+        assertThrows(GfcSourceFileNotFoundException.class, () -> useCase.execute(UUID.randomUUID(), sourceFileId, "void m()"));
         verifyNoInteractions(projectAccessService, gfcSourceMethodDetailsService);
     }
 }

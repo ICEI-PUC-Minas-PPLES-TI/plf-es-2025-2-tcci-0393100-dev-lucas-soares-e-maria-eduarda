@@ -6,5 +6,5 @@ import java.util.UUID;
 
 public interface FindGfcSourceFileByIdUseCasePort {
 
-    GfcSourceFileOutput execute(UUID sourceFileId);
+    GfcSourceFileOutput execute(UUID projectId, UUID sourceFileId);
 }

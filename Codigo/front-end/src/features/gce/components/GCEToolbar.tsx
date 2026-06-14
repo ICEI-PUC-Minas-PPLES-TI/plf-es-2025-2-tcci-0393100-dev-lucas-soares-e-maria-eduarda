@@ -1,11 +1,13 @@
 import { useRef, useState, useEffect } from 'react';
-import { Save, CheckCircle, Table, Pencil } from 'lucide-react';
+import { Save, CheckCircle, Table, Pencil, LayoutGrid } from 'lucide-react';
 import { Button } from '../../../components/Button';
 
 interface GCEToolbarProps {
   gceName: string;
   onSave: () => void;
   onValidate: () => void;
+  onRelayout?: () => void;
+  relayoutLoading?: boolean;
   onGenerateTable: () => void;
   onNameChange?: (name: string) => void;
   saveStatus?: 'idle' | 'saving' | 'saved' | 'error';
@@ -15,7 +17,7 @@ interface GCEToolbarProps {
   hasDecisionTable?: boolean;
 }
 
-export function GCEToolbar({ gceName, onSave, onValidate, onGenerateTable, onNameChange, saveStatus = 'idle', canValidate = true, canSave = false, canGenerateTable = false, hasDecisionTable = false }: GCEToolbarProps) {
+export function GCEToolbar({ gceName, onSave, onValidate, onRelayout, relayoutLoading = false, onGenerateTable, onNameChange, saveStatus = 'idle', canValidate = true, canSave = false, canGenerateTable = false, hasDecisionTable = false }: GCEToolbarProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(gceName);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -83,6 +85,12 @@ export function GCEToolbar({ gceName, onSave, onValidate, onGenerateTable, onNam
           <Button size="sm" variant="primary" onClick={onGenerateTable} disabled={!canGenerateTable}>
             <Table className="w-4 h-4" />
             Gerar Tabela
+          </Button>
+        )}
+        {onRelayout && (
+          <Button size="sm" variant="outline" onClick={onRelayout} disabled={relayoutLoading} title="Reorganizar o diagrama automaticamente">
+            <LayoutGrid className="w-4 h-4" />
+            {relayoutLoading ? 'Reorganizando...' : 'Reorganizar'}
           </Button>
         )}
         <Button size="sm" variant="outline" onClick={onValidate} disabled={!canValidate}>

@@ -6,6 +6,8 @@ export const GCE_MOCK: GCEDTO = {
   name: 'GCE de saque',
   description: 'Fluxo de validacao de saque',
   selected: true,
+  createdAt: '2025-01-01T00:00:00.000Z',
+  updatedAt: null,
   nodes: [
     { code: 'C1', label: 'Usuario autenticado', type: 'CAUSE', operatorType: null },
     { code: 'C2', label: 'Saldo suficiente', type: 'CAUSE', operatorType: null },

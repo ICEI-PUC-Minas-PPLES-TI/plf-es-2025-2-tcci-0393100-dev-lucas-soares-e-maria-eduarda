@@ -1,7 +1,6 @@
 package br.pucminas.graphtest.adapters.inbound.controller;
 
 import br.pucminas.graphtest.adapters.inbound.controller.interfaces.GceController;
-import br.pucminas.graphtest.adapters.inbound.controller.interfaces.OperacoesCRUDController;
 import br.pucminas.graphtest.adapters.inbound.dto.gce.AddGceNodeDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gce.GceDTO;
 import br.pucminas.graphtest.adapters.inbound.dto.gce.GceInputDTO;
@@ -13,7 +12,6 @@ import br.pucminas.graphtest.application.port.input.gce.AddNodeToGceUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.CreateGceUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.DeleteGceUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.FindGceByIdUseCasePort;
-import br.pucminas.graphtest.application.port.input.gce.ListGcesUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.ListGcesByProjectUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.PatchGceDetailsUseCasePort;
 import br.pucminas.graphtest.application.port.input.gce.ToggleGceEdgeUseCasePort;
@@ -56,13 +54,12 @@ import static br.pucminas.graphtest.adapters.inbound.util.GceDtoConverterUtil.to
 import static br.pucminas.graphtest.adapters.inbound.util.GceDtoConverterUtil.toUpdateNodeInput;
 import static br.pucminas.graphtest.adapters.inbound.util.GceDtoConverterUtil.toValidateInput;
 import static br.pucminas.graphtest.adapters.inbound.util.JsonResponseBuilderUtil.buildJsonResponse;
-import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GCE;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GCE_EDGE_TOGGLE;
+import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GCE_ID;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GCE_NODE;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GCE_NODES;
-import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GCE_PROJETO;
 import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.GCE_VALIDAR;
-import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.ID;
+import static br.pucminas.graphtest.infrastructure.paths.ApiRequestPaths.PROJECT_GCE;
 import static br.pucminas.graphtest.shared.LogTopicsUtil.GCE_CONTROLLER;
 import static java.util.Arrays.asList;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -71,14 +68,13 @@ import static org.springframework.http.HttpStatus.OK;
 @Slf4j(topic = GCE_CONTROLLER)
 @RestController
 @Validated
-@RequestMapping(GCE)
+@RequestMapping(PROJECT_GCE)
 @AllArgsConstructor
-public class GceControllerImpl implements GceController, OperacoesCRUDController<GceInputDTO, GceDTO> {
+public class GceControllerImpl implements GceController {
 
     private final CreateGceUseCasePort createGceUseCasePort;
     private final DeleteGceUseCasePort deleteGceUseCasePort;
     private final FindGceByIdUseCasePort findGceByIdUseCasePort;
-    private final ListGcesUseCasePort listGcesUseCasePort;
     private final ListGcesByProjectUseCasePort listGcesByProjectUseCasePort;
     private final ValidateGceUseCasePort validateGceUseCasePort;
     private final PatchGceDetailsUseCasePort patchGceDetailsUseCasePort;
@@ -89,12 +85,13 @@ public class GceControllerImpl implements GceController, OperacoesCRUDController
 
     @Override
     @PostMapping
-    public ResponseEntity<Map<String, Object>> create(@Validated @RequestBody GceInputDTO graph) {
+    public ResponseEntity<Map<String, Object>> create(@PathVariable UUID projectId,
+                                                      @Validated @RequestBody GceInputDTO graph) {
         log.info(">>> criar: recebendo requisicao para criar GCE");
 
-        GceOutput graphCreated = createGceUseCasePort.execute(toCreateInput(graph));
+        GceOutput graphCreated = createGceUseCasePort.execute(toCreateInput(projectId, graph));
 
-        return ResponseEntity.created(URI.create(GCE + "/" + graphCreated.id()))
+        return ResponseEntity.created(URI.create("/projeto/" + projectId + "/gce/" + graphCreated.id()))
                 .body(buildJsonResponse(
                         CHAVES_GCE_CONTROLLER,
                         asList(CREATED.value(), MSG_GCE_CRIADO, graphCreated.id())
@@ -102,25 +99,16 @@ public class GceControllerImpl implements GceController, OperacoesCRUDController
     }
 
     @Override
-    @GetMapping(ID)
-    public ResponseEntity<GceDTO> findById(@PathVariable UUID id) {
+    @GetMapping(GCE_ID)
+    public ResponseEntity<GceDTO> findById(@PathVariable UUID projectId, @PathVariable("gceId") UUID id) {
         log.info(">>> encontrarPorId: recebendo requisicao para encontrar GCE por id");
 
-        GceOutput graph = findGceByIdUseCasePort.execute(new FindGceByIdInput(id));
+        GceOutput graph = findGceByIdUseCasePort.execute(new FindGceByIdInput(projectId, id));
         return ResponseEntity.ok(toDto(graph));
     }
 
     @Override
     @GetMapping
-    public ResponseEntity<List<GceDTO>> listAll() {
-        log.info(">>> listarTodos: recebendo requisicao para listar GCEs do usuario autenticado");
-
-        List<GceOutput> graphs = listGcesUseCasePort.execute();
-        return ResponseEntity.ok(graphs.stream().map(GceDtoConverterUtil::toDto).toList());
-    }
-
-    @Override
-    @GetMapping(GCE_PROJETO)
     public ResponseEntity<List<GceDTO>> listByProject(@PathVariable UUID projectId) {
         log.info(">>> listarPorProjeto: recebendo requisicao para listar GCEs por projeto");
 
@@ -129,11 +117,11 @@ public class GceControllerImpl implements GceController, OperacoesCRUDController
     }
 
     @Override
-    @DeleteMapping(ID)
-    public ResponseEntity<Map<String, Object>> delete(@PathVariable UUID id) {
+    @DeleteMapping(GCE_ID)
+    public ResponseEntity<Map<String, Object>> delete(@PathVariable UUID projectId, @PathVariable("gceId") UUID id) {
         log.info(">>> deletar: recebendo requisicao para deletar GCE");
 
-        deleteGceUseCasePort.execute(new DeleteGceInput(id));
+        deleteGceUseCasePort.execute(new DeleteGceInput(projectId, id));
 
         return ResponseEntity.ok().body(buildJsonResponse(
                 CHAVES_GCE_CONTROLLER,
@@ -142,61 +130,69 @@ public class GceControllerImpl implements GceController, OperacoesCRUDController
     }
 
     @Override
-    @PutMapping(ID)
-    public ResponseEntity<GceDTO> update(@PathVariable UUID id, @RequestBody GceInputDTO graph) {
+    @PutMapping(GCE_ID)
+    public ResponseEntity<GceDTO> update(@PathVariable UUID projectId,
+                                         @PathVariable("gceId") UUID id,
+                                         @RequestBody GceInputDTO graph) {
         log.info(">>> atualizar: recebendo requisicao para substituir a representacao completa do GCE");
 
-        GceOutput updatedGraph = updateGceUseCasePort.execute(toUpdateInput(id, graph));
+        GceOutput updatedGraph = updateGceUseCasePort.execute(toUpdateInput(projectId, id, graph));
         return ResponseEntity.ok(toDto(updatedGraph));
     }
 
     @Override
-    @PatchMapping(ID)
-    public ResponseEntity<GceDTO> patchDetails(@PathVariable UUID id, @RequestBody UpdateGceDetailsDTO graph) {
+    @PatchMapping(GCE_ID)
+    public ResponseEntity<GceDTO> patchDetails(@PathVariable UUID projectId,
+                                               @PathVariable("gceId") UUID id,
+                                               @RequestBody UpdateGceDetailsDTO graph) {
         log.info(">>> atualizarDetalhes: recebendo requisicao para atualizar nome e descricao do GCE");
 
-        GceOutput updatedGraph = patchGceDetailsUseCasePort.execute(toUpdateDetailsInput(id, graph));
+        GceOutput updatedGraph = patchGceDetailsUseCasePort.execute(toUpdateDetailsInput(projectId, id, graph));
         return ResponseEntity.ok(toDto(updatedGraph));
     }
 
 
     @Override
     @PostMapping(GCE_VALIDAR)
-    public ResponseEntity<ValidationGceDTO> validate(@RequestBody GceInputDTO graph) {
+    public ResponseEntity<ValidationGceDTO> validate(@PathVariable UUID projectId, @RequestBody GceInputDTO graph) {
         log.info(">>> validar: recebendo requisicao para validar GCE");
 
-        ValidationGceOutput validation = validateGceUseCasePort.execute(toValidateInput(graph));
+        ValidationGceOutput validation = validateGceUseCasePort.execute(toValidateInput(projectId, graph));
         return ResponseEntity.ok(toDto(validation));
     }
 
 
     @Override
     @PostMapping(GCE_NODES)
-    public ResponseEntity<GceDTO> addNode(@PathVariable UUID id, @RequestBody AddGceNodeDTO node) {
+    public ResponseEntity<GceDTO> addNode(@PathVariable UUID projectId,
+                                          @PathVariable("gceId") UUID id,
+                                          @RequestBody AddGceNodeDTO node) {
         log.info(">>> adicionarNo: recebendo requisicao para adicionar no ao GCE");
 
-        GceOutput updatedGraph = addNodeToGceUseCasePort.execute(toAddNodeInput(id, node));
+        GceOutput updatedGraph = addNodeToGceUseCasePort.execute(toAddNodeInput(projectId, id, node));
         return ResponseEntity.ok(toDto(updatedGraph));
     }
 
     @Override
     @PatchMapping(GCE_NODE)
-    public ResponseEntity<GceDTO> updateNode(@PathVariable UUID id,
+    public ResponseEntity<GceDTO> updateNode(@PathVariable UUID projectId,
+                                             @PathVariable("gceId") UUID id,
                                              @PathVariable String nodeCode,
                                              @RequestBody UpdateGceNodeDTO node) {
         log.info(">>> atualizarNo: recebendo requisicao para atualizar no do GCE");
 
-        GceOutput updatedGraph = updateGceNodeUseCasePort.execute(toUpdateNodeInput(id, nodeCode, node));
+        GceOutput updatedGraph = updateGceNodeUseCasePort.execute(toUpdateNodeInput(projectId, id, nodeCode, node));
         return ResponseEntity.ok(toDto(updatedGraph));
     }
 
     @Override
     @PatchMapping(GCE_EDGE_TOGGLE)
-    public ResponseEntity<GceDTO> toggleEdge(@PathVariable UUID id,
+    public ResponseEntity<GceDTO> toggleEdge(@PathVariable UUID projectId,
+                                             @PathVariable("gceId") UUID id,
                                              @PathVariable UUID edgeId) {
         log.info(">>> inverterAresta: recebendo requisicao para inverter aresta do GCE");
 
-        GceOutput updatedGraph = toggleGceEdgeUseCasePort.execute(toToggleEdgeInput(id, edgeId));
+        GceOutput updatedGraph = toggleGceEdgeUseCasePort.execute(toToggleEdgeInput(projectId, id, edgeId));
         return ResponseEntity.ok(toDto(updatedGraph));
     }
 

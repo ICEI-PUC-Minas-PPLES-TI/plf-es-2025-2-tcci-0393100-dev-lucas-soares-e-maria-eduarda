@@ -44,7 +44,7 @@ class FindGfcSourceFileByIdUseCaseImplTest {
         when(projectAccessService.findAuthorizedProject(projectId))
                 .thenReturn(new Project(projectId, "Projeto", "Descricao", userId));
 
-        GfcSourceFileOutput output = useCase.execute(sourceFileId);
+        GfcSourceFileOutput output = useCase.execute(projectId, sourceFileId);
 
         verify(projectAccessService).findAuthorizedProject(projectId);
         assertEquals(sourceFileId, output.id());
@@ -58,8 +58,22 @@ class FindGfcSourceFileByIdUseCaseImplTest {
         UUID sourceFileId = UUID.randomUUID();
         when(gfcSourceFileRepositoryPort.findById(sourceFileId)).thenReturn(Optional.empty());
 
-        assertThrows(GfcSourceFileNotFoundException.class, () -> useCase.execute(sourceFileId));
+        assertThrows(GfcSourceFileNotFoundException.class, () -> useCase.execute(UUID.randomUUID(), sourceFileId));
         verifyNoInteractions(projectAccessService);
+    }
+
+    @Test
+    void shouldThrowNotFoundWhenSourceFileDoesNotBelongToProject() {
+        UUID sourceFileId = UUID.randomUUID();
+        UUID persistedProjectId = UUID.randomUUID();
+        UUID requestedProjectId = UUID.randomUUID();
+        GfcSourceFile sourceFile = new GfcSourceFile(sourceFileId, persistedProjectId, "Exemplo.java", "class Exemplo {}", "Java");
+        when(gfcSourceFileRepositoryPort.findById(sourceFileId)).thenReturn(Optional.of(sourceFile));
+        when(projectAccessService.findAuthorizedProject(persistedProjectId))
+                .thenReturn(new Project(persistedProjectId, "Projeto", "Descricao", UUID.randomUUID()));
+
+        assertThrows(GfcSourceFileNotFoundException.class, () -> useCase.execute(requestedProjectId, sourceFileId));
+        verify(projectAccessService).findAuthorizedProject(persistedProjectId);
     }
 
     @Test
@@ -71,7 +85,7 @@ class FindGfcSourceFileByIdUseCaseImplTest {
         when(projectAccessService.findAuthorizedProject(projectId))
                 .thenThrow(new UnauthorizedUserException("Usuario nao possui permissao para acessar o projeto"));
 
-        assertThrows(UnauthorizedUserException.class, () -> useCase.execute(sourceFileId));
+        assertThrows(UnauthorizedUserException.class, () -> useCase.execute(projectId, sourceFileId));
         verify(projectAccessService).findAuthorizedProject(projectId);
     }
 }

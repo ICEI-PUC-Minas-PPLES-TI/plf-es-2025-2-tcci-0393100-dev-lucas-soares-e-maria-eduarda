@@ -7,6 +7,7 @@ import { ProjectPage } from '../pages/ProjectPage';
 import { GCEEditorPage } from '../pages/GCEEditorPage';
 import { DecisionTablePage } from '../pages/DecisionTablePage';
 import { GFCViewerPage } from '../pages/GFCViewerPage';
+import { ProfilePage } from '../pages/ProfilePage';
 import { useAuth } from '../context/AuthContext';
 import type { ReactNode } from 'react';
 
@@ -22,6 +23,7 @@ export function AppRouter() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/cadastro" element={<SignUpPage />} />
         <Route path="/homepage" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
+        <Route path="/perfil" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
         <Route path="/projeto/:projectId" element={<ProtectedRoute><ProjectLayout /></ProtectedRoute>}>
           <Route index element={<ProjectPage />} />
           <Route path="gce/:gceId" element={<GCEEditorPage />} />

@@ -24,10 +24,13 @@ public class DeleteGfcSourceFileUseCaseImpl implements DeleteGfcSourceFileUseCas
     }
 
     @Override
-    public void execute(UUID sourceFileId) {
+    public void execute(UUID projectId, UUID sourceFileId) {
         GfcSourceFile sourceFile = gfcSourceFileRepositoryPort.findById(sourceFileId)
                 .orElseThrow(GfcSourceFileNotFoundException::new);
         projectAccessService.findAuthorizedProject(sourceFile.getProjectId());
+        if (!sourceFile.getProjectId().equals(projectId)) {
+            throw new GfcSourceFileNotFoundException();
+        }
 
         gfcRepositoryPort.deleteAllBySourceFileId(sourceFile.getId());
         gfcSourceFileRepositoryPort.deleteById(sourceFile.getId());

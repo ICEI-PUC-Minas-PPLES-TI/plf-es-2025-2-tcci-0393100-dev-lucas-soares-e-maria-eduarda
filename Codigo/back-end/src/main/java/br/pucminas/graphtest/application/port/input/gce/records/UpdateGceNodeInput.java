@@ -8,6 +8,7 @@ import java.util.UUID;
  * Dados para atualizar um no existente do GCE.
  */
 public record UpdateGceNodeInput(
+        UUID projectId,
         UUID gceId,
         String nodeCode,
         String label,

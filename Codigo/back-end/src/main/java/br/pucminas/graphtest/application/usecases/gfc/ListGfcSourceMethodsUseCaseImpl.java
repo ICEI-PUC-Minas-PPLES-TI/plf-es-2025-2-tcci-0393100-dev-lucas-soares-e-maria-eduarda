@@ -29,10 +29,13 @@ public class ListGfcSourceMethodsUseCaseImpl implements ListGfcSourceMethodsUseC
     }
 
     @Override
-    public List<GfcSourceMethodOutput> execute(UUID sourceFileId) {
+    public List<GfcSourceMethodOutput> execute(UUID projectId, UUID sourceFileId) {
         GfcSourceFile sourceFile = gfcSourceFileRepositoryPort.findById(sourceFileId)
                 .orElseThrow(GfcSourceFileNotFoundException::new);
         projectAccessService.findAuthorizedProject(sourceFile.getProjectId());
+        if (!sourceFile.getProjectId().equals(projectId)) {
+            throw new GfcSourceFileNotFoundException();
+        }
 
         return gfcSourceMethodListingService.listMethods(sourceFile.getContent());
     }
