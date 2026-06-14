@@ -213,7 +213,7 @@ Tipos comuns:
 - Lucas Cabral Soares
 - Maria Eduarda Amaral Muniz
 
-### Profesores responsáveis
+### Professores responsáveis
 
 - Cleiton Silva Tavares
 - Danilo de Quadros Maia Filho
