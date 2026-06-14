@@ -1,0 +1,45 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+[32m :: Spring Boot :: [39m              [2m (v4.0.3)[0;39m
+
+[2m2026-03-20T15:29:38.118-03:00[0;39m [32m INFO[0;39m [35m8252[0;39m [2m--- [graphtest] [           main] [0;39m[36mb.p.graphtest.GraphtestApplication      [0;39m [2m:[0;39m Starting GraphtestApplication v0.0.1-SNAPSHOT using Java 25.0.2 with PID 8252 (C:\Repositories\plf-es-2025-2-tcci-0393100-dev-lucas-soares-e-maria-eduarda\Codigo\back-end\graphtest-relational-api\target\graphtest-0.0.1-SNAPSHOT.jar started by lucas in C:\Repositories\plf-es-2025-2-tcci-0393100-dev-lucas-soares-e-maria-eduarda\Codigo\back-end\graphtest-relational-api)
+[2m2026-03-20T15:29:38.126-03:00[0;39m [32m INFO[0;39m [35m8252[0;39m [2m--- [graphtest] [           main] [0;39m[36mb.p.graphtest.GraphtestApplication      [0;39m [2m:[0;39m No active profile set, falling back to 1 default profile: "default"
+[2m2026-03-20T15:29:40.205-03:00[0;39m [32m INFO[0;39m [35m8252[0;39m [2m--- [graphtest] [           main] [0;39m[36m.s.d.r.c.RepositoryConfigurationDelegate[0;39m [2m:[0;39m Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+[2m2026-03-20T15:29:40.314-03:00[0;39m [32m INFO[0;39m [35m8252[0;39m [2m--- [graphtest] [           main] [0;39m[36m.s.d.r.c.RepositoryConfigurationDelegate[0;39m [2m:[0;39m Finished Spring Data repository scanning in 95 ms. Found 1 JPA repository interface.
+[2m2026-03-20T15:29:41.617-03:00[0;39m [32m INFO[0;39m [35m8252[0;39m [2m--- [graphtest] [           main] [0;39m[36mo.s.boot.tomcat.TomcatWebServer         [0;39m [2m:[0;39m Tomcat initialized with port 0 (http)
+[2m2026-03-20T15:29:41.647-03:00[0;39m [32m INFO[0;39m [35m8252[0;39m [2m--- [graphtest] [           main] [0;39m[36mo.apache.catalina.core.StandardService  [0;39m [2m:[0;39m Starting service [Tomcat]
+[2m2026-03-20T15:29:41.648-03:00[0;39m [32m INFO[0;39m [35m8252[0;39m [2m--- [graphtest] [           main] [0;39m[36mo.apache.catalina.core.StandardEngine   [0;39m [2m:[0;39m Starting Servlet engine: [Apache Tomcat/11.0.18]
+[2m2026-03-20T15:29:41.722-03:00[0;39m [32m INFO[0;39m [35m8252[0;39m [2m--- [graphtest] [           main] [0;39m[36mb.w.c.s.WebApplicationContextInitializer[0;39m [2m:[0;39m Root WebApplicationContext: initialization completed in 3467 ms
+[2m2026-03-20T15:29:42.153-03:00[0;39m [32m INFO[0;39m [35m8252[0;39m [2m--- [graphtest] [           main] [0;39m[36morg.hibernate.orm.jpa                   [0;39m [2m:[0;39m HHH008540: Processing PersistenceUnitInfo [name: default]
+[2m2026-03-20T15:29:42.253-03:00[0;39m [32m INFO[0;39m [35m8252[0;39m [2m--- [graphtest] [           main] [0;39m[36morg.hibernate.orm.core                  [0;39m [2m:[0;39m HHH000001: Hibernate ORM core version 7.2.4.Final
+[2m2026-03-20T15:29:43.027-03:00[0;39m [32m INFO[0;39m [35m8252[0;39m [2m--- [graphtest] [           main] [0;39m[36mo.s.o.j.p.SpringPersistenceUnitInfo     [0;39m [2m:[0;39m No LoadTimeWeaver setup: ignoring JPA class transformer
+[2m2026-03-20T15:29:43.065-03:00[0;39m [32m INFO[0;39m [35m8252[0;39m [2m--- [graphtest] [           main] [0;39m[36mcom.zaxxer.hikari.HikariDataSource      [0;39m [2m:[0;39m HikariPool-1 - Starting...
+[2m2026-03-20T15:29:43.355-03:00[0;39m [32m INFO[0;39m [35m8252[0;39m [2m--- [graphtest] [           main] [0;39m[36mcom.zaxxer.hikari.pool.HikariPool       [0;39m [2m:[0;39m HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@20f99c18
+[2m2026-03-20T15:29:43.358-03:00[0;39m [32m INFO[0;39m [35m8252[0;39m [2m--- [graphtest] [           main] [0;39m[36mcom.zaxxer.hikari.HikariDataSource      [0;39m [2m:[0;39m HikariPool-1 - Start completed.
+[2m2026-03-20T15:29:43.492-03:00[0;39m [32m INFO[0;39m [35m8252[0;39m [2m--- [graphtest] [           main] [0;39m[36morg.hibernate.orm.connections.pooling   [0;39m [2m:[0;39m HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/graphtest]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 16.4
+	Default catalog/schema: graphtest/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+[2m2026-03-20T15:29:44.988-03:00[0;39m [32m INFO[0;39m [35m8252[0;39m [2m--- [graphtest] [           main] [0;39m[36morg.hibernate.orm.core                  [0;39m [2m:[0;39m HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+[2m2026-03-20T15:29:45.095-03:00[0;39m [32m INFO[0;39m [35m8252[0;39m [2m--- [graphtest] [           main] [0;39m[36mj.LocalContainerEntityManagerFactoryBean[0;39m [2m:[0;39m Initialized JPA EntityManagerFactory for persistence unit 'default'
+[2m2026-03-20T15:29:45.283-03:00[0;39m [32m INFO[0;39m [35m8252[0;39m [2m--- [graphtest] [           main] [0;39m[36mo.s.d.j.r.query.QueryEnhancerFactories  [0;39m [2m:[0;39m Hibernate is in classpath; If applicable, HQL parser will be used.
+[2m2026-03-20T15:29:46.026-03:00[0;39m [33m WARN[0;39m [35m8252[0;39m [2m--- [graphtest] [           main] [0;39m[36mJpaBaseConfiguration$JpaWebConfiguration[0;39m [2m:[0;39m spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+[2m2026-03-20T15:29:46.189-03:00[0;39m [32m INFO[0;39m [35m8252[0;39m [2m--- [graphtest] [           main] [0;39m[36mr$InitializeUserDetailsManagerConfigurer[0;39m [2m:[0;39m Global AuthenticationManager configured with UserDetailsService bean with name customUserDetailsAdapter
+[2m2026-03-20T15:29:46.371-03:00[0;39m [32m INFO[0;39m [35m8252[0;39m [2m--- [graphtest] [           main] [0;39m[36mSEGURANCA_CONFIG                        [0;39m [2m:[0;39m >>> filterChain: iniciando camada de seguranca Filter Chain
+[2m2026-03-20T15:29:46.374-03:00[0;39m [32m INFO[0;39m [35m8252[0;39m [2m--- [graphtest] [           main] [0;39m[36mSEGURANCA_CONFIG                        [0;39m [2m:[0;39m >>> corsConfigurationSource: iniciando configuracao de Cors
+[2m2026-03-20T15:29:47.631-03:00[0;39m [32m INFO[0;39m [35m8252[0;39m [2m--- [graphtest] [           main] [0;39m[36mo.s.boot.tomcat.TomcatWebServer         [0;39m [2m:[0;39m Tomcat started on port 65368 (http) with context path '/'
+[2m2026-03-20T15:29:47.647-03:00[0;39m [32m INFO[0;39m [35m8252[0;39m [2m--- [graphtest] [           main] [0;39m[36mb.p.graphtest.GraphtestApplication      [0;39m [2m:[0;39m Started GraphtestApplication in 10.128 seconds (process running for 10.821)

@@ -1,0 +1,273 @@
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { useParams, useLocation, useNavigate, useOutletContext } from 'react-router-dom';
+import { ReactFlowProvider } from '@xyflow/react';
+import { Header } from '../components/Header';
+import { GCEToolbar } from '../features/gce/components/GCEToolbar';
+import { ElementPalette } from '../features/gce/components/ElementPalette';
+import { GCECanvas, type GCECanvasHandle } from '../features/gce/components/GCECanvas';
+import { PropertiesPanel } from '../features/gce/components/PropertiesPanel';
+import { ValidationPanel } from '../features/gce/components/ValidationPanel';
+import { GCEEditorSkeleton } from '../features/gce/components/GCEEditorSkeleton';
+import {
+  buildFlow,
+  flowToCreateRequest,
+  savePositions,
+  saveBends,
+  clearPositions,
+  clearBends,
+} from '../features/gce/utils/gceConverters';
+import GCEService from '../services/GCE/GCEService';
+import DecisionTableService from '../services/DecisionTable/DecisionTableService';
+import type { GCEDTO, GCEValidationResponse, GCERestriction, GCEFlowNode, GCEFlowEdge } from '../features/gce/types/gce';
+import type { ProjectLayoutContext } from './ProjectLayout';
+
+export function GCEEditorPage() {
+  const { projectId, gceId } = useParams<{ projectId: string; gceId: string }>();
+  const { project } = useOutletContext<ProjectLayoutContext>();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const isNew = gceId === 'new';
+  const routeState = location.state as { name?: string; description?: string } | null;
+
+  const [gce, setGce] = useState<GCEDTO | null>(
+    isNew && projectId
+      ? {
+          id: 'new',
+          projectId,
+          name: routeState?.name ?? 'Novo GCE',
+          description: routeState?.description ?? '',
+          selected: false,
+          createdAt: new Date().toISOString(),
+          updatedAt: null,
+          nodes: [],
+          edges: [],
+          restrictions: [],
+        }
+      : null,
+  );
+  const [flow, setFlow] = useState<{ nodes: GCEFlowNode[]; edges: GCEFlowEdge[]; restrictions: GCERestriction[] } | null>(
+    isNew ? { nodes: [], edges: [], restrictions: [] } : null,
+  );
+  const [layoutVersion, setLayoutVersion] = useState(0);
+  const [relayoutLoading, setRelayoutLoading] = useState(false);
+  const [loading, setLoading] = useState(!isNew);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
+  const [showValidation, setShowValidation] = useState(false);
+  const [validationResult, setValidationResult] = useState<GCEValidationResponse | null>(null);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [isValidated, setIsValidated] = useState(false);
+  const [hasDecisionTable, setHasDecisionTable] = useState(false);
+  const [liveRestrictions, setLiveRestrictions] = useState<GCERestriction[]>([]);
+  const canvasRef = useRef<GCECanvasHandle>(null);
+
+  useEffect(() => {
+    if (isNew || !gceId || !projectId) return;
+    let cancelled = false;
+    GCEService.buscarPorId(projectId, gceId)
+      .then(async (g) => {
+        const built = await buildFlow(g);
+        if (cancelled) return;
+        setGce(g);
+        setFlow(built);
+      })
+      .catch(() => {
+        if (!cancelled) setLoadError('GCE não encontrado.');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [isNew, gceId, projectId]);
+
+  useEffect(() => {
+    if (isNew || !gceId || !projectId) return;
+    DecisionTableService.buscarPorGceId(projectId, gceId)
+      .then(() => setHasDecisionTable(true))
+      .catch(() => setHasDecisionTable(false));
+  }, [isNew, gceId, projectId]);
+
+  const handleSelectionChange = useCallback((nodeId: string | null, edgeId: string | null) => {
+    setSelectedNodeId(nodeId);
+    setSelectedEdgeId(edgeId);
+  }, []);
+
+  const handleGraphChange = useCallback(() => setIsValidated(false), []);
+
+  const handleRelayout = useCallback(async () => {
+    if (!gce) return;
+    setRelayoutLoading(true);
+    try {
+      const state = canvasRef.current?.getState();
+      const source: GCEDTO = state
+        ? { ...gce, ...flowToCreateRequest(gce, state.nodes, state.edges, state.restrictions) }
+        : gce;
+      clearPositions(gce.id);
+      clearBends(gce.id);
+      setFlow(await buildFlow(source));
+      setLayoutVersion((v) => v + 1);
+    } finally {
+      setRelayoutLoading(false);
+    }
+  }, [gce]);
+
+  const handleSave = useCallback(async () => {
+    if (!gce || !projectId) return;
+    const state = canvasRef.current?.getState();
+    if (!state) return;
+
+    setSaveStatus('saving');
+    try {
+      const request = flowToCreateRequest(gce, state.nodes, state.edges, state.restrictions);
+
+      if (gce.id === 'new') {
+        // Primeiro save: cria no backend
+        const { id } = await GCEService.criar(projectId, request);
+        const created = await GCEService.buscarPorId(projectId, id);
+        savePositions(id, state.nodes);
+        saveBends(id, state.edges);
+        setFlow({ nodes: state.nodes, edges: state.edges, restrictions: state.restrictions });
+        setGce(created);
+        // Atualiza a URL sem recarregar o componente
+        navigate(`/projeto/${projectId}/gce/${id}`, { replace: true, state: null });
+      } else {
+        // Saves seguintes: atualiza
+        savePositions(gce.id, state.nodes);
+        saveBends(gce.id, state.edges);
+        const updated = await GCEService.atualizar(projectId, gce.id, request);
+        setGce(updated);
+      }
+
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus('idle'), 2000);
+    } catch {
+      setSaveStatus('error');
+      setTimeout(() => setSaveStatus('idle'), 3000);
+    }
+  }, [gce, projectId, navigate]);
+
+  const handleNameChange = useCallback(async (newName: string) => {
+    if (!gce || !projectId) return;
+
+    const updatedGce = { ...gce, name: newName };
+    setGce(updatedGce);
+
+    if (gce.id === 'new') return;
+
+    const state = canvasRef.current?.getState();
+    if (!state) return;
+
+    setSaveStatus('saving');
+    try {
+      savePositions(gce.id, state.nodes);
+      saveBends(gce.id, state.edges);
+      const request = flowToCreateRequest(updatedGce, state.nodes, state.edges, state.restrictions);
+      const updated = await GCEService.atualizar(projectId, gce.id, request);
+      setGce(updated);
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus('idle'), 2000);
+    } catch {
+      setSaveStatus('error');
+      setTimeout(() => setSaveStatus('idle'), 3000);
+    }
+  }, [gce, projectId]);
+
+  const handleValidate = useCallback(async () => {
+    if (!gce || !projectId) return;
+    const state = canvasRef.current?.getState();
+    if (!state) return;
+    setValidationResult(null);
+    setShowValidation(true);
+    try {
+      const request = flowToCreateRequest(gce, state.nodes, state.edges, state.restrictions);
+      const result = await GCEService.validar(projectId, request);
+      setValidationResult(result);
+      setIsValidated(result.valid);
+    } catch {
+      setValidationResult({
+        valid: false,
+        errors: [{ code: 'NET', message: 'Erro ao conectar com o servidor.' }],
+        warnings: [],
+      });
+    }
+  }, [gce, projectId]);
+
+  if (loading) {
+    return <GCEEditorSkeleton projectName={project.name} projectId={projectId ?? ''} />;
+  }
+
+  if (loadError || !gce) {
+    return (
+      <div className="min-h-screen bg-surface flex items-center justify-center">
+        <p className="text-red-400">{loadError ?? 'GCE não encontrado.'}</p>
+      </div>
+    );
+  }
+
+  return (
+    <ReactFlowProvider>
+      <div className="h-screen flex flex-col bg-surface">
+        <Header
+          breadcrumb={[
+            { label: 'Projetos', href: '/homepage' },
+            { label: project.name, href: `/projeto/${projectId}` },
+            { label: gce.name },
+          ]}
+        />
+
+        <GCEToolbar
+          gceName={gce.name}
+          onSave={handleSave}
+          onValidate={handleValidate}
+          onRelayout={handleRelayout}
+          relayoutLoading={relayoutLoading}
+          onGenerateTable={() => navigate(`/projeto/${projectId}/gce/${gceId}/tabela-decisao`)}
+          onNameChange={handleNameChange}
+          saveStatus={saveStatus}
+          canValidate
+          canSave={isValidated}
+          hasDecisionTable={hasDecisionTable}
+          canGenerateTable={isValidated && gce.id !== 'new'}
+        />
+
+        <div className="flex-1 flex overflow-hidden">
+          <ElementPalette
+            onAddNode={(type, op) => canvasRef.current?.addNode(type, op)}
+            onDelete={() => canvasRef.current?.deleteSelected()}
+            hasSelection={canvasRef.current?.hasSelection ?? false}
+          />
+
+          <div className="flex-1 flex flex-col relative">
+            {flow && (
+              <GCECanvas
+                key={`${gce.id}:${layoutVersion}`}
+                ref={canvasRef}
+                initialNodes={flow.nodes}
+                initialEdges={flow.edges}
+                initialRestrictions={flow.restrictions}
+                onSelectionChange={handleSelectionChange}
+                onRestrictionsChange={setLiveRestrictions}
+                onChange={handleGraphChange}
+              />
+            )}
+
+            {showValidation && (
+              <ValidationPanel
+                result={validationResult}
+                onClose={() => setShowValidation(false)}
+              />
+            )}
+          </div>
+
+          <PropertiesPanel
+            selectedNodeId={selectedNodeId}
+            selectedEdgeId={selectedEdgeId}
+            restrictions={liveRestrictions}
+          />
+        </div>
+      </div>
+    </ReactFlowProvider>
+  );
+}
