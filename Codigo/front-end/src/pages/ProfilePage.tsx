@@ -135,7 +135,7 @@ export function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-surface">
-      <Header breadcrumb={[{ label: 'Projetos', href: '/homepage' }, { label: 'Meu Perfil' }]} />
+      <Header breadcrumb={[{ label: 'Meu Perfil' }]} />
 
       <div className="container mx-auto px-6 py-10 max-w-3xl">
         <h1 className="text-gray-100 text-2xl font-semibold mb-8">Meu Perfil</h1>
