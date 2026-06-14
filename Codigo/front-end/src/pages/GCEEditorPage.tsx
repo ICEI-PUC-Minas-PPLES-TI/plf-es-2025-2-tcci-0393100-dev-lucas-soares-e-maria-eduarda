@@ -128,6 +128,7 @@ export function GCEEditorPage() {
         const created = await GCEService.buscarPorId(projectId, id);
         savePositions(id, state.nodes);
         saveBends(id, state.edges);
+        setFlow({ nodes: state.nodes, edges: state.edges, restrictions: state.restrictions });
         setGce(created);
         // Atualiza a URL sem recarregar o componente
         navigate(`/projeto/${projectId}/gce/${id}`, { replace: true, state: null });
