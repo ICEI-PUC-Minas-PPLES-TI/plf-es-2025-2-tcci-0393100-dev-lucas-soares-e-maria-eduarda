@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Outlet } from 'react-router-dom';
 import ProjectService from '../services/Project/ProjectService';
+import { ProjectPageSkeleton } from '../features/projects/components/ProjectPageSkeleton';
 import type { ProjectDTO } from '../services/Project/types/project';
 
 export type ProjectLayoutContext = {
@@ -28,11 +29,7 @@ export function ProjectLayout() {
   }, [projectId]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-surface flex items-center justify-center">
-        <p className="text-gray-400">Carregando projeto...</p>
-      </div>
-    );
+    return <ProjectPageSkeleton />;
   }
 
   if (error || !project) {

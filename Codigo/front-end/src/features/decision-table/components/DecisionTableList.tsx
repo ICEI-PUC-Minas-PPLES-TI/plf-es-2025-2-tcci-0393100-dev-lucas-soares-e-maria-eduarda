@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AlertTriangle, Network, Trash2 } from 'lucide-react';
 import { Button } from '../../../components/Button';
 import { ConfirmModal } from '../../../components/ConfirmModal';
+import { CardGridSkeleton } from '../../../components/CardGridSkeleton';
 import { ARTIFACT_TYPES } from '../../../shared/artifactTypes';
 import DecisionTableService from '../../../services/DecisionTable/DecisionTableService';
 import GCEService from '../../../services/GCE/GCEService';
@@ -45,13 +46,17 @@ export function DecisionTableList({ projectId }: DecisionTableListProps) {
       <div className="mb-4">
         <h2 className="text-base font-semibold text-gray-200">Tabelas de Decisão</h2>
         <p className="text-sm text-gray-500 mt-0.5">
-          {loading
-            ? 'Carregando...'
-            : `${tables.length} tabela${tables.length !== 1 ? 's' : ''}`}
+          {loading ? (
+            <span className="inline-block h-3.5 w-24 bg-surface-hover rounded animate-pulse align-middle" />
+          ) : (
+            `${tables.length} tabela${tables.length !== 1 ? 's' : ''}`
+          )}
         </p>
       </div>
 
-      {!loading && tables.length === 0 ? (
+      {loading ? (
+        <CardGridSkeleton />
+      ) : tables.length === 0 ? (
         <div className="bg-surface-card border border-edge rounded-lg p-12 flex flex-col items-center gap-3">
           <div className={`w-12 h-12 rounded-lg ${tableConfig.bgColor} flex items-center justify-center`}>
             <TableIcon className={`w-6 h-6 ${tableConfig.color}`} />

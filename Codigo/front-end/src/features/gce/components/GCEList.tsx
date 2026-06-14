@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AlertTriangle, Clock, Plus, Trash2 } from 'lucide-react';
 import { Button } from '../../../components/Button';
 import { ConfirmModal } from '../../../components/ConfirmModal';
+import { CardGridSkeleton } from '../../../components/CardGridSkeleton';
 import { ARTIFACT_TYPES } from '../../../shared/artifactTypes';
 import GCEService from '../../../services/GCE/GCEService';
 import { formatRelativeDate } from '../../../utils/formatDate';
@@ -41,7 +42,11 @@ export function GCEList({ projectId, onCreateGCE }: GCEListProps) {
         <div>
           <h2 className="text-base font-semibold text-gray-200">Grafos de Causa e Efeito</h2>
           <p className="text-sm text-gray-500 mt-0.5">
-            {loading ? 'Carregando...' : `${gces.length} grafo${gces.length !== 1 ? 's' : ''}`}
+            {loading ? (
+              <span className="inline-block h-3.5 w-24 bg-surface-hover rounded animate-pulse align-middle" />
+            ) : (
+              `${gces.length} grafo${gces.length !== 1 ? 's' : ''}`
+            )}
           </p>
         </div>
         <Button size="sm" variant="primary" onClick={onCreateGCE}>
@@ -50,7 +55,9 @@ export function GCEList({ projectId, onCreateGCE }: GCEListProps) {
         </Button>
       </div>
 
-      {!loading && gces.length === 0 ? (
+      {loading ? (
+        <CardGridSkeleton />
+      ) : gces.length === 0 ? (
         <div className="bg-surface-card border border-edge rounded-lg p-12 flex flex-col items-center gap-3">
           <div className={`w-12 h-12 rounded-lg ${typeConfig.bgColor} flex items-center justify-center`}>
             <Icon className={`w-6 h-6 ${typeConfig.color}`} />

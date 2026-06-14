@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AlertTriangle, FileCode, Trash2, Eye } from 'lucide-react';
 import { Button } from '../../../components/Button';
 import { ConfirmModal } from '../../../components/ConfirmModal';
+import { CardGridSkeleton } from '../../../components/CardGridSkeleton';
 import { SourceFileViewerModal } from './SourceFileViewerModal';
 import SourceFileService from '../../../services/GFC/SourceFileService';
 import GFCService from '../../../services/GFC/GFCService';
@@ -108,9 +109,11 @@ export function SourceFileList({ projectId }: SourceFileListProps) {
         <div>
           <h2 className="text-base font-semibold text-gray-200">Arquivos de código</h2>
           <p className="text-sm text-gray-500 mt-0.5">
-            {loading
-              ? 'Carregando...'
-              : `${files.length} arquivo${files.length !== 1 ? 's' : ''} .java`}
+            {loading ? (
+              <span className="inline-block h-3.5 w-24 bg-surface-hover rounded animate-pulse align-middle" />
+            ) : (
+              `${files.length} arquivo${files.length !== 1 ? 's' : ''} .java`
+            )}
           </p>
         </div>
       </div>
@@ -119,7 +122,9 @@ export function SourceFileList({ projectId }: SourceFileListProps) {
         <div className="bg-surface-card border border-edge rounded-lg p-6">
           <p className="text-sm text-red-400">{loadError}</p>
         </div>
-      ) : !loading && files.length === 0 ? (
+      ) : loading ? (
+        <CardGridSkeleton />
+      ) : files.length === 0 ? (
         <div className="bg-surface-card border border-edge rounded-lg p-12 flex flex-col items-center gap-3">
           <div className="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center">
             <FileCode className="w-6 h-6 text-blue-400" />
