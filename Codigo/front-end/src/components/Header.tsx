@@ -45,7 +45,11 @@ export function Header({ breadcrumb }: HeaderProps) {
               ? <Sun className="w-5 h-5 text-gray-300" />
               : <Moon className="w-5 h-5 text-gray-300" />}
           </button>
-          <button className="p-2 hover:bg-surface-hover rounded-lg transition-colors">
+          <button
+            onClick={() => navigate('/perfil')}
+            className="p-2 hover:bg-surface-hover rounded-lg transition-colors"
+            title="Meu perfil"
+          >
             <User className="w-5 h-5 text-gray-300" />
           </button>
           <button
