@@ -2,18 +2,15 @@
 
 <div align="center">
 
-# GraphTest
-
-**Plataforma de apoio à modelagem e análise de grafos para teste de software**
+# **Plataforma de apoio à modelagem e análise de grafos para teste de software**
 
 <img src="./Artefatos/imagens/graphtest-logo.svg" alt="Logo GraphTest" width="700"/>
 
 [Sobre](#sobre) |
 [Funcionalidades](#funcionalidades) |
 [Tecnologias](#tecnologias) |
-[Instruções de utilização](#instruções-de-utilização) |
-[Testes](#testes) |
-[Equipe](#equipe) |
+[Instruções de utilização](#instruções-de-utilização)  |
+[Colaboradores](#colaboradores) |
 [Licença](#licença)
 
 </div>
@@ -23,8 +20,6 @@
 O **GraphTest** é uma aplicação web desenvolvida para apoiar o ensino e a prática de testes de software por meio da criação, visualização e análise de grafos usados em testes funcionais e estruturais.
 
 A plataforma permite trabalhar com **Grafos de Fluxo de Controle (GFC)**, voltados ao teste estrutural, e **Grafos de Causa e Efeito (GCE)**, voltados ao teste funcional. A partir desses modelos, o sistema auxilia na geração de tabelas de decisão, no cálculo de complexidade ciclomática e na produção de assinaturas de testes.
-
-O projeto foi desenvolvido no contexto acadêmico da PUC Minas, integrando documentação, protótipos, diagramas, código-fonte e artefatos de acompanhamento do Trabalho de Conclusão de Curso.
 
 ## Funcionalidades
 
@@ -75,11 +70,12 @@ O projeto foi desenvolvido no contexto acadêmico da PUC Minas, integrando docum
 
 ## Arquitetura
 
-O back-end segue uma organização inspirada em **Arquitetura Hexagonal (Ports and Adapters)**:
+O back-end segue uma organização em **Arquitetura Hexagonal (Ports and Adapters)**:
 
 - `application`: regras de negócio, casos de uso, portas e modelos de domínio.
 - `adapters/inbound`: controllers, DTOs, validações, tratamento de erros e segurança HTTP.
 - `adapters/outbound`: persistência JPA, persistência Neo4j, mapeadores e serviços externos.
+- `infrastructure`: configurações de banco de dados e frameworks
 - `src/test`: testes automatizados de domínio, serviços, casos de uso, controllers, conversores e repositórios.
 
 O front-end está organizado por funcionalidades:
@@ -92,21 +88,6 @@ O front-end está organizado por funcionalidades:
 - `features/decision-table`: tabela de decisão e assinatura funcional.
 - `services`: clientes HTTP para comunicação com a API.
 - `routes`: rotas públicas e protegidas da aplicação.
-
-## Estrutura do repositório
-
-```text
-.
-|-- Artefatos/       # Diagramas, protótipos, vídeos, memoriais e PDFs de entrega
-|-- Codigo/
-|   |-- back-end/    # API Spring Boot
-|   `-- front-end/   # Aplicação React + Vite
-|-- Divulgacao/      # Materiais de divulgação
-|-- Documentacao/    # Documentos acadêmicos do projeto
-|-- CITATION.cff
-|-- LICENSE
-`-- README.md
-```
 
 ## Instruções de utilização
 
@@ -197,48 +178,6 @@ O Vite informará a URL local da aplicação, normalmente:
 http://localhost:5173
 ```
 
-## Testes
-
-### Back-end
-
-```bash
-cd Codigo/back-end
-./mvnw test
-```
-
-No Windows PowerShell:
-
-```powershell
-cd Codigo\back-end
-.\mvnw.cmd test
-```
-
-### Front-end
-
-O front-end possui verificação de lint configurada:
-
-```bash
-cd Codigo/front-end
-npm run lint
-```
-
-Para gerar uma build de produção:
-
-```bash
-cd Codigo/front-end
-npm run build
-```
-
-## Artefatos acadêmicos
-
-Os principais materiais de apoio ao projeto estão em `Artefatos/`, incluindo:
-
-- Diagramas de arquitetura, classe, componente, caso de uso, sequência, estados, comunicação, implantação e entidade-relacionamento.
-- Protótipos de interface.
-- Vídeos de entrega.
-- Memoriais individuais.
-- PDFs das entregas de pré-banca e versão final.
-
 ## Padrão de commits
 
 O projeto adota o padrão [**Conventional Commits**](https://www.conventionalcommits.org/en/v1.0.0/):
@@ -250,36 +189,40 @@ O projeto adota o padrão [**Conventional Commits**](https://www.conventionalcom
 Exemplos:
 
 ```bash
-feat(gfc): adicionar geração de assinatura estrutural
-fix(auth): corrigir validação do token jwt
-docs(readme): atualizar instruções de execução
+feat: adicionar geração de assinatura estrutural
+fix: corrigir validação token jwt
+docs: atualizar instruções de execução
 ```
 
 Tipos comuns:
 
-- `feat`
-- `fix`
-- `docs`
-- `refactor`
-- `test`
-- `style`
-- `perf`
-- `build`
-- `ci`
+- `feat`: Adição de uma nova feature.
+- `fix`: Correção de um bug.
+- `docs`: Mudanças apenas na documentação.
+- `refactor`: Mudança de código que não corrige um bug e nem adiciona uma feature.
+- `test`: Adição de testes ou correção de testes existentes.
+- `style`: Mudanças que não afetam o significado do código (espaços em branco, formatação, ponto e vírgula faltando, etc).
+- `perf`: Melhoria de performance.
+- `build`: Mudanças que afetam o build do sistema ou dependências externas.
 
-## Equipe
 
-### Alunos
+## Colaboradores
+
+### Alunos integrantes da equipe
 
 - Lucas Cabral Soares
 - Maria Eduarda Amaral Muniz
 
-### Professor responsável
+### Profesores responsáveis
 
 - Cleiton Silva Tavares
 - Danilo de Quadros Maia Filho
 - Leonardo Vilela Cardoso
 - Raphael Ramos Dias Costa
+
+### Orientador
+
+- Cleiton Silva Tavares
 
 ## Licença
 
