@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, type FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Mail, Shield, Calendar, Save, KeyRound, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { Header } from '../components/Header';
 import { Button } from '../components/Button';
@@ -11,7 +12,6 @@ import { extractApiErrorMessage } from '../utils/apiError';
 import type { UserProfile } from '../services/User/types/user';
 
 const PROFILE_LABELS: Record<number, string> = { 1: 'Administrador', 2: 'Usuário' };
-// Mesma regra do backend (UserDTO): minúsculas, dígitos e ponto antes do @.
 const EMAIL_REGEX = /^[a-z0-9.]+@[a-z0-9]+\.[a-z]+\.?([a-z]+)?$/;
 
 type Status = 'idle' | 'saving' | 'saved' | 'error';
@@ -24,7 +24,8 @@ function initials(name: string): string {
 }
 
 export function ProfilePage() {
-  const { token } = useAuth();
+  const { token, logout } = useAuth();
+  const navigate = useNavigate();
   const userId = useMemo(() => decodeToken(token)?.userId ?? null, [token]);
 
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -35,6 +36,7 @@ export function ProfilePage() {
   const [email, setEmail] = useState('');
   const [profileStatus, setProfileStatus] = useState<Status>('idle');
   const [profileError, setProfileError] = useState<string | null>(null);
+  const [reloginNotice, setReloginNotice] = useState<string | null>(null);
 
   const [currentPw, setCurrentPw] = useState('');
   const [newPw, setNewPw] = useState('');
@@ -79,6 +81,7 @@ export function ProfilePage() {
       return;
     }
 
+    const emailChanged = trimmedEmail !== user.email;
     setProfileStatus('saving');
     try {
       await UserService.atualizar(userId, {
@@ -86,7 +89,17 @@ export function ProfilePage() {
         email: trimmedEmail,
         perfil_usuario: user.perfil_usuario,
       });
-      // O PUT devolve só uma mensagem; rebusca para refletir os dados e o updatedAt.
+
+      if (emailChanged) {
+        setProfileStatus('saved');
+        setReloginNotice('E-mail atualizado. Faça login novamente com o novo e-mail.');
+        setTimeout(() => {
+          logout();
+          navigate('/login');
+        }, 1800);
+        return;
+      }
+
       const fresh = await UserService.buscarPorId(userId);
       setUser(fresh);
       setName(fresh.name);
@@ -216,8 +229,15 @@ export function ProfilePage() {
                 </p>
               )}
 
+              {reloginNotice && (
+                <p className="text-sm text-green-400 flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+                  {reloginNotice}
+                </p>
+              )}
+
               <div className="flex items-center gap-3">
-                <Button type="submit" disabled={!profileDirty || profileStatus === 'saving'}>
+                <Button type="submit" disabled={!profileDirty || profileStatus === 'saving' || !!reloginNotice}>
                   <Save className="w-4 h-4" />
                   {profileStatus === 'saving' ? 'Salvando...' : 'Salvar alterações'}
                 </Button>
