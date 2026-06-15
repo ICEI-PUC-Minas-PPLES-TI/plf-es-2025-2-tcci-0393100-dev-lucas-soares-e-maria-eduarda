@@ -23,4 +23,19 @@ public abstract class Neo4jBaseEntity {
     protected LocalDateTime createdAt;
 
     protected LocalDateTime updatedAt;
+
+    public void prepareAuditForSave() {
+        if (createdAt == null || updatedAt == null) {
+            LocalDateTime now = LocalDateTime.now();
+            if (createdAt == null) {
+                createdAt = now;
+            }
+            if (updatedAt == null) {
+                updatedAt = createdAt;
+            }
+            return;
+        }
+
+        updatedAt = LocalDateTime.now();
+    }
 }

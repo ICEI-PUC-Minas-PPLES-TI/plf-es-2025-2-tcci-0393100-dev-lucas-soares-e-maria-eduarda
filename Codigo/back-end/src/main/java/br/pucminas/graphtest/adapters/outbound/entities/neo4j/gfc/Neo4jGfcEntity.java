@@ -33,4 +33,25 @@ public class Neo4jGfcEntity extends Neo4jBaseEntity {
 
     @Relationship(type = "HAS_NODE")
     private List<Neo4jGfcNodeEntity> nodes = new ArrayList<>();
+
+    @Override
+    public void prepareAuditForSave() {
+        super.prepareAuditForSave();
+        if (nodes == null) {
+            return;
+        }
+
+        for (Neo4jGfcNodeEntity node : nodes) {
+            if (node == null) {
+                continue;
+            }
+            node.prepareAuditForSave();
+            if (node.getOutgoingEdges() == null) {
+                continue;
+            }
+            node.getOutgoingEdges().stream()
+                    .filter(java.util.Objects::nonNull)
+                    .forEach(Neo4jGfcEdgeRelationship::prepareAuditForSave);
+        }
+    }
 }

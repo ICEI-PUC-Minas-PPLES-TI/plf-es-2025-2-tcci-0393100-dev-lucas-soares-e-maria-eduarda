@@ -25,6 +25,7 @@ public class GfcRepositoryAdapter implements GfcRepositoryPort {
     @Override
     public Gfc save(Gfc graph) {
         Neo4jGfcEntity entityToSave = mapper.toEntity(graph);
+        entityToSave.prepareAuditForSave();
         return mapper.toDomain(neo4jGfcRepository.save(entityToSave));
     }
 
