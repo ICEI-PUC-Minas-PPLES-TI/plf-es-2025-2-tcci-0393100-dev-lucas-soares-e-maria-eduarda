@@ -25,6 +25,7 @@ public class GceRepositoryAdapter implements GceRepositoryPort {
     @Override
     public Gce save(Gce graph) {
         Neo4jGceEntity entityToSave = mapper.toEntity(graph);
+        entityToSave.prepareAuditForSave();
         return mapper.toDomain(neo4jGceRepository.save(entityToSave));
     }
 
