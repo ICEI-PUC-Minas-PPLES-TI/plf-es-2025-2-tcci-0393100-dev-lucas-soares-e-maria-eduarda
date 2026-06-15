@@ -5,6 +5,7 @@ import br.pucminas.graphtest.application.port.input.project.DeleteProjectUseCase
 import br.pucminas.graphtest.application.port.input.project.records.DeleteProjectInput;
 import br.pucminas.graphtest.application.service.project.interfaces.ProjectAccessService;
 import br.pucminas.graphtest.application.service.project.interfaces.ProjectDeletionService;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Caso de uso responsavel por excluir um projeto acessivel ao usuario
@@ -37,6 +38,7 @@ public class DeleteProjectUseCaseImpl implements DeleteProjectUseCasePort {
      * @param input dados de entrada contendo o identificador do projeto
      */
     @Override
+    @Transactional
     public void execute(DeleteProjectInput input) {
         Project project = projectAccessService.findAuthorizedProject(input.id());
         projectDeletionService.deleteProject(project);
