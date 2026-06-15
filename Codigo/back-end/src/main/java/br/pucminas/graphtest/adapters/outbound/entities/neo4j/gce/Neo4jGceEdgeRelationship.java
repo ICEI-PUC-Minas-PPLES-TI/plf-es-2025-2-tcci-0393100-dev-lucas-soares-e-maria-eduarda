@@ -41,4 +41,19 @@ public class Neo4jGceEdgeRelationship {
 
     @TargetNode
     private Neo4jGceNodeEntity targetNode;
+
+    public void prepareAuditForSave() {
+        if (createdAt == null || updatedAt == null) {
+            LocalDateTime now = LocalDateTime.now();
+            if (createdAt == null) {
+                createdAt = now;
+            }
+            if (updatedAt == null) {
+                updatedAt = createdAt;
+            }
+            return;
+        }
+
+        updatedAt = LocalDateTime.now();
+    }
 }
