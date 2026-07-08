@@ -42,7 +42,7 @@ class GceTest {
         gce.addEdge(edgeOne);
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> gce.addEdge(edgeTwo));
-        assertTrue(exception.getMessage().contains("Efeito nao pode ser origem"));
+        assertTrue(exception.getMessage().contains("efeito não pode ser origem"));
     }
 
     @Test
@@ -64,7 +64,7 @@ class GceTest {
                 () -> gce.addNode(GceNode.effect(UUID.randomUUID(), "C1", "Efeito duplicado"))
         );
 
-        assertTrue(exception.getMessage().contains("codigo"));
+        assertTrue(exception.getMessage().contains("código"));
     }
 
     @Test
@@ -86,7 +86,7 @@ class GceTest {
         );
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> gce.removeNode(cause.getCode()));
-        assertTrue(exception.getMessage().contains("arestas associadas"));
+        assertTrue(exception.getMessage().contains("arestas ligadas"));
     }
 
     @Test
@@ -115,7 +115,7 @@ class GceTest {
                 () -> gce.replaceNode(GceNode.effect(causeId, "C1", "Agora efeito"))
         );
 
-        assertTrue(exception.getMessage().contains("CAUSE"));
+        assertTrue(exception.getMessage().contains("deve referenciar apenas causas"));
         assertTrue(gce.findNode(cause.getCode()).orElseThrow().isCause());
     }
 
@@ -210,7 +210,7 @@ class GceTest {
                 )
         );
 
-        assertTrue(exception.getMessage().contains("no maximo uma aresta de entrada direta"));
+        assertTrue(exception.getMessage().contains("no máximo uma aresta de entrada direta"));
     }
 
     @Test
@@ -240,6 +240,6 @@ class GceTest {
                 )
         );
 
-        assertTrue(exception.getMessage().contains("no maximo duas arestas de entrada"));
+        assertTrue(exception.getMessage().contains("no máximo duas arestas de entrada"));
     }
 }
